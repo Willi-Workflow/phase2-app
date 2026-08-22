@@ -82,17 +82,19 @@ function zeichneDiagramm(laeufe) {
     { profil: eigenes, werte: reihe(laeufe, eigenes) },
   ];
   const maxAnzahl = Math.max(...reihen.map((r) => r.werte.length));
-  if (maxAnzahl === 0) { behaelter.hidden = true; return; }
   behaelter.hidden = false;
 
+  // Das Raster steht auch ohne Läufe: mindestens zehn Plätze, der erste Lauf
+  // sitzt links auf Platz 1.
+  const plaetze = Math.max(maxAnzahl, DIAGRAMM.sichtbareLaeufe);
   const rollen = document.getElementById("diagrammrollen");
-  const rollbar = maxAnzahl > DIAGRAMM.sichtbareLaeufe;
+  const rollbar = plaetze > DIAGRAMM.sichtbareLaeufe;
   const schrittBreite = (DIAGRAMM.grundbreite - 2 * DIAGRAMM.rand) / (DIAGRAMM.sichtbareLaeufe - 1);
   const gesamtBreite = rollbar
-    ? (maxAnzahl - 1) * schrittBreite + 2 * DIAGRAMM.rand
+    ? (plaetze - 1) * schrittBreite + 2 * DIAGRAMM.rand
     : DIAGRAMM.grundbreite;
   const feld = { x: DIAGRAMM.rand, y: DIAGRAMM.oben, breite: gesamtBreite - 2 * DIAGRAMM.rand, hoehe: DIAGRAMM.zeichenhoehe };
-  const xVon = (index) => feld.x + (maxAnzahl > 1 ? (index / (maxAnzahl - 1)) * feld.breite : feld.breite / 2);
+  const xVon = (index) => feld.x + (index / (plaetze - 1)) * feld.breite;
   const yVon = (w, maxWert) => feld.y + feld.hoehe - (w / maxWert) * feld.hoehe;
 
   const y = skala(reihen.flatMap((r) => r.werte), mission.kennzahlName.includes("%"));
@@ -102,17 +104,17 @@ function zeichneDiagramm(laeufe) {
   const gitter = y.schritte.map((w) =>
     `<line class="gitter" x1="0" y1="${yVon(w, y.max).toFixed(1)}" x2="${gesamtBreite.toFixed(1)}" y2="${yVon(w, y.max).toFixed(1)}"></line>`).join("");
 
-  const nummern = rollbar ? Array.from({ length: maxAnzahl }, (_, i) => i + 1) : laufnummern(maxAnzahl);
+  const nummern = rollbar ? Array.from({ length: plaetze }, (_, i) => i + 1) : laufnummern(plaetze);
   const unten = nummern.map((n) =>
     `<text class="achse" x="${xVon(n - 1).toFixed(1)}" y="${feld.y + feld.hoehe + 15}" text-anchor="middle">${n}</text>`).join("");
 
   const linien = reihen.filter((r) => r.werte.length).map((r) => {
-    const p = punkte(r.werte, feld, maxAnzahl, y.max);
+    const p = punkte(r.werte, feld, plaetze, y.max);
     const kreise = p.map((pt) =>
       `<circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="4" fill="${PROFILFARBEN[r.profil]}" stroke="${TAFELGRUND}" stroke-width="2"></circle>`).join("");
     const spitze = p[p.length - 1];
     const endwert = r.profil === eigenes
-      ? `<text class="endwert" x="${spitze.x.toFixed(1)}" y="${Math.max(spitze.y - 9, 9).toFixed(1)}" text-anchor="middle">${r.werte[r.werte.length - 1]}</text>`
+      ? `<text class="endwert" x="${Math.max(spitze.x, 12).toFixed(1)}" y="${Math.max(spitze.y - 9, 9).toFixed(1)}" text-anchor="middle">${r.werte[r.werte.length - 1]}</text>`
       : "";
     return `<path d="${pfad(p)}" fill="none" stroke="${PROFILFARBEN[r.profil]}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>${kreise}${endwert}`;
   }).join("");
@@ -130,10 +132,10 @@ function zeichneDiagramm(laeufe) {
     <div class="werkzeugtipp" hidden></div>`;
   rollen.scrollLeft = rollen.scrollWidth;
 
-  verdrahteWerkzeugtipp(flaeche, reihen, maxAnzahl, xVon, gesamtBreite);
+  if (maxAnzahl > 0) verdrahteWerkzeugtipp(flaeche, reihen, maxAnzahl, plaetze, xVon, gesamtBreite);
 }
 
-function verdrahteWerkzeugtipp(flaeche, reihen, maxAnzahl, xVon, gesamtBreite) {
+function verdrahteWerkzeugtipp(flaeche, reihen, maxAnzahl, plaetze, xVon, gesamtBreite) {
   const svg = flaeche.querySelector("svg");
   const kreuz = svg.querySelector(".fadenkreuz");
   const tipp = flaeche.querySelector(".werkzeugtipp");
@@ -167,7 +169,7 @@ function verdrahteWerkzeugtipp(flaeche, reihen, maxAnzahl, xVon, gesamtBreite) {
   svg.addEventListener("pointermove", (e) => {
     const einheit = (e.offsetX / flaeche.clientWidth) * gesamtBreite;
     const stelle = (einheit - DIAGRAMM.rand) / (gesamtBreite - 2 * DIAGRAMM.rand);
-    index = Math.min(Math.max(Math.round(stelle * (maxAnzahl - 1)), 0), maxAnzahl - 1);
+    index = Math.min(Math.max(Math.round(stelle * (plaetze - 1)), 0), maxAnzahl - 1);
     zeige();
   });
   svg.addEventListener("pointerleave", verberge);
