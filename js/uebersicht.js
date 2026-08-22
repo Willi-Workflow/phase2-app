@@ -2,8 +2,11 @@ import { KONFIG } from "./konfig.js";
 import { erzeugeSpeicher } from "./speicher.js";
 import { MISSIONEN } from "./missionen.js";
 import { oeffneProfilmenue } from "./profilmenue.js";
+import { erzeugeControls } from "./controls.js";
 
 const speicher = erzeugeSpeicher({ konfig: KONFIG });
+const controls = erzeugeControls(speicher);
+controls.lade();
 
 if (!speicher.profil()) location.replace("index.html");
 
@@ -19,6 +22,7 @@ for (const mission of MISSIONEN) {
   raster.append(knopf);
 }
 
-document.getElementById("anhaenger").addEventListener("click", () => oeffneProfilmenue(speicher));
+document.getElementById("anhaenger").addEventListener("click", () =>
+  oeffneProfilmenue(speicher, { oeffneControls: () => controls.oeffneDialog() }));
 
 speicher.synce(); // liegengebliebene Läufe bestmöglich nachmelden

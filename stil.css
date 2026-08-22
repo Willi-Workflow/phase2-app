@@ -168,3 +168,10 @@ main { position: relative; z-index: 1; }
 }
 .profilmenue .punkt:hover { background: #232c18; }
 .profilmenue .zustand { margin-top: 12px; font-size: 11px; letter-spacing: 0.1em; color: var(--gedeckt); }
+
+.controlsdialog { max-height: 86vh; overflow-y: auto; }
+.rollenzeile { display: grid; grid-template-columns: 1fr auto auto; gap: 6px; align-items: center; margin-top: 8px; font-size: 12px; }
+.rollenzeile .rollentitel { letter-spacing: 0.08em; }
+.rollenzeile .rollenstand { grid-column: 1 / -1; font-size: 10px; color: var(--gedeckt); }
+.punkt.klein { width: auto; margin-top: 0; padding: 6px 10px; font-size: 11px; }
+.controlsdialog input[type="range"] { width: 100%; }
