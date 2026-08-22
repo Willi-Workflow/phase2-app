@@ -65,7 +65,7 @@ main { position: relative; z-index: 1; }
   transition: transform 0.35s ease;
 }
 
-.band:hover { transform: translateY(10px); }
+.band:hover, .band:focus-visible { transform: translateY(10px); }
 .band.gezogen { transform: translateY(48vh); transition: transform 0.6s ease-in; }
 
 .band img.stoff { display: block; width: 100%; height: auto; }
