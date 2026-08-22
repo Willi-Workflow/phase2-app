@@ -83,3 +83,88 @@ main { position: relative; z-index: 1; }
 .band .aufdruck img.flieger { width: 46%; height: auto; display: block; margin: 0 auto; filter: brightness(1.35) drop-shadow(0 1px 1px rgba(0,0,0,.45)); }
 .band .aufdruck .name { font-size: clamp(17px, 2vw, 24px); letter-spacing: 0.18em; margin-top: 10%; }
 .band .aufdruck img.schwinge { width: 86%; height: auto; display: block; margin: 2% auto 0; mix-blend-mode: screen; }
+
+/* Übersicht: sechs Schilder */
+.schildraster {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(14px, 2vw, 26px);
+  max-width: 1200px;
+  margin: 4vh auto 0;
+  padding: 0 clamp(16px, 3vw, 40px) 40px;
+}
+
+.schild {
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+  background: center / 100% 100% no-repeat;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 8% 12%;
+  font-family: inherit;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.schild:hover { transform: translateY(-3px); box-shadow: 0 14px 28px rgba(0, 0, 0, 0.7); }
+.schild .nummer { font-size: clamp(9px, 1vw, 13px); letter-spacing: 0.3em; color: var(--tafel-neben); }
+.schild .name { font-size: clamp(13px, 1.5vw, 21px); letter-spacing: 0.06em; color: var(--tafel-dunkel); margin-top: 5px; }
+
+/* Profilanhänger rechts oben */
+.profilanhaenger {
+  position: fixed;
+  top: 0;
+  right: clamp(16px, 4vw, 60px);
+  width: clamp(56px, 5.5vw, 78px);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  z-index: 5;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.55));
+  transform-origin: top center;
+  transition: transform 0.3s ease;
+}
+.profilanhaenger:hover { transform: rotate(2deg); }
+.profilanhaenger img.stoff { display: block; width: 100%; height: auto; }
+.profilanhaenger .aufdruck { position: absolute; left: 4%; right: 4%; top: 30%; text-align: center; color: #f7f0e7; }
+.profilanhaenger .aufdruck img.flieger { width: 46%; display: block; margin: 0 auto; filter: brightness(1.35); }
+.profilanhaenger .aufdruck .name { font-size: clamp(10px, 1vw, 13px); letter-spacing: 0.15em; display: block; margin-top: 12%; }
+.profilanhaenger .aufdruck img.schwinge { width: 84%; display: block; margin: 4% auto 0; mix-blend-mode: screen; }
+
+/* Profilmenü */
+.menueschleier { position: fixed; inset: 0; background: rgba(5, 7, 4, 0.75); z-index: 9; }
+.profilmenue {
+  position: fixed;
+  top: 0;
+  right: clamp(8px, 3vw, 48px);
+  width: min(360px, 92vw);
+  background: #12170e;
+  border: 1px solid #39422c;
+  border-top: 0;
+  border-radius: 0 0 10px 10px;
+  padding: 18px;
+  z-index: 10;
+  color: var(--hell);
+}
+.profilmenue h2 { font-size: 15px; letter-spacing: 0.2em; color: var(--gedeckt); margin-bottom: 12px; }
+.profilmenue .punkt {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: #1a2113;
+  color: var(--hell);
+  border: 1px solid #2c3520;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-top: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+.profilmenue .punkt:hover { background: #232c18; }
+.profilmenue .zustand { margin-top: 12px; font-size: 11px; letter-spacing: 0.1em; color: var(--gedeckt); }
