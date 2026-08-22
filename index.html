@@ -4,12 +4,36 @@
 <meta charset="utf-8">
 <title>Phase II · Fliegerische Eignung</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="stil.css?v=1">
+<link rel="stylesheet" href="stil.css?v=2">
 </head>
 <body>
-<main style="padding-top:18vh;">
+<main style="padding-top:10vh;">
   <h1 class="she-titel">PHASE II</h1>
   <p class="she-untertitel">FLIEGERISCHE EIGNUNG</p>
+
+  <div class="bandreihe">
+    <button class="band" data-profil="luigi" aria-label="Profil Luigi wählen">
+      <img class="stoff" src="bilder/anhaenger.png" alt="">
+      <span class="aufdruck">
+        <img class="flieger" src="bilder/eurofighter.svg" alt="">
+        <span class="name">LUIGI</span>
+        <img class="schwinge" src="bilder/schwinge.png" alt="">
+      </span>
+    </button>
+    <button class="band" data-profil="willi" aria-label="Profil Willi wählen">
+      <img class="stoff" src="bilder/anhaenger.png" alt="">
+      <span class="aufdruck">
+        <img class="flieger" src="bilder/eurofighter.svg" alt="">
+        <span class="name">WILLI</span>
+        <img class="schwinge" src="bilder/schwinge.png" alt="">
+      </span>
+    </button>
+  </div>
+
+  <p id="browserhinweis" class="she-untertitel" style="letter-spacing:.1em;padding-left:0;margin-top:8vh;display:none;">
+    Bitte in Google Chrome öffnen. Andere Browser erkennen die Flug-Controls nicht.
+  </p>
 </main>
+<script type="module" src="js/start.js?v=1"></script>
 </body>
 </html>

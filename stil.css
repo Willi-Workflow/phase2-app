@@ -46,3 +46,40 @@ main { position: relative; z-index: 1; }
   margin-top: 8px;
   padding-left: 0.75em; /* gleicht die Sperrung optisch aus */
 }
+
+/* Profilwahl: zwei hängende Bänder */
+.bandreihe {
+  display: flex;
+  justify-content: center;
+  gap: clamp(60px, 12vw, 160px);
+  margin-top: 6vh;
+}
+
+.band {
+  position: relative;
+  width: clamp(120px, 16vw, 190px);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.55));
+  transition: transform 0.35s ease;
+}
+
+.band:hover { transform: translateY(10px); }
+.band.gezogen { transform: translateY(48vh); transition: transform 0.6s ease-in; }
+
+.band img.stoff { display: block; width: 100%; height: auto; }
+
+.band .aufdruck {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 28%;
+  text-align: center;
+  color: #f7f0e7;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.band .aufdruck img.flieger { width: 46%; height: auto; display: block; margin: 0 auto; filter: brightness(1.35) drop-shadow(0 1px 1px rgba(0,0,0,.45)); }
+.band .aufdruck .name { font-size: clamp(17px, 2vw, 24px); letter-spacing: 0.18em; margin-top: 10%; }
+.band .aufdruck img.schwinge { width: 86%; height: auto; display: block; margin: 2% auto 0; mix-blend-mode: screen; }
