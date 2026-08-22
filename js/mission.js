@@ -3,6 +3,7 @@ import { erzeugeSpeicher } from "./speicher.js";
 import { MISSIONEN } from "./missionen.js";
 import { sortiertNeueste, bestwert, durchschnitt, vergleich } from "./auswertung.js";
 import { erzeugeControls } from "./controls.js";
+import { rollenStand } from "./geraetestand.js";
 
 const speicher = erzeugeSpeicher({ konfig: KONFIG });
 const nr = Number(new URLSearchParams(location.search).get("bereich"));
@@ -31,10 +32,18 @@ async function zeichneAuswertung() {
 }
 
 function zeichneGeraete() {
-  const geraete = controls.geraete();
-  document.getElementById("geraetestand").textContent = geraete.length
-    ? geraete.map((g) => g.kennung.slice(0, 22)).join(" · ")
-    : "Kein Gerät erkannt. Anschließen und eine Taste am Gerät drücken. Tastatur geht auch.";
+  const kennungen = controls.geraete().map((g) => g.kennung);
+  const zuordnung = {};
+  for (const [rolle] of controls.ROLLEN) {
+    const z = controls.zuordnungVon(rolle);
+    if (z) zuordnung[rolle] = z;
+  }
+  const sicher = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  const zeilen = rollenStand(controls.ROLLEN, zuordnung, kennungen).map((s) =>
+    `<span class="rollenlampe ${s.zustand}"></span><span>${s.titel}</span><span class="rollentext">${sicher(s.text)}</span>`);
+  const hinweis = kennungen.length ? ""
+    : `<p class="geraetehinweis">Kein Gerät erkannt. Anschließen und eine Taste am Gerät drücken.</p>`;
+  document.getElementById("geraetestand").innerHTML = zeilen.join("") + hinweis;
 }
 
 // Platzhalter-Lauf: wird je Bereich durch die echte Übung ersetzt.
@@ -81,7 +90,9 @@ function starteLauf() {
 }
 
 function initialisiereSeite() {
-  controls.lade();
+  // Erst nach dem Laden der Zuordnung zeigt die Rollenanzeige den echten Stand,
+  // vorher stünde kurz überall Tastatur.
+  controls.lade().then(zeichneGeraete);
 
   document.getElementById("missionstitel").textContent = mission.name.toUpperCase();
   document.getElementById("missionsnummer").textContent = `MISSION 0${mission.nr}`;

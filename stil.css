@@ -236,6 +236,23 @@ main { position: relative; z-index: 1; }
   cursor: pointer;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.55);
 }
+.geraetestand {
+  max-width: 360px;
+  margin: 14px auto 0;
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 5px 9px;
+  align-items: baseline;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--gedeckt);
+}
+.geraetestand .rollenlampe { width: 7px; height: 7px; border-radius: 50%; align-self: center; }
+.geraetestand .rollenlampe.verbunden { background: #7da05a; box-shadow: 0 0 5px rgba(125, 160, 90, 0.7); }
+.geraetestand .rollenlampe.fehlt { background: #b0563c; box-shadow: 0 0 5px rgba(176, 86, 60, 0.6); }
+.geraetestand .rollenlampe.tastatur { background: var(--tafel-neben); }
+.geraetestand .rollentext { text-align: right; color: var(--hell); opacity: 0.85; }
+.geraetestand .geraetehinweis { grid-column: 1 / -1; text-align: center; margin-top: 4px; }
 .laufliste { list-style: none; font-size: 13px; }
 .laufliste li { display: flex; justify-content: space-between; padding: 4px 0; color: var(--gedeckt); }
 .laufliste li b { color: var(--hell); }
