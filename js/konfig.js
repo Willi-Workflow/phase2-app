@@ -1,6 +1,7 @@
-// Zugangsdaten werden in Task 9 nach dem Anlegen des Supabase-Projekts eingetragen.
+// Zugang zum gemeinsamen Datenspeicher. Der Schlüssel ist der öffentliche
+// Publishable-Schlüssel von Supabase und dafür gedacht, im Browser zu liegen.
 export const KONFIG = {
-  supabaseUrl: "",
-  supabaseKey: "",
+  supabaseUrl: "https://bgjndiekhvisyvqzqzuv.supabase.co",
+  supabaseKey: "sb_publishable_aPjys9UltYScEUL7SuigpA_QagwNr74",
   version: 1,
 };
