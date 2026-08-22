@@ -5,17 +5,11 @@ import { sortiertNeueste, bestwert, durchschnitt, vergleich } from "./auswertung
 import { erzeugeControls } from "./controls.js";
 
 const speicher = erzeugeSpeicher({ konfig: KONFIG });
-if (!speicher.profil()) location.replace("index.html");
-
 const nr = Number(new URLSearchParams(location.search).get("bereich"));
 const mission = MISSIONEN.find((m) => m.nr === nr);
-if (!mission) location.replace("uebersicht.html");
 
+let laufAktiv = false;
 const controls = erzeugeControls(speicher);
-controls.lade();
-
-document.getElementById("missionstitel").textContent = mission.name.toUpperCase();
-document.getElementById("missionsnummer").textContent = `MISSION 0${mission.nr}`;
 
 async function zeichneAuswertung() {
   const laeufe = await speicher.ladeLaeufe(mission.nr);
@@ -45,6 +39,9 @@ function zeichneGeraete() {
 
 // Platzhalter-Lauf: wird je Bereich durch die echte Übung ersetzt.
 function starteLauf() {
+  if (laufAktiv) return;
+  laufAktiv = true;
+
   const schleier = document.createElement("div");
   schleier.className = "laufschleier";
   schleier.innerHTML = `
@@ -66,6 +63,7 @@ function starteLauf() {
     if (rest > 0) { requestAnimationFrame(takt); return; }
     if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
     schleier.remove();
+    laufAktiv = false;
     try {
       await speicher.speichereLauf({
         profil: speicher.profil(),
@@ -82,10 +80,25 @@ function starteLauf() {
   requestAnimationFrame(takt);
 }
 
-document.getElementById("start").addEventListener("click", starteLauf);
-addEventListener("keydown", (e) => { if (e.key === "Escape" && document.querySelector(".laufschleier")) location.reload(); });
+function initialisiereSeite() {
+  controls.lade();
 
-zeichneAuswertung();
-zeichneGeraete();
-setInterval(zeichneGeraete, 2000);
-speicher.synce();
+  document.getElementById("missionstitel").textContent = mission.name.toUpperCase();
+  document.getElementById("missionsnummer").textContent = `MISSION 0${mission.nr}`;
+
+  document.getElementById("start").addEventListener("click", starteLauf);
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && document.querySelector(".laufschleier")) location.reload(); });
+
+  zeichneAuswertung();
+  zeichneGeraete();
+  setInterval(zeichneGeraete, 2000);
+  speicher.synce();
+}
+
+if (!speicher.profil()) {
+  location.replace("index.html");
+} else if (!mission) {
+  location.replace("uebersicht.html");
+} else {
+  initialisiereSeite();
+}
