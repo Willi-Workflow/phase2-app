@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <title>Phase II · Mission</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="stil.css?v=28">
+<link rel="stylesheet" href="stil.css?v=29">
 </head>
 <body>
 <button class="zurueck" onclick="location.href='uebersicht.html'">◄ ÜBERSICHT</button>
@@ -24,6 +24,10 @@
     </section>
     <section class="missionsfeld">
       <h2>AUSWERTUNG</h2>
+      <div class="diagramm" id="diagramm" hidden>
+        <div class="diagrammlegende" id="diagrammlegende"></div>
+        <div class="diagrammflaeche" id="diagrammflaeche"></div>
+      </div>
       <ul class="laufliste" id="laufliste"></ul>
       <div class="kennzeile"><span>Bestwert</span><b id="bestwert">–</b></div>
       <div class="kennzeile"><span>Durchschnitt</span><b id="durchschnitt">–</b></div>
@@ -32,6 +36,6 @@
     </section>
   </div>
 </main>
-<script type="module" src="js/mission.js?v=7"></script>
+<script type="module" src="js/mission.js?v=8"></script>
 </body>
 </html>
