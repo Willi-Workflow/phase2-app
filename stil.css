@@ -269,8 +269,43 @@ main { position: relative; z-index: 1; }
 .balken span { display: block; height: 100%; }
 .balken.willi span { background: #9fb98a; }
 .balken.luigi span { background: #c8a24a; }
-.zurueck { position: fixed; top: 16px; left: clamp(16px, 3vw, 40px); z-index: 5; background: transparent; border: 0; color: var(--gedeckt); font-family: inherit; font-size: 13px; letter-spacing: 0.15em; cursor: pointer; }
-.zurueck:hover { color: var(--hell); }
+/* Rücksprung als gesprühte Schablonen-Markierung mit Eckwinkeln, bewusst ohne Metall */
+.zurueck {
+  --winkel: color-mix(in srgb, var(--gedeckt) 55%, transparent);
+  position: fixed;
+  top: 16px;
+  left: clamp(16px, 3vw, 40px);
+  z-index: 5;
+  padding: 11px 18px;
+  border: 0;
+  color: var(--gedeckt);
+  font-family: inherit;
+  font-size: 13px;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  text-shadow: 0 0 1px color-mix(in srgb, var(--gedeckt) 60%, transparent);
+  background:
+    linear-gradient(var(--winkel), var(--winkel)) left 0 top 0 / 16px 2px,
+    linear-gradient(var(--winkel), var(--winkel)) left 0 top 0 / 2px 16px,
+    linear-gradient(var(--winkel), var(--winkel)) right 0 top 0 / 16px 2px,
+    linear-gradient(var(--winkel), var(--winkel)) right 0 top 0 / 2px 16px,
+    linear-gradient(var(--winkel), var(--winkel)) left 0 bottom 0 / 16px 2px,
+    linear-gradient(var(--winkel), var(--winkel)) left 0 bottom 0 / 2px 16px,
+    linear-gradient(var(--winkel), var(--winkel)) right 0 bottom 0 / 16px 2px,
+    linear-gradient(var(--winkel), var(--winkel)) right 0 bottom 0 / 2px 16px;
+  background-repeat: no-repeat;
+  background-color: transparent;
+  transition: color 0.15s, background-color 0.15s;
+}
+.zurueck:hover {
+  --winkel: var(--hell);
+  color: var(--hell);
+  background-color: rgba(221, 225, 213, 0.06);
+}
+.zurueck .pfeil { display: inline-block; transition: transform 0.15s; }
+.zurueck:hover .pfeil { transform: translateX(-3px); }
+.zurueck:active { transform: translateY(1px); }
+.zurueck:focus-visible { outline: 2px dashed var(--gedeckt); outline-offset: 4px; }
 
 /* Platzhalter-Lauf im Vollbild */
 .laufschleier { position: fixed; inset: 0; background: #0b0f08; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
