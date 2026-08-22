@@ -61,6 +61,33 @@ test("ohne Zugangsdaten bleibt alles örtlich und der Zustand ist ohne-zugang", 
   assert.equal((await s.ladeLaeufe(1)).length, 1);
 });
 
+test("doppelter speichereLauf offline erzeugt nur einen Warteschlangen-Eintrag und einen POST", async () => {
+  let kaputt = true;
+  const posts = [];
+  const fetchFn = async (adresse, optionen = {}) => {
+    if (kaputt) throw new Error("kein Netz");
+    if ((optionen.method ?? "GET") === "POST") posts.push(adresse);
+    return { ok: true, json: async () => [] };
+  };
+  const s = erzeugeSpeicher({ konfig, fetchFn, lager: attrappenLager() });
+  await s.speichereLauf(lauf);
+  await s.speichereLauf(lauf);
+  kaputt = false;
+  await s.synce();
+  assert.equal(posts.length, 1);
+});
+
+test("URL ohne Schlüssel zählt als ohne-zugang und ruft fetch nie", async () => {
+  const s = erzeugeSpeicher({
+    konfig: { supabaseUrl: "https://beispiel.supabase.co", supabaseKey: "", version: 1 },
+    fetchFn: async () => { throw new Error("darf nicht gerufen werden"); },
+    lager: attrappenLager(),
+  });
+  await s.speichereLauf(lauf);
+  assert.equal(s.zustand(), "ohne-zugang");
+  assert.equal((await s.ladeLaeufe(1)).length, 1);
+});
+
 test("ladeLaeufe vereinigt gemeinsamen Bestand und Warteschlange ohne Doppelte", async () => {
   const fern = [{ ...lauf, kennzahl: 70, zeitpunkt: "2026-08-20T10:00:00Z" }];
   let kaputt = true;

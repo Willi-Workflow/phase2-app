@@ -7,7 +7,8 @@ const LAGER_PROFIL = "p2-profil";
 const LAGER_EINSTELLUNGEN = "p2-einstellungen";
 
 export function erzeugeSpeicher({ konfig, fetchFn = fetch, lager = localStorage }) {
-  let zustand = konfig.supabaseUrl ? "getrennt" : "ohne-zugang";
+  const zugang = Boolean(konfig.supabaseUrl && konfig.supabaseKey);
+  let zustand = zugang ? "getrennt" : "ohne-zugang";
 
   const liesJson = (schluessel, vorgabe) => {
     const roh = lager.getItem(schluessel);
@@ -24,7 +25,7 @@ export function erzeugeSpeicher({ konfig, fetchFn = fetch, lager = localStorage 
   const tabelle = (name) => `${konfig.supabaseUrl}/rest/v1/${name}`;
 
   async function rufe(adresse, optionen = {}) {
-    if (!konfig.supabaseUrl) { zustand = "ohne-zugang"; throw new Error("ohne-zugang"); }
+    if (!zugang) { zustand = "ohne-zugang"; throw new Error("ohne-zugang"); }
     try {
       const antwort = await fetchFn(adresse, { ...optionen, headers: { ...kopf, ...(optionen.headers ?? {}) } });
       if (!antwort.ok) throw new Error(`Supabase antwortet ${antwort.status}`);
@@ -56,7 +57,9 @@ export function erzeugeSpeicher({ konfig, fetchFn = fetch, lager = localStorage 
         await rufe(tabelle("laeufe"), { method: "POST", body: JSON.stringify(lauf) });
       } catch {
         const schlange = liesJson(LAGER_WARTESCHLANGE, []);
-        schlange.push(lauf);
+        if (!schlange.some((l) => schluesselVon(l) === schluesselVon(lauf))) {
+          schlange.push(lauf);
+        }
         schreibJson(LAGER_WARTESCHLANGE, schlange);
       }
     },
