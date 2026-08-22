@@ -1,4 +1,5 @@
 import { KONFIG } from "./konfig.js";
+import { ANHEFT, pendelGroessen, pendelSchritt, glatt } from "./pendel.js";
 import { erzeugeSpeicher } from "./speicher.js";
 
 const speicher = erzeugeSpeicher({ konfig: KONFIG });
@@ -25,36 +26,72 @@ for (const knopf of document.querySelectorAll(".band")) {
     }
     gewaehlt = true;
 
-    // Band vom Bund lösen und als schwebendes Element festhalten
+    // Band vom Bund lösen: der Aufhängepunkt fliegt die Bahn, das Band hängt
+    // als simuliertes Pendel daran (Werte aus dem Stellpult, siehe js/pendel.js).
     const lage = knopf.getBoundingClientRect();
     const breite = knopf.offsetWidth;
-    const start = { left: lage.left + (lage.width - breite) / 2, top: lage.top };
-    const winkel = knopf.dataset.profil === "willi" ? 16 : -16;
-    knopf.style.left = `${start.left}px`;
-    knopf.style.top = `${start.top}px`;
-    knopf.style.width = `${breite}px`;
-    knopf.classList.add("anheften");
+    const hoehe = knopf.offsetHeight;
+    const start = { x: lage.left + (lage.width - breite) / 2, y: lage.top };
 
-    // Ziel: Lage und Größe des Profilanhängers der Übersicht
+    // Es fliegt ein Klon ohne Übergangsregeln; das Original wird unsichtbar.
+    // So gibt es keinen Sprung beim Loslösen und kein Verschleifen der Einzelbilder.
+    const klon = knopf.cloneNode(true);
+    Object.assign(klon.style, {
+      position: "fixed", left: "0px", top: "0px", width: `${breite}px`,
+      margin: "0", zIndex: 50, transformOrigin: "47.1% 9.2%", transition: "none",
+    });
+    klon.style.transform = `translate(${start.x}px, ${start.y}px) rotate(${knopf.dataset.profil === "willi" ? 16 : -16}deg)`;
+    document.body.append(klon);
+    knopf.style.visibility = "hidden";
+
     const zielBreite = innerWidth <= 1500 ? 54 : Math.min(78, Math.max(56, innerWidth * 0.055));
     const rechts = Math.min(60, Math.max(16, innerWidth * 0.04));
-    const ziel = { left: innerWidth - rechts - zielBreite, top: 0 };
+    const ziel = { x: innerWidth - rechts - zielBreite, y: 0 };
+    const kontrolle = { x: (start.x + ziel.x) / 2, y: Math.min(start.y, ziel.y) - ANHEFT.bogen };
 
-    const flug = knopf.animate([
-      { left: `${start.left}px`, top: `${start.top}px`, width: `${breite}px`, transform: `rotate(${winkel}deg)` },
-      { left: `${ziel.left}px`, top: `${ziel.top}px`, width: `${zielBreite}px`, transform: "rotate(0deg)" },
-    ], { duration: 750, easing: "cubic-bezier(0.35, 0.05, 0.25, 1)", fill: "forwards" });
+    const { g, L } = pendelGroessen(hoehe);
+    const cssStart = knopf.dataset.profil === "willi" ? 16 : -16;
+    let zustand = { theta: (-cssStart * Math.PI) / 180, thetaP: 0 };
+    const T = ANHEFT.flugdauer / 1000;
+    const t0 = performance.now();
+    let tVorher = t0;
 
-    flug.finished.then(() => {
-      const pendeln = knopf.animate([
-        { transform: "rotate(0deg)" },
-        { transform: "rotate(6deg)" },
-        { transform: "rotate(-5deg)" },
-        { transform: "rotate(3deg)" },
-        { transform: "rotate(-1.5deg)" },
-        { transform: "rotate(0deg)" },
-      ], { duration: 650, easing: "ease-in-out" });
-      return pendeln.finished;
-    }).then(() => location.href = "uebersicht.html");
+    const schritt = (jetzt) => {
+      const dt = Math.min(0.032, (jetzt - tVorher) / 1000) || 0.016;
+      tVorher = jetzt;
+      const s = Math.min(1, (jetzt - t0) / ANHEFT.flugdauer);
+      const { e, e1, e2 } = glatt(s);
+
+      const bx = (1 - e) ** 2 * start.x + 2 * (1 - e) * e * kontrolle.x + e * e * ziel.x;
+      const by = (1 - e) ** 2 * start.y + 2 * (1 - e) * e * kontrolle.y + e * e * ziel.y;
+      const d1x = 2 * (1 - e) * (kontrolle.x - start.x) + 2 * e * (ziel.x - kontrolle.x);
+      const d1y = 2 * (1 - e) * (kontrolle.y - start.y) + 2 * e * (ziel.y - kontrolle.y);
+      const d2x = 2 * (start.x - 2 * kontrolle.x + ziel.x);
+      const d2y = 2 * (start.y - 2 * kontrolle.y + ziel.y);
+      const ax = (d2x * e1 * e1 + d1x * e2) / (T * T);
+      const ay = (d2y * e1 * e1 + d1y * e2) / (T * T);
+
+      zustand = pendelSchritt(zustand, { g, L, daempfung: ANHEFT.daempfung, ax, ay }, dt);
+
+      klon.style.width = `${breite + (zielBreite - breite) * e}px`;
+      klon.style.transform = `translate(${bx}px, ${by}px) rotate(${(-zustand.theta * 180) / Math.PI}deg)`;
+
+      if (s < 1) {
+        requestAnimationFrame(schritt);
+      } else {
+        // Andocken: Schwungzustand an die Übersicht übergeben, die pendelt aus.
+        sessionStorage.setItem("p2-anheft-schwung", JSON.stringify(zustand));
+        location.href = "uebersicht.html";
+      }
+    };
+    requestAnimationFrame(schritt);
+
+    // Sicherung: zeichnet der Browser gerade nicht (verdecktes Fenster),
+    // geht es nach der Flugzeit trotzdem in die Übersicht.
+    setTimeout(() => {
+      // Läuft die Seite hier noch, hat der Zeichner gestockt: dann ohne Flug weiter.
+      sessionStorage.setItem("p2-anheft-schwung", JSON.stringify(zustand));
+      location.href = "uebersicht.html";
+    }, ANHEFT.flugdauer + 700);
   });
 }
