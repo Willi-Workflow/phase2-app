@@ -266,7 +266,6 @@ main { position: relative; z-index: 1; }
 .stufenwahl .stufe { font-family: inherit; font-size: 10px; letter-spacing: 0.12em; color: var(--gedeckt); background: transparent; border: 1px solid #39422c; border-radius: 4px; padding: 5px 10px; cursor: pointer; }
 .stufenwahl .stufe:hover { color: var(--hell); }
 .stufenwahl .stufe.aktiv { color: var(--hell); border-color: var(--gedeckt); background: #1a2113; }
-#stufenwahl-statistik { margin-bottom: 12px; }
 .kennzeile { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; border-top: 1px dashed #39422c; margin-top: 6px; }
 .balkenpaar { margin-top: 8px; font-size: 12px; }
 .balken { height: 7px; border-radius: 4px; background: #1a2113; margin: 4px 0 10px; overflow: hidden; }

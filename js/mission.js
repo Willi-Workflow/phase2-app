@@ -13,32 +13,27 @@ const mission = MISSIONEN.find((m) => m.nr === nr);
 let laufAktiv = false;
 const controls = erzeugeControls(speicher);
 
-// Statistik je Schwierigkeit: von Hand umstellbar, sonst folgt sie der Stufe
-// des letzten eigenen Laufs. Läufe ohne Stufe zählen zur ersten Stufe.
+// Alle Läufe zählen in eine gemeinsame Statistik; die Aufgabenvariation deckelt
+// über ihren anteil nur die erreichbare Kennzahl. Links wird die Stufe für den
+// nächsten Lauf gewählt, vorbelegt mit der des letzten eigenen Laufs.
 let alleLaeufe = [];
-let stufeVonHand = null;
 let laufStufe = null;
 
-const stufeVon = (l) => l.daten?.schwierigkeit ?? mission.schwierigkeiten[0];
+const stufeVonName = (name) => mission.schwierigkeiten.find((s) => s.name === name) ?? mission.schwierigkeiten[0];
 
 function letzteEigeneStufe() {
   const eigene = sortiertNeueste(alleLaeufe.filter((l) => l.profil === speicher.profil()));
-  return eigene.length ? stufeVon(eigene[0]) : null;
+  return eigene.length ? eigene[0].daten?.schwierigkeit ?? null : null;
 }
 
-const aktiveStufe = () => stufeVonHand ?? letzteEigeneStufe() ?? mission.schwierigkeiten[0];
-
 function zeichneStufenwahl() {
-  const knopf = (s, aktiv) => `<button class="stufe ${aktiv ? "aktiv" : ""}" data-stufe="${s}">${s.toUpperCase()}</button>`;
-  document.getElementById("stufenwahl-statistik").innerHTML =
-    mission.schwierigkeiten.map((s) => knopf(s, s === aktiveStufe())).join("");
-  document.getElementById("stufenwahl-lauf").innerHTML =
-    mission.schwierigkeiten.map((s) => knopf(s, s === laufStufe)).join("");
+  document.getElementById("stufenwahl-lauf").innerHTML = mission.schwierigkeiten.map((s) =>
+    `<button class="stufe ${s.name === laufStufe ? "aktiv" : ""}" data-stufe="${s.name}">${s.name.toUpperCase()}</button>`).join("");
 }
 
 function zeichneStatistik() {
   zeichneStufenwahl();
-  const laeufe = alleLaeufe.filter((l) => stufeVon(l) === aktiveStufe());
+  const laeufe = alleLaeufe;
   zeichneDiagramm(laeufe);
   const eigene = laeufe.filter((l) => l.profil === speicher.profil());
   document.getElementById("bestwert").textContent = bestwert(eigene) ?? "–";
@@ -59,7 +54,7 @@ function zeichneStatistik() {
 
 async function zeichneAuswertung() {
   alleLaeufe = await speicher.ladeLaeufe(mission.nr);
-  if (laufStufe === null) laufStufe = aktiveStufe();
+  if (laufStufe === null) laufStufe = letzteEigeneStufe() ?? mission.schwierigkeiten[0].name;
   zeichneStatistik();
 }
 
@@ -253,18 +248,20 @@ function starteLauf() {
     raeumeAuf();
     if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
     if (!mission.wertung) return; // Probebetrieb: Lauf zählt nicht
+    // Platzhalter-Rohleistung: 20 Treffer in zehn Sekunden gelten als volle
+    // Leistung; die Aufgabenvariation deckelt die Kennzahl über ihren anteil.
+    const roh = Math.min(punkte * 5, 100);
     try {
       await speicher.speichereLauf({
         profil: speicher.profil(),
         bereich: mission.nr,
         zeitpunkt: new Date().toISOString(),
-        kennzahl: punkte,
+        kennzahl: Math.round(roh * stufeVonName(laufStufe).anteil),
         daten: { art: "probelauf", schwierigkeit: laufStufe },
       });
     } catch {
       alert("Der Lauf konnte nicht gesichert werden und geht verloren. Bitte Verbindung und Einrichtung prüfen.");
     }
-    stufeVonHand = null; // Statistik folgt wieder dem zuletzt gelaufenen Test
     zeichneAuswertung();
   };
   requestAnimationFrame(takt);
@@ -282,10 +279,6 @@ function initialisiereSeite() {
   document.getElementById("start").addEventListener("click", starteLauf);
   addEventListener("keydown", (e) => { if (e.key === "Escape" && brichLaufAb) brichLaufAb(); });
 
-  document.getElementById("stufenwahl-statistik").addEventListener("click", (e) => {
-    const stufe = e.target.dataset?.stufe;
-    if (stufe) { stufeVonHand = stufe; zeichneStatistik(); }
-  });
   document.getElementById("stufenwahl-lauf").addEventListener("click", (e) => {
     const stufe = e.target.dataset?.stufe;
     if (stufe) { laufStufe = stufe; zeichneStufenwahl(); }
