@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Phase II · Mission</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="stil.css?v=6">
+</head>
+<body>
+<button class="zurueck" onclick="location.href='uebersicht.html'">◄ ÜBERSICHT</button>
+<main style="padding-top:7vh;">
+  <h1 class="she-titel" id="missionstitel"></h1>
+  <p class="she-untertitel" id="missionsnummer"></p>
+  <div class="missionsraster">
+    <section class="missionsfeld">
+      <h2>MISSION</h2>
+      <p id="uebungshinweis" style="font-size:13px;color:var(--gedeckt);letter-spacing:.05em;">
+        Die echte Übung entsteht in einem eigenen Bauabschnitt. Der Probelauf prüft Speicherung,
+        Auswertung und Vergleich: 10 Sekunden, jeder Klick oder Knopfdruck zählt einen Punkt.
+      </p>
+      <button class="startknopf" id="start">START</button>
+      <p class="zustand" id="geraetestand" style="font-size:11px;color:var(--gedeckt);text-align:center;"></p>
+    </section>
+    <section class="missionsfeld">
+      <h2>AUSWERTUNG</h2>
+      <ul class="laufliste" id="laufliste"></ul>
+      <div class="kennzeile"><span>Bestwert</span><b id="bestwert">–</b></div>
+      <div class="kennzeile"><span>Durchschnitt</span><b id="durchschnitt">–</b></div>
+      <h2 style="margin-top:18px;">VERGLEICH</h2>
+      <div class="balkenpaar" id="vergleich"></div>
+    </section>
+  </div>
+</main>
+<script type="module" src="js/mission.js?v=1"></script>
+</body>
+</html>
