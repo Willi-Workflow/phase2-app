@@ -47,3 +47,16 @@ test("groessterAusschlag übersteht neu dazugekommene Geräte", () => {
   const t = groessterAusschlag(basen, jetzt, 0.55);
   assert.deepEqual(t, { geraet: "Pedale", achse: 0, delta: 0.9 });
 });
+
+test("groessterAusschlag waehlt groesseres rohen Delta, nicht Rundungsartefakt", () => {
+  const basen = [
+    { geraet: "A", achsen: [0] },
+    { geraet: "B", achsen: [0] },
+  ];
+  const jetzt = [
+    { geraet: "A", achsen: [0.803] },
+    { geraet: "B", achsen: [0.801] },
+  ];
+  const t = groessterAusschlag(basen, jetzt, 0.55);
+  assert.deepEqual(t, { geraet: "A", achse: 0, delta: 0.8 });
+});

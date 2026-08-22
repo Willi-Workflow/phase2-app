@@ -14,10 +14,11 @@ export function groessterAusschlag(basen, jetzt, schwelle) {
     const basis = ruhe.get(geraet.geraet) ?? [];
     geraet.achsen.forEach((wert, achse) => {
       const delta = Math.abs(wert - (basis[achse] ?? 0));
-      if (delta > schwelle && (!treffer || delta > treffer.delta)) {
-        treffer = { geraet: geraet.geraet, achse, delta: Math.round(delta * 100) / 100 };
+      if (delta > schwelle && (!treffer || delta > treffer.rohesDelta)) {
+        treffer = { geraet: geraet.geraet, achse, rohesDelta: delta };
       }
     });
   }
-  return treffer;
+  if (!treffer) return null;
+  return { geraet: treffer.geraet, achse: treffer.achse, delta: Math.round(treffer.rohesDelta * 100) / 100 };
 }
