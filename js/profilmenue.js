@@ -16,7 +16,7 @@ export function oeffneProfilmenue(speicher, { oeffneControls } = {}) {
   menue.innerHTML = `
     <h2>PILOT: ${(speicher.profil() ?? "").toUpperCase()}</h2>
     <button class="punkt" data-tat="wechseln">Profil wechseln</button>
-    <button class="punkt" data-tat="controls">Controls einrichten</button>
+    <button class="punkt" data-tat="controls">Controls</button>
     <button class="punkt" data-tat="zuruecksetzen">Ergebnisse zurücksetzen</button>
     <p class="zustand">${ZUSTANDSTEXT[speicher.zustand()]}</p>
   `;

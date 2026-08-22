@@ -200,6 +200,12 @@ main { position: relative; z-index: 1; }
 .profilmenue .zustand { margin-top: 12px; font-size: 11px; letter-spacing: 0.1em; color: var(--gedeckt); }
 
 .controlsdialog { max-height: 86vh; overflow-y: auto; }
+.geraeteliste { display: grid; gap: 9px; margin-top: 10px; }
+.geraetezeile { display: flex; gap: 9px; align-items: flex-start; }
+.geraetezeile .rollenlampe { flex: none; margin-top: 5px; }
+.geraetezeile .geraetename { font-size: 12px; letter-spacing: 0.08em; color: var(--hell); }
+.geraetezeile .geraeteinfo { font-size: 10px; letter-spacing: 0.06em; color: var(--gedeckt); margin-top: 2px; }
+.geraetezeile .geraeteachsen { font-size: 10px; color: var(--gedeckt); opacity: 0.85; margin-top: 2px; min-height: 12px; font-variant-numeric: tabular-nums; }
 .rollenzeile { display: grid; grid-template-columns: 1fr auto auto; gap: 6px; align-items: center; margin-top: 8px; font-size: 12px; }
 .rollenzeile .rollentitel { letter-spacing: 0.08em; }
 .rollenzeile .rollenstand { grid-column: 1 / -1; font-size: 10px; color: var(--gedeckt); }
@@ -247,10 +253,11 @@ main { position: relative; z-index: 1; }
   letter-spacing: 0.06em;
   color: var(--gedeckt);
 }
-.geraetestand .rollenlampe { width: 7px; height: 7px; border-radius: 50%; align-self: center; }
-.geraetestand .rollenlampe.verbunden { background: #7da05a; box-shadow: 0 0 5px rgba(125, 160, 90, 0.7); }
-.geraetestand .rollenlampe.fehlt { background: #b0563c; box-shadow: 0 0 5px rgba(176, 86, 60, 0.6); }
-.geraetestand .rollenlampe.tastatur { background: var(--tafel-neben); }
+.rollenlampe { width: 7px; height: 7px; border-radius: 50%; }
+.rollenlampe.verbunden { background: #7da05a; box-shadow: 0 0 5px rgba(125, 160, 90, 0.7); }
+.rollenlampe.fehlt { background: #b0563c; box-shadow: 0 0 5px rgba(176, 86, 60, 0.6); }
+.rollenlampe.tastatur { background: var(--tafel-neben); }
+.geraetestand .rollenlampe { align-self: center; }
 .geraetestand .rollentext { text-align: right; color: var(--hell); opacity: 0.85; }
 .geraetestand .geraetehinweis { grid-column: 1 / -1; text-align: center; margin-top: 4px; }
 .laufliste { list-style: none; font-size: 13px; }

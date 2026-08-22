@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { kurzname, rollenStand } from "../js/geraetestand.js";
+import { kurzname, rollenStand, geraeteListe } from "../js/geraetestand.js";
 
 const ROLLEN = [
   ["stickX", "Stick quer"],
@@ -45,4 +45,33 @@ test("rollenStand: zugewiesenes, aber fehlendes Gerät wird gemeldet", () => {
   const stand = rollenStand(ROLLEN, zuordnung, []);
   assert.equal(stand[1].zustand, "fehlt");
   assert.equal(stand[1].text, "TWCS Throttle fehlt · Tastatur greift");
+});
+
+test("geraeteListe: verbundenes Gerät mit Umfang und zugewiesenen Rollen", () => {
+  const kennung = "T.16000M (Vendor: 044f Product: b10a)";
+  const zuordnung = { stickX: { geraet: kennung, achse: 0, invert: false } };
+  const liste = geraeteListe(ROLLEN, zuordnung, [{ kennung, achsen: 4, knoepfe: 16 }]);
+  assert.equal(liste.length, 1);
+  assert.equal(liste[0].zustand, "verbunden");
+  assert.equal(liste[0].name, "T.16000M");
+  assert.equal(liste[0].umfang, "4 Achsen · 16 Knöpfe");
+  assert.deepEqual(liste[0].rollen, ["Stick quer"]);
+});
+
+test("geraeteListe: zugewiesenes, aber getrenntes Gerät erscheint einmal als fehlt", () => {
+  const kennung = "T.16000M (Vendor: 044f Product: b10a)";
+  const zuordnung = {
+    stickX: { geraet: kennung, achse: 0, invert: false },
+    schub: { geraet: kennung, achse: 2, invert: false },
+  };
+  const liste = geraeteListe(ROLLEN, zuordnung, []);
+  assert.equal(liste.length, 1);
+  assert.equal(liste[0].zustand, "fehlt");
+  assert.deepEqual(liste[0].rollen, ["Stick quer", "Schubregler"]);
+});
+
+test("geraeteListe: Gerät ohne Zuweisung hat keine Rollen", () => {
+  const liste = geraeteListe(ROLLEN, {}, [{ kennung: "Pedale", achsen: 3, knoepfe: 0 }]);
+  assert.equal(liste[0].zustand, "verbunden");
+  assert.deepEqual(liste[0].rollen, []);
 });

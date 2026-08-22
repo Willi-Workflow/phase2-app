@@ -1,5 +1,6 @@
 // Gamepad-Anbindung: Anlernen über alle Geräte, Kurven, Tastatur-Ersatz.
 import { mitKurve, groessterAusschlag } from "./kurve.js";
+import { geraeteListe } from "./geraetestand.js";
 
 const ROLLEN = [
   ["stickX", "Stick quer"],
@@ -127,12 +128,11 @@ export function erzeugeControls(speicher) {
         </div>`).join("");
       dialog.innerHTML = `
         <h2>CONTROLS · ${(speicher.profil() ?? "").toUpperCase()}</h2>
-        <p class="zustand" id="geraeteliste"></p>
+        <div class="geraeteliste" id="geraeteliste"></div>
         <p class="zustand">Gerät anschließen und eine Taste daran drücken, dann erscheint es hier.</p>
         ${rollenZeilen}
         <label class="zustand">Totzone <input type="range" id="totzone" min="0" max="0.2" step="0.01"></label>
         <label class="zustand">Expo <input type="range" id="expo" min="0" max="1" step="0.05"></label>
-        <p class="zustand" id="rohachsen"></p>
         <button class="punkt" data-tat="schliessen">Fertig</button>
       `;
       const schliesse = () => { this.brichFangAb(); schleier.remove(); dialog.remove(); halteAn = true; };
@@ -166,14 +166,31 @@ export function erzeugeControls(speicher) {
       dialog.querySelector("#expo").addEventListener("change", (e) => this.setzeRegler("expo", Number(e.target.value)));
 
       let halteAn = false;
+      // Die Zeilen werden nur bei geändertem Gerätebestand oder geänderter
+      // Zuordnung neu gebaut; je Bild frischen sich nur die Achswerte auf.
+      let geraeteMerkmal = "";
+      const geraeteFeld = dialog.querySelector("#geraeteliste");
+      const sicher = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
       const takt = () => {
         if (halteAn) return;
-        dialog.querySelector("#geraeteliste").textContent = this.geraete()
-          .map((g) => `${g.kennung.slice(0, 26)} (${g.achsen} Achsen, ${g.knoepfe} Knöpfe)`)
-          .join(" · ") || "Kein Gerät erkannt.";
-        dialog.querySelector("#rohachsen").textContent = pads()
-          .map((p) => p.axes.map((a) => a.toFixed(2)).join(" "))
-          .join(" | ");
+        const liste = geraeteListe(ROLLEN, zuordnung, this.geraete());
+        const merkmal = JSON.stringify(liste);
+        if (merkmal !== geraeteMerkmal) {
+          geraeteMerkmal = merkmal;
+          geraeteFeld.innerHTML = liste.map((g) => `
+            <div class="geraetezeile">
+              <span class="rollenlampe ${g.zustand}"></span>
+              <div>
+                <div class="geraetename">${sicher(g.name)}</div>
+                <div class="geraeteinfo">${g.zustand === "fehlt" ? "nicht verbunden" : sicher(g.umfang)}${g.rollen.length ? ` · ${g.rollen.join(", ")}` : ""}</div>
+                <div class="geraeteachsen" data-kennung="${sicher(g.kennung)}"></div>
+              </div>
+            </div>`).join("") || `<p class="zustand">Kein Gerät erkannt.</p>`;
+        }
+        for (const feld of geraeteFeld.querySelectorAll(".geraeteachsen")) {
+          const pad = pads().find((p) => p.id === feld.dataset.kennung);
+          feld.textContent = pad ? pad.axes.map((a) => a.toFixed(2)).join("  ") : "";
+        }
         requestAnimationFrame(takt);
       };
 
