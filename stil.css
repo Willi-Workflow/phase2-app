@@ -55,6 +55,8 @@ main { position: relative; z-index: 1; }
   margin: 7vh auto 0;
 }
 
+.bund { --bandbreite: clamp(120px, 16vw, 190px); }
+
 .bundring {
   position: absolute;
   left: 50%;
@@ -66,18 +68,12 @@ main { position: relative; z-index: 1; }
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
 }
 
-.bundring.vorn {
-  clip-path: inset(52% 0 0 0);
-  z-index: 3;
-}
-
 .band {
   position: absolute;
   left: 50%;
-  top: 26px;
-  width: clamp(120px, 16vw, 190px);
-  margin-left: calc(clamp(120px, 16vw, 190px) / -2);
-  transform-origin: 50% 4%;
+  top: calc(30px - var(--bandbreite) * 0.12);
+  width: var(--bandbreite);
+  transform-origin: 51% 4.5%;
   border: 0;
   background: transparent;
   cursor: pointer;
@@ -85,10 +81,10 @@ main { position: relative; z-index: 1; }
   transition: transform 0.35s ease;
 }
 
-.band[data-profil="luigi"] { transform: rotate(-20deg); }
-.band[data-profil="willi"] { transform: rotate(20deg); z-index: 1; }
-.band[data-profil="luigi"]:hover, .band[data-profil="luigi"]:focus-visible { transform: rotate(-24deg); }
-.band[data-profil="willi"]:hover, .band[data-profil="willi"]:focus-visible { transform: rotate(24deg); }
+.band[data-profil="luigi"] { margin-left: calc(var(--bandbreite) / -2 + 26px); transform: rotate(-16deg); }
+.band[data-profil="willi"] { margin-left: calc(var(--bandbreite) / -2 - 26px); transform: rotate(16deg); z-index: 1; }
+.band[data-profil="luigi"]:hover, .band[data-profil="luigi"]:focus-visible { transform: rotate(-20deg); }
+.band[data-profil="willi"]:hover, .band[data-profil="willi"]:focus-visible { transform: rotate(20deg); }
 .band.gezogen { transform: rotate(0deg) translateY(52vh); transition: transform 0.65s ease-in; z-index: 2; }
 
 .band img.stoff { display: block; width: 100%; height: auto; }
