@@ -87,7 +87,15 @@ main { position: relative; z-index: 1; }
 .band[data-profil="willi"] { margin-left: calc(var(--b) * -0.641); transform: rotate(16deg); z-index: 1; }
 .band[data-profil="luigi"]:hover, .band[data-profil="luigi"]:focus-visible { transform: rotate(-20deg); }
 .band[data-profil="willi"]:hover, .band[data-profil="willi"]:focus-visible { transform: rotate(20deg); }
-.band.gezogen { transform: rotate(0deg) translateY(52vh); transition: transform 0.65s ease-in; z-index: 2; }
+/* Abheften vom Bund: das gewählte Band fliegt in die rechte obere Ecke,
+   hängt sich dort ein und pendelt kurz aus. Ziel und Größe entsprechen dem
+   Profilanhänger der Übersicht, damit der Übergang nahtlos wirkt. */
+.band.anheften {
+  position: fixed;
+  margin: 0;
+  z-index: 50;
+  transform-origin: 50% 3%;
+}
 
 .band img.stoff { display: block; width: 100%; height: auto; }
 
