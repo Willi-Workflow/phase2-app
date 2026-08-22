@@ -1,7 +1,7 @@
 import { KONFIG } from "./konfig.js";
 import { erzeugeSpeicher } from "./speicher.js";
 import { MISSIONEN } from "./missionen.js";
-import { sortiertNeueste, bestwert, durchschnitt, vergleich } from "./auswertung.js";
+import { bestwert, durchschnitt, vergleich } from "./auswertung.js";
 import { erzeugeControls } from "./controls.js";
 import { rollenStand } from "./geraetestand.js";
 import { PROFILFARBEN, reihe, skala, punkte, pfad, laufnummern } from "./diagramm.js";
@@ -13,26 +13,9 @@ const mission = MISSIONEN.find((m) => m.nr === nr);
 let laufAktiv = false;
 const controls = erzeugeControls(speicher);
 
-// Alle Läufe zählen in eine gemeinsame Statistik; die Aufgabenvariation deckelt
-// über ihren anteil nur die erreichbare Kennzahl. Links wird die Stufe für den
-// nächsten Lauf gewählt, vorbelegt mit der des letzten eigenen Laufs.
 let alleLaeufe = [];
-let laufStufe = null;
-
-const stufeVonName = (name) => mission.schwierigkeiten.find((s) => s.name === name) ?? mission.schwierigkeiten[0];
-
-function letzteEigeneStufe() {
-  const eigene = sortiertNeueste(alleLaeufe.filter((l) => l.profil === speicher.profil()));
-  return eigene.length ? eigene[0].daten?.schwierigkeit ?? null : null;
-}
-
-function zeichneStufenwahl() {
-  document.getElementById("stufenwahl-lauf").innerHTML = mission.schwierigkeiten.map((s) =>
-    `<button class="stufe ${s.name === laufStufe ? "aktiv" : ""}" data-stufe="${s.name}">${s.name.toUpperCase()}</button>`).join("");
-}
 
 function zeichneStatistik() {
-  zeichneStufenwahl();
   const laeufe = alleLaeufe;
   zeichneDiagramm(laeufe);
   const eigene = laeufe.filter((l) => l.profil === speicher.profil());
@@ -54,7 +37,6 @@ function zeichneStatistik() {
 
 async function zeichneAuswertung() {
   alleLaeufe = await speicher.ladeLaeufe(mission.nr);
-  if (laufStufe === null) laufStufe = letzteEigeneStufe() ?? mission.schwierigkeiten[0].name;
   zeichneStatistik();
 }
 
@@ -248,16 +230,13 @@ function starteLauf() {
     raeumeAuf();
     if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
     if (!mission.wertung) return; // Probebetrieb: Lauf zählt nicht
-    // Platzhalter-Rohleistung: 20 Treffer in zehn Sekunden gelten als volle
-    // Leistung; die Aufgabenvariation deckelt die Kennzahl über ihren anteil.
-    const roh = Math.min(punkte * 5, 100);
     try {
       await speicher.speichereLauf({
         profil: speicher.profil(),
         bereich: mission.nr,
         zeitpunkt: new Date().toISOString(),
-        kennzahl: Math.round(roh * stufeVonName(laufStufe).anteil),
-        daten: { art: "probelauf", schwierigkeit: laufStufe },
+        kennzahl: punkte,
+        daten: { art: "probelauf" },
       });
     } catch {
       alert("Der Lauf konnte nicht gesichert werden und geht verloren. Bitte Verbindung und Einrichtung prüfen.");
@@ -279,10 +258,6 @@ function initialisiereSeite() {
   document.getElementById("start").addEventListener("click", starteLauf);
   addEventListener("keydown", (e) => { if (e.key === "Escape" && brichLaufAb) brichLaufAb(); });
 
-  document.getElementById("stufenwahl-lauf").addEventListener("click", (e) => {
-    const stufe = e.target.dataset?.stufe;
-    if (stufe) { laufStufe = stufe; zeichneStufenwahl(); }
-  });
 
   zeichneAuswertung();
   zeichneGeraete();
