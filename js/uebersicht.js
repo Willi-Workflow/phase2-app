@@ -1,5 +1,6 @@
 import { KONFIG } from "./konfig.js";
 import { ANHEFT, pendelGroessen, pendelSchritt, istRuhig } from "./pendel.js";
+import { PRUEFUNGSDATUM, ZAEHLBEGINN, heuteAlsIso, tageBis, monatsraster } from "./zeitplan.js";
 import { erzeugeSpeicher } from "./speicher.js";
 import { MISSIONEN } from "./missionen.js";
 import { oeffneProfilmenue } from "./profilmenue.js";
@@ -49,5 +50,49 @@ if (schwungRoh) {
     requestAnimationFrame(schritt);
   } catch { /* ohne Schwung geht es schlicht weiter */ }
 }
+
+// Countdown zur Prüfung: aus dem aktuellen Datum gerechnet und bei jedem
+// Sichtbarwerden der Seite neu aufgebaut, damit er auch über Nacht stimmt.
+function zeichneZeitplan() {
+  const feld = document.getElementById("zeitplan");
+  const heute = heuteAlsIso();
+  const rest = tageBis(PRUEFUNGSDATUM, heute);
+  const [pj, pm, pt] = PRUEFUNGSDATUM.split("-");
+  let restzeile;
+  if (rest > 1) restzeile = `Noch <b>${rest} Tage</b> bis zur Prüfung`;
+  else if (rest === 1) restzeile = "Morgen ist <b>Prüfung</b>";
+  else if (rest === 0) restzeile = "<b>Heute ist Prüfung.</b> Hals- und Beinbruch!";
+  else restzeile = `Die Prüfung war am ${Number(pt)}.${Number(pm)}.${pj}`;
+
+  let rumpf = "";
+  if (rest >= 0) {
+    rumpf = monatsraster(ZAEHLBEGINN, PRUEFUNGSDATUM).map((monat) => {
+      const kopf = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
+        .map((w) => `<span class="wochenkopf">${w}</span>`).join("");
+      const zellen = monat.wochen.flat().map((tag) => {
+        if (!tag) return "<span></span>";
+        const klassen = ["tagkachel"];
+        if (tag.wochenende) klassen.push("wochenende");
+        if (tag.iso < heute) klassen.push("vergangen");
+        if (tag.iso === heute) klassen.push("heute");
+        if (tag.iso === PRUEFUNGSDATUM) klassen.push("pruefung");
+        const ziel = tag.iso === PRUEFUNGSDATUM ? '<span class="ziel">PRÜFUNG</span>' : "";
+        return `<span class="${klassen.join(" ")}"><span class="nr">${tag.tag}</span>${ziel}</span>`;
+      }).join("");
+      return `<div class="monat"><div class="monatsname">${monat.name}</div>
+        <div class="wochenraster">${kopf}${zellen}</div></div>`;
+    }).join("");
+  }
+
+  feld.innerHTML = `
+    <span class="klebeband olinks"></span><span class="klebeband orechts"></span>
+    <span class="klebeband ulinks"></span><span class="klebeband urechts"></span>
+    <div class="kopfzeile">
+      <span class="rest">${restzeile}</span>
+    </div>
+    ${rumpf}`;
+}
+zeichneZeitplan();
+document.addEventListener("visibilitychange", () => { if (!document.hidden) zeichneZeitplan(); });
 
 speicher.synce(); // liegengebliebene Läufe bestmöglich nachmelden

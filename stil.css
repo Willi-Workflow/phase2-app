@@ -15,6 +15,7 @@
 
 body {
   min-height: 100vh;
+  overflow-x: clip;
   font-family: "Black Ops One", system-ui, sans-serif;
   color: var(--hell);
   background: #232a19 url("bilder/tarn.svg") center / cover no-repeat fixed;
@@ -281,4 +282,134 @@ main { position: relative; z-index: 1; }
   left: calc(50% + var(--b) * 0.022);
   top: calc(var(--b) * 0.112);
   background-position: calc(var(--b) * -0.647) calc(var(--b) * -0.717);
+}
+
+
+/* Countdown zur Prüfung: mit Klebeband aufgehängtes Blatt unter den Missionen */
+@font-face {
+  font-family: "Caveat";
+  src: url("schrift/caveat.woff2") format("woff2");
+  font-display: swap;
+}
+
+.zeitplan {
+  position: relative;
+  max-width: 760px;
+  margin: 30px auto 70px;
+  padding: clamp(30px, 4vw, 46px) clamp(30px, 4.5vw, 56px) clamp(34px, 4.5vw, 54px);
+  background: url("bilder/papier.png") center / 100% 100% no-repeat;
+  filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.55));
+  transform: rotate(-0.7deg);
+  box-sizing: border-box;
+  width: calc(100% - 2 * clamp(16px, 3vw, 40px));
+  font-family: "Caveat", cursive;
+}
+
+.klebeband {
+  position: absolute;
+  width: 110px;
+  height: 26px;
+  /* Durchscheinendes Band: hellt den Untergrund auf, mit Spannungsstreifen und Glanz */
+  background:
+    linear-gradient(90deg, rgba(240, 234, 212, 0.14), rgba(240, 234, 212, 0.44) 14%, rgba(247, 242, 224, 0.52) 50%, rgba(240, 234, 212, 0.44) 86%, rgba(240, 234, 212, 0.14)),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.10) 0 2px, rgba(255, 255, 255, 0) 2px 7px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 35%, rgba(120, 110, 80, 0.10) 100%);
+  backdrop-filter: brightness(1.07);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+  /* Gerissene Enden */
+  clip-path: polygon(2% 0, 98% 3%, 100% 16%, 96% 30%, 100% 46%, 97% 62%, 100% 78%, 96% 100%, 4% 97%, 0 84%, 3% 66%, 0 48%, 3% 32%, 0 16%);
+}
+.klebeband.olinks { left: -24px; top: 32px; transform: rotate(-45deg); }
+.klebeband.orechts { right: -24px; top: 32px; transform: rotate(45deg); }
+.klebeband.ulinks { left: -24px; bottom: 32px; transform: rotate(45deg); }
+.klebeband.urechts { right: -24px; bottom: 32px; transform: rotate(-45deg); }
+
+.zeitplan .kopfzeile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  text-align: center;
+}
+
+.zeitplan .titel { font-size: clamp(16px, 1.8vw, 22px); letter-spacing: 0.12em; color: #6b6350; }
+.zeitplan .rest { font-size: clamp(30px, 3.4vw, 44px); letter-spacing: 0.02em; color: #2e2b23; }
+.zeitplan .rest b { color: #b5271d; }
+
+.monat {
+  margin-top: 16px;
+  /* Tinten-Verwacklung: verzieht Linien und Ziffern leicht, wie von Hand gezeichnet */
+  filter: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg"><filter id="tinte"><feTurbulence type="fractalNoise" baseFrequency="0.012 0.02" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="3.5"/></filter></svg>#tinte');
+}
+.monat .monatsname {
+  text-align: center;
+  font-size: clamp(20px, 2.2vw, 27px);
+  color: #3a352a;
+  letter-spacing: 0.08em;
+  border-bottom: 1.5px solid rgba(62, 56, 42, 0.5);
+  width: fit-content;
+  margin: 0 auto 6px;
+  padding: 0 18px 1px;
+}
+
+.wochenraster {
+  display: grid;
+  grid-template-columns: repeat(7, clamp(44px, 5.5vw, 64px));
+  justify-content: center;
+  gap: 0;
+  width: fit-content;
+  margin: 0 auto;
+  border-left: 1.6px solid rgba(58, 52, 40, 0.65);
+  border-top: 1.6px solid rgba(58, 52, 40, 0.65);
+}
+.wochenraster > span {
+  border-right: 1.6px solid rgba(58, 52, 40, 0.65);
+  border-bottom: 1.6px solid rgba(58, 52, 40, 0.65);
+}
+.wochenkopf {
+  text-align: center;
+  font-size: clamp(13px, 1.4vw, 17px);
+  color: #6b6350;
+  padding: 2px 0;
+}
+.tagkachel {
+  position: relative;
+  text-align: center;
+  padding: 2px 0 4px;
+}
+.tagkachel .nr { font-size: clamp(19px, 2vw, 25px); color: #2e2b23; line-height: 1.15; }
+.tagkachel.wochenende .nr { color: #55503f; }
+.tagkachel.vergangen .nr { color: #97907c; }
+.tagkachel.vergangen::before,
+.tagkachel.vergangen::after {
+  content: "";
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  top: 50%;
+  height: 2.5px;
+  border-radius: 2px;
+  background: rgba(181, 39, 29, 0.85);
+}
+.tagkachel.vergangen::before { transform: rotate(38deg); }
+.tagkachel.vergangen::after { transform: rotate(-41deg); }
+.tagkachel.heute .nr { color: #2e2b23; }
+.tagkachel.heute::before {
+  content: "";
+  position: absolute;
+  inset: -3px 8%;
+  border: 2.5px solid #b5271d;
+  border-radius: 55% 48% 52% 45% / 48% 55% 45% 52%;
+  transform: rotate(-3deg);
+}
+.tagkachel.pruefung .nr {
+  color: #b5271d;
+  font-weight: 600;
+}
+.tagkachel.pruefung .ziel {
+  display: block;
+  font-size: clamp(8px, 0.85vw, 10px);
+  letter-spacing: 0.02em;
+  color: #b5271d;
+  margin-top: -3px;
 }
