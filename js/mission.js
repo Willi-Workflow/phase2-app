@@ -99,6 +99,7 @@ function starteLauf() {
     if (rest > 0) { requestAnimationFrame(takt); return; }
     raeumeAuf();
     if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
+    if (!mission.wertung) return; // Probebetrieb: Lauf zählt nicht
     try {
       await speicher.speichereLauf({
         profil: speicher.profil(),
@@ -122,6 +123,7 @@ function initialisiereSeite() {
 
   document.getElementById("missionstitel").textContent = mission.name.toUpperCase();
   document.getElementById("missionsnummer").textContent = `MISSION 0${mission.nr}`;
+  document.getElementById("probehinweis").hidden = Boolean(mission.wertung);
 
   document.getElementById("start").addEventListener("click", starteLauf);
   addEventListener("keydown", (e) => { if (e.key === "Escape" && brichLaufAb) brichLaufAb(); });

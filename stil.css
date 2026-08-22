@@ -242,6 +242,7 @@ main { position: relative; z-index: 1; }
   cursor: pointer;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.55);
 }
+.probehinweis { font-size: 11px; letter-spacing: 0.12em; color: #c9ae4a; text-align: center; margin: 2px 0 6px; }
 .geraetestand {
   max-width: 360px;
   margin: 14px auto 0;
