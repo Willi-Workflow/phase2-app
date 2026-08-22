@@ -52,7 +52,7 @@ main { position: relative; z-index: 1; }
    Fenstergröße exakt auf dem Ringstrang sitzen (Lochmitte im Bandbild: 47.1 % / 9.2 %,
    Strangmitte im Ringbild vermessen). */
 .bund {
-  --b: clamp(120px, 16vw, 190px);
+  --b: clamp(120px, 15vw, 170px);
   position: relative;
   width: min(620px, 92vw);
   height: calc(var(--b) * 3.05);
@@ -62,9 +62,9 @@ main { position: relative; z-index: 1; }
 .bundring {
   position: absolute;
   left: 50%;
-  top: calc(var(--b) * -0.75);
-  width: calc(var(--b) * 1.5);
-  height: calc(var(--b) * 1.5);
+  top: calc(var(--b) * -0.605);
+  width: calc(var(--b) * 1.25);
+  height: calc(var(--b) * 1.25);
   transform: translateX(-50%);
   pointer-events: none;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
@@ -73,7 +73,7 @@ main { position: relative; z-index: 1; }
 .band {
   position: absolute;
   left: 50%;
-  top: calc(var(--b) * 0.086);
+  top: calc(var(--b) * 0.05);
   width: var(--b);
   transform-origin: 47.1% 9.2%;
   border: 0;
@@ -83,8 +83,8 @@ main { position: relative; z-index: 1; }
   transition: transform 0.35s ease;
 }
 
-.band[data-profil="luigi"] { margin-left: calc(var(--b) * -0.267); transform: rotate(-16deg); }
-.band[data-profil="willi"] { margin-left: calc(var(--b) * -0.675); transform: rotate(16deg); z-index: 1; }
+.band[data-profil="luigi"] { margin-left: calc(var(--b) * -0.301); transform: rotate(-16deg); }
+.band[data-profil="willi"] { margin-left: calc(var(--b) * -0.641); transform: rotate(16deg); z-index: 1; }
 .band[data-profil="luigi"]:hover, .band[data-profil="luigi"]:focus-visible { transform: rotate(-20deg); }
 .band[data-profil="willi"]:hover, .band[data-profil="willi"]:focus-visible { transform: rotate(20deg); }
 .band.gezogen { transform: rotate(0deg) translateY(52vh); transition: transform 0.65s ease-in; z-index: 2; }
@@ -248,4 +248,29 @@ main { position: relative; z-index: 1; }
 /* Schmale Fenster: Anhänger verkleinern, damit er über dem Schildraster endet */
 @media (max-width: 1500px) {
   .profilanhaenger { width: 54px; }
+}
+
+
+/* Der Ringstrang läuft durch die Ösen: kleines Strangstück über der oberen,
+   inneren Ösenhälfte jedes Bands, deckungsgleich zum großen Ringbild gelegt. */
+.strangstueck {
+  position: absolute;
+  width: calc(var(--b) * 0.17);
+  height: calc(var(--b) * 0.17);
+  border-radius: 50%;
+  background-image: url("bilder/bundring.png");
+  background-size: calc(var(--b) * 1.25) calc(var(--b) * 1.25);
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 2;
+}
+.strangstueck.links {
+  left: calc(50% - var(--b) * 0.192);
+  top: calc(var(--b) * 0.112);
+  background-position: calc(var(--b) * -0.433) calc(var(--b) * -0.717);
+}
+.strangstueck.rechts {
+  left: calc(50% + var(--b) * 0.022);
+  top: calc(var(--b) * 0.112);
+  background-position: calc(var(--b) * -0.647) calc(var(--b) * -0.717);
 }
