@@ -1,6 +1,7 @@
 // Reine Kalenderrechnung für den Countdown zur Prüfung.
 
 export const PRUEFUNGSDATUM = "2026-09-14";
+export const ANREISEDATUM = "2026-09-13";
 export const ZAEHLBEGINN = "2026-08-22";
 
 const WOCHENTAGE = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];

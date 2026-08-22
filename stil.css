@@ -471,6 +471,31 @@ main { position: relative; z-index: 1; }
   color: #b5271d;
   font-weight: 600;
 }
+.tagkachel.anreise .nr {
+  color: #b5271d;
+  font-weight: 600;
+}
+/* Handschriftliche Notiz, erscheint beim Überfahren der Kachel */
+.tagkachel .notiz {
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%) rotate(-2deg);
+  font-size: clamp(13px, 1.3vw, 16px);
+  line-height: 1.2;
+  color: #b5271d;
+  background: rgba(247, 242, 224, 0.96);
+  border: 1px solid rgba(58, 52, 40, 0.4);
+  border-radius: 3px;
+  padding: 1px 9px 2px;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s;
+  z-index: 3;
+}
+.tagkachel:hover .notiz { opacity: 1; }
 .tagkachel.pruefung .ziel {
   display: block;
   font-size: clamp(8px, 0.85vw, 10px);

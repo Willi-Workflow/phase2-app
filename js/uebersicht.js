@@ -1,6 +1,6 @@
 import { KONFIG } from "./konfig.js";
 import { ANHEFT, pendelGroessen, pendelSchritt, istRuhig } from "./pendel.js";
-import { PRUEFUNGSDATUM, ZAEHLBEGINN, heuteAlsIso, tageBis, monatsraster } from "./zeitplan.js";
+import { PRUEFUNGSDATUM, ANREISEDATUM, ZAEHLBEGINN, heuteAlsIso, tageBis, monatsraster } from "./zeitplan.js";
 import { erzeugeSpeicher } from "./speicher.js";
 import { MISSIONEN } from "./missionen.js";
 import { oeffneProfilmenue } from "./profilmenue.js";
@@ -76,8 +76,10 @@ function zeichneZeitplan() {
         if (tag.iso < heute) klassen.push("vergangen");
         if (tag.iso === heute) klassen.push("heute");
         if (tag.iso === PRUEFUNGSDATUM) klassen.push("pruefung");
+        if (tag.iso === ANREISEDATUM) klassen.push("anreise");
         const ziel = tag.iso === PRUEFUNGSDATUM ? '<span class="ziel">PRÜFUNG</span>' : "";
-        return `<span class="${klassen.join(" ")}"><span class="nr">${tag.tag}</span>${ziel}</span>`;
+        const notiz = tag.iso === ANREISEDATUM ? '<span class="notiz">Anreisetag</span>' : "";
+        return `<span class="${klassen.join(" ")}"><span class="nr">${tag.tag}</span>${ziel}${notiz}</span>`;
       }).join("");
       return `<div class="monat"><div class="monatsname">${monat.name}</div>
         <div class="wochenraster">${kopf}${zellen}</div></div>`;
