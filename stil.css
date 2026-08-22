@@ -47,17 +47,34 @@ main { position: relative; z-index: 1; }
   padding-left: 0.75em; /* gleicht die Sperrung optisch aus */
 }
 
-/* Profilwahl: zwei hängende Bänder */
-.bandreihe {
-  display: flex;
-  justify-content: center;
-  gap: clamp(60px, 12vw, 160px);
-  margin-top: 6vh;
+/* Profilwahl: zwei Bänder an einem gemeinsamen Bund */
+.bund {
+  position: relative;
+  width: min(620px, 92vw);
+  height: 58vh;
+  margin: 7vh auto 0;
+}
+
+.bundring {
+  position: absolute;
+  left: 50%;
+  top: -30px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.bundring.vorn {
+  clip-path: inset(52% 0 0 0);
+  z-index: 3;
 }
 
 .band {
-  position: relative;
+  position: absolute;
+  left: 50%;
+  top: 26px;
   width: clamp(120px, 16vw, 190px);
+  margin-left: calc(clamp(120px, 16vw, 190px) / -2);
+  transform-origin: 50% 4%;
   border: 0;
   background: transparent;
   cursor: pointer;
@@ -65,8 +82,11 @@ main { position: relative; z-index: 1; }
   transition: transform 0.35s ease;
 }
 
-.band:hover, .band:focus-visible { transform: translateY(10px); }
-.band.gezogen { transform: translateY(48vh); transition: transform 0.6s ease-in; }
+.band[data-profil="luigi"] { transform: rotate(-20deg); }
+.band[data-profil="willi"] { transform: rotate(20deg); z-index: 1; }
+.band[data-profil="luigi"]:hover, .band[data-profil="luigi"]:focus-visible { transform: rotate(-24deg); }
+.band[data-profil="willi"]:hover, .band[data-profil="willi"]:focus-visible { transform: rotate(24deg); }
+.band.gezogen { transform: rotate(0deg) translateY(52vh); transition: transform 0.65s ease-in; z-index: 2; }
 
 .band img.stoff { display: block; width: 100%; height: auto; }
 
@@ -222,3 +242,9 @@ main { position: relative; z-index: 1; }
 .laufschleier { position: fixed; inset: 0; background: #0b0f08; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
 .laufschleier .gross { font-size: 64px; }
 .laufschleier .hinweis { color: var(--gedeckt); font-size: 14px; letter-spacing: 0.1em; text-align: center; }
+
+
+/* Schmale Fenster: Anhänger verkleinern, damit er über dem Schildraster endet */
+@media (max-width: 1500px) {
+  .profilanhaenger { width: 54px; }
+}
