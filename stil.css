@@ -58,9 +58,12 @@ main { position: relative; z-index: 1; }
 .bundring {
   position: absolute;
   left: 50%;
-  top: -30px;
+  top: -52px;
+  width: 108px;
+  height: 108px;
   transform: translateX(-50%);
   pointer-events: none;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
 }
 
 .bundring.vorn {
