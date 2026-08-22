@@ -161,9 +161,19 @@ test("dauerhafte Ablehnung landet nicht in der Warteschlange und gilt als verbun
   const fetchFn = async () => ({ ok: false, status: 409, json: async () => [] });
   const lager = attrappenLager();
   const s = erzeugeSpeicher({ konfig, fetchFn, lager });
-  await s.speichereLauf(lauf);
+  await assert.rejects(s.speichereLauf(lauf), (f) => f.dauerhaft === true);
   assert.equal(s.zustand(), "verbunden");
   assert.equal(JSON.parse(lager.getItem("p2-warteschlange") ?? "[]").length, 0);
+});
+
+test("scheitert das Einreihen nach Netzfehler, wird der Fehler durchgereicht", async () => {
+  const m = new Map();
+  const lager = {
+    getItem: (k) => m.get(k) ?? null,
+    setItem: (k, v) => { if (k === "p2-warteschlange") throw new Error("QuotaExceededError"); m.set(k, String(v)); },
+  };
+  const s = erzeugeSpeicher({ konfig, fetchFn: async () => { throw new Error("kein Netz"); }, lager });
+  await assert.rejects(s.speichereLauf(lauf));
 });
 
 test("auf anderem Geraet geloeschte Laeufe erstehen nicht wieder auf", async () => {

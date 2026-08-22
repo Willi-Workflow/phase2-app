@@ -100,12 +100,13 @@ export function erzeugeSpeicher({ konfig, fetchFn = fetch, lager = localStorage 
         await sendeLauf(lauf);
       } catch (fehler) {
         if (fehler.dauerhaft) {
-          // Wiederholen wäre sinnlos, dieser Lauf gehört nicht in die Warteschlange.
-          if (!oertlichOk) throw fehler; // weder örtlich noch (absichtlich) in der Warteschlange
-          return;
+          // Dauerhafte Ablehnung: Fehler dem Aufrufer mitteilen, damit dieser
+          // den Nutzer verständigen kann. Der Lauf wird nicht in die Warteschlange eingereiht.
+          throw fehler;
         }
         const schlangeOk = reiheEin(lauf);
-        if (!oertlichOk && !schlangeOk) throw fehler;
+        // Bei fehlgeschlagenem Einreihen ist der Lauf verloren, daher immer werfen.
+        if (!schlangeOk) throw fehler;
       }
     },
 
