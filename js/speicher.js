@@ -15,7 +15,12 @@ export function erzeugeSpeicher({ konfig, fetchFn = fetch, lager = localStorage 
     if (roh === null) return vorgabe;
     try { return JSON.parse(roh); } catch { return vorgabe; }
   };
-  const schreibJson = (schluessel, wert) => lager.setItem(schluessel, JSON.stringify(wert));
+  // Kontingentfehler und andere Schreibfehler dürfen nie einen Lauf verlieren:
+  // schreibJsonStill wirft nie, sie meldet den Erfolg nur über den Rückgabewert.
+  const schreibJsonStill = (schluessel, wert) => {
+    try { lager.setItem(schluessel, JSON.stringify(wert)); return true; }
+    catch { return false; }
+  };
 
   const kopf = {
     apikey: konfig.supabaseKey,
@@ -26,69 +31,120 @@ export function erzeugeSpeicher({ konfig, fetchFn = fetch, lager = localStorage 
 
   async function rufe(adresse, optionen = {}) {
     if (!zugang) { zustand = "ohne-zugang"; throw new Error("ohne-zugang"); }
+    let antwort;
     try {
-      const antwort = await fetchFn(adresse, { ...optionen, headers: { ...kopf, ...(optionen.headers ?? {}) } });
-      if (!antwort.ok) throw new Error(`Supabase antwortet ${antwort.status}`);
-      zustand = "verbunden";
-      return antwort;
-    } catch (fehler) {
-      if (zustand !== "ohne-zugang") zustand = "getrennt";
+      antwort = await fetchFn(adresse, { ...optionen, headers: { ...kopf, ...(optionen.headers ?? {}) } });
+    } catch (netzfehler) {
+      zustand = "getrennt";
+      netzfehler.dauerhaft = false;
+      throw netzfehler;
+    }
+    if (!antwort.ok) {
+      // 400 bis 499 außer 408 (Timeout) und 429 (zu viele Anfragen) sind dauerhafte
+      // Ablehnungen: die Verbindung steht, nur die Anfrage selbst ist ungültig.
+      const dauerhaft = antwort.status >= 400 && antwort.status <= 499 && antwort.status !== 408 && antwort.status !== 429;
+      zustand = dauerhaft ? "verbunden" : "getrennt";
+      const fehler = new Error(`Supabase antwortet ${antwort.status}`);
+      fehler.dauerhaft = dauerhaft;
       throw fehler;
     }
+    zustand = "verbunden";
+    return antwort;
   }
 
   const schluesselVon = (l) => `${l.profil}|${l.bereich}|${l.zeitpunkt}`;
 
+  function aktuellesProfil() {
+    const wert = lager.getItem(LAGER_PROFIL);
+    return wert ? wert : null;
+  }
+
   function merkeOertlich(lauf) {
     const alle = liesJson(LAGER_LAEUFE, []);
     if (!alle.some((v) => schluesselVon(v) === schluesselVon(lauf))) alle.push(lauf);
-    schreibJson(LAGER_LAEUFE, alle);
+    return schreibJsonStill(LAGER_LAEUFE, alle);
+  }
+
+  // Einzige Stelle für den Lauf-POST. on_conflict plus ignore-duplicates setzen voraus,
+  // dass die Tabelle laeufe einen Eindeutigkeitsschlüssel auf (profil, bereich, zeitpunkt)
+  // hat; damit ist eine doppelt gesendete Anfrage in der Datenbank unschädlich.
+  async function sendeLauf(lauf) {
+    return rufe(`${tabelle("laeufe")}?on_conflict=profil,bereich,zeitpunkt`, {
+      method: "POST",
+      headers: { Prefer: "resolution=ignore-duplicates" },
+      body: JSON.stringify(lauf),
+    });
+  }
+
+  function reiheEin(lauf) {
+    const schluessel = schluesselVon(lauf);
+    const schlange = liesJson(LAGER_WARTESCHLANGE, []);
+    if (!schlange.some((l) => schluesselVon(l) === schluessel)) schlange.push(lauf);
+    return schreibJsonStill(LAGER_WARTESCHLANGE, schlange);
+  }
+
+  function entferneAusSchlange(schluessel) {
+    const schlange = liesJson(LAGER_WARTESCHLANGE, []);
+    schreibJsonStill(LAGER_WARTESCHLANGE, schlange.filter((l) => schluesselVon(l) !== schluessel));
   }
 
   return {
-    profil() { const wert = lager.getItem(LAGER_PROFIL); return wert ? wert : null; },
+    profil: aktuellesProfil,
     setzeProfil(name) { lager.setItem(LAGER_PROFIL, name ?? ""); },
 
     zustand() { return zustand; },
 
     async speichereLauf(lauf) {
-      merkeOertlich(lauf);
+      const oertlichOk = merkeOertlich(lauf);
       try {
-        await rufe(tabelle("laeufe"), { method: "POST", body: JSON.stringify(lauf) });
-      } catch {
-        const schlange = liesJson(LAGER_WARTESCHLANGE, []);
-        if (!schlange.some((l) => schluesselVon(l) === schluesselVon(lauf))) {
-          schlange.push(lauf);
+        await sendeLauf(lauf);
+      } catch (fehler) {
+        if (fehler.dauerhaft) {
+          // Wiederholen wäre sinnlos, dieser Lauf gehört nicht in die Warteschlange.
+          if (!oertlichOk) throw fehler; // weder örtlich noch (absichtlich) in der Warteschlange
+          return;
         }
-        schreibJson(LAGER_WARTESCHLANGE, schlange);
+        const schlangeOk = reiheEin(lauf);
+        if (!oertlichOk && !schlangeOk) throw fehler;
       }
     },
 
     async synce() {
-      const schlange = liesJson(LAGER_WARTESCHLANGE, []);
-      const rest = [];
-      for (const lauf of schlange) {
-        try { await rufe(tabelle("laeufe"), { method: "POST", body: JSON.stringify(lauf) }); }
-        catch { rest.push(lauf); }
+      // Momentaufnahme nur zum Iterieren. Ausgetragen wird je Eintrag über
+      // entferneAusSchlange, das die Schlange bei jedem Aufruf frisch liest,
+      // damit während des Sendens neu eingereihte Läufe nie überschrieben werden.
+      const momentaufnahme = liesJson(LAGER_WARTESCHLANGE, []);
+      for (const lauf of momentaufnahme) {
+        const schluessel = schluesselVon(lauf);
+        try {
+          await sendeLauf(lauf);
+          entferneAusSchlange(schluessel);
+        } catch (fehler) {
+          if (fehler.dauerhaft) entferneAusSchlange(schluessel);
+          // Netzfehler: bleibt liegen, wird beim nächsten synce() erneut versucht.
+        }
       }
-      schreibJson(LAGER_WARTESCHLANGE, rest);
     },
 
     async ladeLaeufe(bereich) {
+      const alleOertlich = liesJson(LAGER_LAEUFE, []); // ein Lesevorgang, mehrfach verwendet
       let fern = null;
       try {
         const antwort = await rufe(`${tabelle("laeufe")}?bereich=eq.${bereich}&select=profil,bereich,zeitpunkt,kennzahl,daten`);
         fern = await antwort.json();
       } catch { /* örtliche Kopie greift */ }
-      const oertlich = liesJson(LAGER_LAEUFE, []).filter((l) => l.bereich === bereich);
       const schlange = liesJson(LAGER_WARTESCHLANGE, []).filter((l) => l.bereich === bereich);
+      // Bei erfolgreichem Fernabruf zählt der gemeinsame Bestand: die alte örtliche
+      // Kopie des Bereichs wird NICHT beigemischt, sonst erstehen anderswo gelöschte
+      // Läufe wieder auf. Nur wenn der Fernabruf scheitert, greift die örtliche Kopie.
+      const quelle = fern ? [...fern, ...schlange] : [...alleOertlich.filter((l) => l.bereich === bereich), ...schlange];
       const gesehen = new Set();
       const alle = [];
-      for (const l of [...(fern ?? []), ...oertlich, ...schlange]) {
+      for (const l of quelle) {
         const s = schluesselVon(l);
         if (!gesehen.has(s)) { gesehen.add(s); alle.push(l); }
       }
-      if (fern) schreibJson(LAGER_LAEUFE, [...liesJson(LAGER_LAEUFE, []).filter((l) => l.bereich !== bereich), ...alle]);
+      if (fern) schreibJsonStill(LAGER_LAEUFE, [...alleOertlich.filter((l) => l.bereich !== bereich), ...alle]);
       return alle;
     },
 
@@ -98,21 +154,21 @@ export function erzeugeSpeicher({ konfig, fetchFn = fetch, lager = localStorage 
         : `?profil=eq.${profil}&bereich=eq.${bereichOderNull}`;
       try { await rufe(`${tabelle("laeufe")}${filter}`, { method: "DELETE" }); } catch { /* örtlich trotzdem leeren */ }
       const behalten = (l) => !(l.profil === profil && (bereichOderNull === null || l.bereich === bereichOderNull));
-      schreibJson(LAGER_LAEUFE, liesJson(LAGER_LAEUFE, []).filter(behalten));
-      schreibJson(LAGER_WARTESCHLANGE, liesJson(LAGER_WARTESCHLANGE, []).filter(behalten));
+      schreibJsonStill(LAGER_LAEUFE, liesJson(LAGER_LAEUFE, []).filter(behalten));
+      schreibJsonStill(LAGER_WARTESCHLANGE, liesJson(LAGER_WARTESCHLANGE, []).filter(behalten));
     },
 
     async ladeEinstellung(schluessel, vorgabe) {
       const alle = liesJson(LAGER_EINSTELLUNGEN, {});
-      const je = alle[this.profil()] ?? {};
+      const je = alle[aktuellesProfil()] ?? {};
       return schluessel in je ? je[schluessel] : vorgabe;
     },
 
     async setzeEinstellung(schluessel, wert) {
       const alle = liesJson(LAGER_EINSTELLUNGEN, {});
-      const profil = this.profil();
+      const profil = aktuellesProfil();
       alle[profil] = { ...(alle[profil] ?? {}), [schluessel]: wert };
-      schreibJson(LAGER_EINSTELLUNGEN, alle);
+      schreibJsonStill(LAGER_EINSTELLUNGEN, alle);
       try {
         await rufe(`${tabelle("einstellungen")}?on_conflict=profil,schluessel`, {
           method: "POST",

@@ -115,6 +115,118 @@ test("loescheLaeufe ruft DELETE und leert die örtliche Kopie des Profils", asyn
   assert.equal((await s.ladeLaeufe(1)).filter((l) => l.profil === "willi").length, 0);
 });
 
+test("volles Speicherkontingent verliert keinen Lauf: Sendung geht trotzdem raus", async () => {
+  const posts = [];
+  const kaputtesLager = (() => {
+    const m = new Map();
+    return {
+      getItem: (k) => m.get(k) ?? null,
+      setItem: (k, v) => { if (k === "p2-laeufe") throw new Error("QuotaExceededError"); m.set(k, String(v)); },
+    };
+  })();
+  const fetchFn = async (adresse, optionen = {}) => {
+    if ((optionen.method ?? "GET") === "POST") posts.push(adresse);
+    return { ok: true, json: async () => [] };
+  };
+  const s = erzeugeSpeicher({ konfig, fetchFn, lager: kaputtesLager });
+  await s.speichereLauf(lauf);
+  assert.equal(posts.length, 1);
+});
+
+test("waehrend synce eingereihte Laeufe gehen nicht verloren", async () => {
+  const lauf3 = { ...lauf, zeitpunkt: "2026-08-23T10:00:00Z" };
+  let s;
+  let erster = true;
+  const fetchFn = async (adresse, optionen = {}) => {
+    if ((optionen.method ?? "GET") !== "POST") return { ok: true, json: async () => [] };
+    const inhalt = JSON.parse(optionen.body);
+    if (inhalt.zeitpunkt === lauf3.zeitpunkt) throw new Error("kein Netz");
+    if (erster) {
+      erster = false;
+      await s.speichereLauf(lauf3);
+    }
+    return { ok: true, json: async () => [] };
+  };
+  const lager = attrappenLager();
+  s = erzeugeSpeicher({ konfig, fetchFn: async () => { throw new Error("kein Netz"); }, lager });
+  await s.speichereLauf(lauf);
+  s = erzeugeSpeicher({ konfig, fetchFn, lager });
+  await s.synce();
+  const schlange = JSON.parse(lager.getItem("p2-warteschlange"));
+  assert.equal(schlange.length, 1);
+  assert.equal(schlange[0].zeitpunkt, lauf3.zeitpunkt);
+});
+
+test("dauerhafte Ablehnung landet nicht in der Warteschlange und gilt als verbunden", async () => {
+  const fetchFn = async () => ({ ok: false, status: 409, json: async () => [] });
+  const lager = attrappenLager();
+  const s = erzeugeSpeicher({ konfig, fetchFn, lager });
+  await s.speichereLauf(lauf);
+  assert.equal(s.zustand(), "verbunden");
+  assert.equal(JSON.parse(lager.getItem("p2-warteschlange") ?? "[]").length, 0);
+});
+
+test("auf anderem Geraet geloeschte Laeufe erstehen nicht wieder auf", async () => {
+  const lager = attrappenLager();
+  lager.setItem("p2-laeufe", JSON.stringify([lauf]));
+  const fetchFn = async () => ({ ok: true, json: async () => [] });
+  const s = erzeugeSpeicher({ konfig, fetchFn, lager });
+  assert.equal((await s.ladeLaeufe(1)).length, 0);
+  assert.equal(JSON.parse(lager.getItem("p2-laeufe")).filter((l) => l.bereich === 1).length, 0);
+});
+
+test("entnommene Methoden funktionieren ohne this-Bindung", async () => {
+  const s = erzeugeSpeicher({ konfig: { supabaseUrl: "", supabaseKey: "", version: 1 }, fetchFn: async () => ({ ok: true, json: async () => [] }), lager: attrappenLager() });
+  const { setzeProfil, profil, setzeEinstellung, ladeEinstellung } = s;
+  setzeProfil("willi");
+  assert.equal(profil(), "willi");
+  await setzeEinstellung("totzone", 0.1);
+  assert.equal(await ladeEinstellung("totzone", 0.06), 0.1);
+});
+
+test("Lauf-POST traegt on_conflict und ignore-duplicates, doppelte Online-Sendung wird dadurch unschaedlich", async () => {
+  const rufe = [];
+  const fetchFn = async (adresse, optionen = {}) => {
+    if ((optionen.method ?? "GET") === "POST") rufe.push({ adresse, headers: optionen.headers });
+    return { ok: true, json: async () => [] };
+  };
+  const s = erzeugeSpeicher({ konfig, fetchFn, lager: attrappenLager() });
+  await s.speichereLauf(lauf);
+  await s.speichereLauf(lauf);
+  assert.equal(rufe.length, 2);
+  for (const r of rufe) {
+    assert.ok(r.adresse.includes("on_conflict=profil,bereich,zeitpunkt"));
+    assert.equal(r.headers.Prefer, "resolution=ignore-duplicates");
+  }
+});
+
+test("synce traegt dauerhaft abgelehnte Laeufe aus der Warteschlange aus und wiederholt sie nicht", async () => {
+  let versuche = 0;
+  const fetchFn = async (adresse, optionen = {}) => {
+    if ((optionen.method ?? "GET") === "POST") { versuche += 1; return { ok: false, status: 400, json: async () => [] }; }
+    return { ok: true, json: async () => [] };
+  };
+  const lager = attrappenLager();
+  const offlineS = erzeugeSpeicher({ konfig, fetchFn: async () => { throw new Error("kein Netz"); }, lager });
+  await offlineS.speichereLauf(lauf);
+  const s = erzeugeSpeicher({ konfig, fetchFn, lager });
+  await s.synce();
+  await s.synce();
+  assert.equal(versuche, 1);
+  assert.equal(JSON.parse(lager.getItem("p2-warteschlange") ?? "[]").length, 0);
+});
+
+test("synce laesst Laeufe bei Netzfehler in der Warteschlange liegen", async () => {
+  const lager = attrappenLager();
+  const offlineS = erzeugeSpeicher({ konfig, fetchFn: async () => { throw new Error("kein Netz"); }, lager });
+  await offlineS.speichereLauf(lauf);
+  const s = erzeugeSpeicher({ konfig, fetchFn: async () => { throw new Error("immer noch kein Netz"); }, lager });
+  await s.synce();
+  const schlange = JSON.parse(lager.getItem("p2-warteschlange"));
+  assert.equal(schlange.length, 1);
+  assert.equal(s.zustand(), "getrennt");
+});
+
 test("Einstellungen werden je Profil gehalten", async () => {
   const s = erzeugeSpeicher({ konfig: { supabaseUrl: "", supabaseKey: "", version: 1 }, fetchFn: async () => ({ ok: true, json: async () => [] }), lager: attrappenLager() });
   s.setzeProfil("willi");

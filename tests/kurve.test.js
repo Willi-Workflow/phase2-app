@@ -48,6 +48,17 @@ test("groessterAusschlag übersteht neu dazugekommene Geräte", () => {
   assert.deepEqual(t, { geraet: "Pedale", achse: 0, delta: 0.9 });
 });
 
+test("mitKurve: expo wird auf den Bereich 0 bis 1 begrenzt", () => {
+  assert.equal(mitKurve(0.5, 0, 2), 0.125);
+  assert.equal(mitKurve(-0.5, 0, 2), -0.125);
+  assert.equal(mitKurve(0.5, 0, -1), 0.5);
+});
+
+test("mitKurve: totzone wird auf den Bereich 0 bis 0.9 begrenzt", () => {
+  assert.equal(mitKurve(1, 1, 0), 1); // ohne Begrenzung: Division durch 0 (NaN/Infinity)
+  assert.equal(mitKurve(1, 5, 0), 1); // extreme Totzone wirkt wie 0.9
+});
+
 test("groessterAusschlag waehlt groesseres rohen Delta, nicht Rundungsartefakt", () => {
   const basen = [
     { geraet: "A", achsen: [0] },

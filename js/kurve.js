@@ -1,10 +1,12 @@
 // Reine Steuerlogik: Totzone, Expo und das Anlernen der Achsen.
 
 export function mitKurve(wert, totzone, expo) {
+  const t = Math.min(Math.max(totzone, 0), 0.9);
+  const e = Math.min(Math.max(expo, 0), 1);
   const betrag = Math.abs(wert);
-  if (betrag < totzone) return 0;
-  const gestreckt = ((betrag - totzone) / (1 - totzone)) * Math.sign(wert);
-  return (1 - expo) * gestreckt + expo * gestreckt ** 3;
+  if (betrag < t) return 0;
+  const gestreckt = ((betrag - t) / (1 - t)) * Math.sign(wert);
+  return (1 - e) * gestreckt + e * gestreckt ** 3;
 }
 
 export function groessterAusschlag(basen, jetzt, schwelle) {
