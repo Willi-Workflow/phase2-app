@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Rücksprung-Knopf · Varianten</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../stil.css?v=27">
+<style>
+  .varianten { max-width: 760px; margin: 7vh auto; display: grid; gap: 52px; justify-items: center; padding: 0 20px; }
+  .varianten h1 { font-size: 22px; letter-spacing: 0.2em; color: var(--hell); }
+  .variante { display: grid; gap: 14px; justify-items: center; }
+  .variante .beschriftung { font-size: 11px; letter-spacing: 0.12em; color: var(--gedeckt); text-align: center; max-width: 460px; line-height: 1.6; }
+  .variante .kennbuchstabe { font-size: 15px; color: var(--hell); }
+
+  /* A: Rotes Band nach dem Vorbild des Profilanhängers, quer mit Schwalbenschwanz */
+  .zv-band {
+    position: relative;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    color: #f2e6e0;
+    padding: 13px 42px 13px 22px;
+    background:
+      repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0 1px, rgba(0, 0, 0, 0) 1px 3px),
+      repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.07) 0 1px, rgba(0, 0, 0, 0) 1px 3px),
+      linear-gradient(180deg, #b32226, #8e1518 55%, #6f0f12);
+    clip-path: polygon(0 0, 100% 0, calc(100% - 16px) 50%, 100% 100%, 0 100%);
+    filter: drop-shadow(0 6px 9px rgba(0, 0, 0, 0.5));
+    transition: transform 0.18s;
+    transform-origin: left center;
+  }
+  .zv-band::after { content: ""; position: absolute; inset: 4px 22px 4px 4px; border: 1px dashed rgba(255, 244, 235, 0.5); pointer-events: none; }
+  .zv-band:hover { transform: translateX(-5px) rotate(-1.2deg); }
+
+  /* B: Namensband wie an der Uniform, Stoff mit Stichnaht */
+  .zv-patch {
+    position: relative;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    color: #d8dcc9;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.55);
+    padding: 13px 22px;
+    border-radius: 3px;
+    background:
+      repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.045) 0 2px, rgba(0, 0, 0, 0) 2px 4px),
+      repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.05) 0 2px, rgba(0, 0, 0, 0) 2px 4px),
+      linear-gradient(180deg, #4d5540, #3b4230);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), 0 3px 7px rgba(0, 0, 0, 0.45);
+    transition: filter 0.15s, transform 0.15s;
+  }
+  .zv-patch::after { content: ""; position: absolute; inset: 4px; border: 1px dashed rgba(216, 220, 201, 0.55); border-radius: 2px; pointer-events: none; }
+  .zv-patch:hover { filter: brightness(1.14); transform: translateX(-3px); }
+
+  /* C: Papierzettel mit Klebeband und Handschrift, wie der Zeitplan */
+  .zv-zettel {
+    position: relative;
+    border: 0;
+    cursor: pointer;
+    font-family: "Caveat", cursive;
+    font-size: 25px;
+    font-weight: 600;
+    color: #2e2a22;
+    padding: 12px 30px 14px;
+    background: url("../bilder/papier.png") center / 100% 100% no-repeat;
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.5));
+    transform: rotate(-2deg);
+    transition: transform 0.18s;
+  }
+  .zv-zettel .klebeband { width: 84px; height: 20px; left: 50%; top: -10px; transform: translateX(-50%) rotate(-2.5deg); }
+  .zv-zettel:hover { transform: rotate(-0.3deg); }
+
+  /* D: Gurtband-Lasche mit Rippen und Nahtkasten, wie am Ausrüstungsgurt */
+  .zv-gurt {
+    position: relative;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    color: #cdd3bf;
+    padding: 14px 30px 14px 24px;
+    border-radius: 2px;
+    background:
+      repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.15) 0 3px, rgba(255, 255, 255, 0.05) 3px 6px),
+      linear-gradient(180deg, #3a4030, #2b3023);
+    box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.08), inset 0 -2px 3px rgba(0, 0, 0, 0.35), 0 4px 8px rgba(0, 0, 0, 0.5);
+    transition: transform 0.15s;
+  }
+  .zv-gurt::after {
+    content: "";
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    right: 8px;
+    width: 10px;
+    border: 1px solid rgba(205, 211, 191, 0.4);
+    background: repeating-linear-gradient(180deg, rgba(205, 211, 191, 0.35) 0 2px, rgba(0, 0, 0, 0) 2px 5px);
+    pointer-events: none;
+  }
+  .zv-gurt:hover { transform: translateX(-4px); }
+
+  /* E: Schleudersitz-Griff, gelb-schwarz gestreifte Schlaufe mit Stoffetikett */
+  .zv-griff {
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.15s;
+  }
+  .zv-griff .schlaufe {
+    width: 168px;
+    height: 58px;
+    border-radius: 29px;
+    padding: 15px;
+    box-sizing: border-box;
+    background: repeating-linear-gradient(45deg, #d8b62a 0 9px, #23241f 9px 18px);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.55));
+  }
+  .zv-griff .etikett {
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    color: #d8dcc9;
+    background: linear-gradient(180deg, #4d5540, #3b4230);
+    padding: 5px 12px;
+    border-radius: 2px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.45);
+  }
+  .zv-griff:hover { transform: translateY(4px); }
+
+  /* F: Rollfeld-Markierung, deckend gelbe Farbe mit unregelmäßigem Rand */
+  .zv-rollfeld {
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    letter-spacing: 0.2em;
+    color: #171a12;
+    padding: 14px 26px;
+    background:
+      repeating-linear-gradient(63deg, rgba(23, 26, 18, 0.10) 0 2px, rgba(0, 0, 0, 0) 2px 9px),
+      repeating-linear-gradient(-49deg, rgba(23, 26, 18, 0.08) 0 1px, rgba(0, 0, 0, 0) 1px 7px),
+      linear-gradient(180deg, #cfae2d, #b99a24);
+    clip-path: polygon(1% 6%, 12% 0, 38% 4%, 66% 0, 91% 5%, 100% 12%, 98% 44%, 100% 78%, 94% 100%, 61% 96%, 33% 100%, 8% 95%, 0 86%, 2% 52%);
+    filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.5));
+    transition: filter 0.15s;
+  }
+  .zv-rollfeld:hover { filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.5)) brightness(1.12); }
+
+  /* G: Runder Aufnäher mit Kettelrand, wie ein Staffelabzeichen */
+  .zv-aufnaeher {
+    width: 104px;
+    height: 104px;
+    border-radius: 50%;
+    border: 5px solid #8e1518;
+    box-sizing: border-box;
+    cursor: pointer;
+    font-family: inherit;
+    color: #d8dcc9;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 2px;
+    background:
+      repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.045) 0 2px, rgba(0, 0, 0, 0) 2px 4px),
+      repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.05) 0 2px, rgba(0, 0, 0, 0) 2px 4px),
+      radial-gradient(circle at 38% 30%, #4d5540, #363d2b);
+    box-shadow: 0 4px 9px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+    transition: transform 0.15s;
+  }
+  .zv-aufnaeher .pfeilgross { font-size: 26px; line-height: 1; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.55); }
+  .zv-aufnaeher .klein { font-size: 8px; letter-spacing: 0.16em; }
+  .zv-aufnaeher:hover { transform: rotate(-4deg) scale(1.05); }
+
+  /* H: Fräsung im Grund, vertieft ausgespartes Feld ohne Aufbau */
+  .zv-fraesung {
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    color: var(--gedeckt);
+    padding: 13px 24px;
+    border-radius: 6px;
+    background: rgba(6, 8, 4, 0.55);
+    box-shadow: inset 0 3px 7px rgba(0, 0, 0, 0.65), inset 0 -1px 0 rgba(168, 180, 154, 0.14);
+    transition: color 0.15s, box-shadow 0.15s;
+  }
+  .zv-fraesung:hover { color: var(--hell); box-shadow: inset 0 3px 7px rgba(0, 0, 0, 0.65), inset 0 0 14px rgba(168, 180, 154, 0.12); }
+</style>
+</head>
+<body>
+<main class="varianten">
+  <h1>RÜCKSPRUNG: VIER VARIANTEN</h1>
+
+  <div class="variante">
+    <span class="kennbuchstabe">A</span>
+    <button class="zv-band">◄ ÜBERSICHT</button>
+    <p class="beschriftung">Rotes Band mit Schwalbenschwanz und Ziernaht, das Gegenstück zum Profilanhänger. Beim Überfahren zieht es leicht nach links, wie am Remove-before-flight-Band gezogen.</p>
+  </div>
+
+  <div class="variante">
+    <span class="kennbuchstabe">B</span>
+    <button class="zv-patch">◄ ÜBERSICHT</button>
+    <p class="beschriftung">Namensband wie an der Uniform: gewebter Stoff in Oliv, umlaufende Stichnaht, gestickte Schrift. Beim Überfahren hellt der Stoff auf und rückt Richtung Übersicht.</p>
+  </div>
+
+  <div class="variante">
+    <span class="kennbuchstabe">C</span>
+    <button class="zv-zettel"><span class="klebeband"></span>&#8592; zur Übersicht</button>
+    <p class="beschriftung">Angeklebter Papierzettel mit Handschrift, dieselbe Welt wie der Zeitplan-Kalender. Hängt leicht schief und richtet sich beim Überfahren auf.</p>
+  </div>
+
+  <div class="variante">
+    <span class="kennbuchstabe">D</span>
+    <button class="zv-gurt">◄ ÜBERSICHT</button>
+    <p class="beschriftung">Gurtband-Lasche wie am Ausrüstungsgurt: gerippter Gurt mit vernähtem Ende. Beim Überfahren zieht die Lasche ein Stück heraus.</p>
+  </div>
+
+  <div class="variante">
+    <span class="kennbuchstabe">E</span>
+    <button class="zv-griff"><span class="schlaufe"></span><span class="etikett">ZIEHEN · ÜBERSICHT</span></button>
+    <p class="beschriftung">Schleudersitz-Griff: die gelb-schwarz gestreifte Schlaufe aus dem Cockpit, darunter ein Stoffetikett. Ziehen heißt raus aus der Mission. Beim Überfahren senkt sich der Griff, als würde gezogen.</p>
+  </div>
+
+  <div class="variante">
+    <span class="kennbuchstabe">F</span>
+    <button class="zv-rollfeld">◄ ÜBERSICHT</button>
+    <p class="beschriftung">Rollfeld-Markierung: deckend gelbe Farbe mit unregelmäßig gemaltem Rand und dunkler Schrift, wie auf den Rollweg gemalt. Beim Überfahren leuchtet die Farbe frischer.</p>
+  </div>
+
+  <div class="variante">
+    <span class="kennbuchstabe">G</span>
+    <button class="zv-aufnaeher"><span class="pfeilgross">◄</span><span class="klein">ÜBERSICHT</span></button>
+    <p class="beschriftung">Runder Aufnäher mit rotem Kettelrand wie ein Staffelabzeichen, Stoffgrund in Oliv. Beim Überfahren dreht er sich leicht an, als wäre er nur an einer Ecke vernäht.</p>
+  </div>
+
+  <div class="variante">
+    <span class="kennbuchstabe">H</span>
+    <button class="zv-fraesung">◄ ÜBERSICHT</button>
+    <p class="beschriftung">Vertiefte Aussparung im Grund, ganz ohne Aufbau: ein dunkel eingelassenes Feld mit Innenschatten, die Schrift hellt beim Überfahren auf. Die ruhigste der acht Varianten.</p>
+  </div>
+</main>
+</body>
+</html>
