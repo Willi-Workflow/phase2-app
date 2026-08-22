@@ -47,6 +47,10 @@ function zeichneGeraete() {
 }
 
 // Platzhalter-Lauf: wird je Bereich durch die echte Übung ersetzt.
+// Abgebrochene Läufe (Esc, Vollbild verlassen, Tab gewechselt) werden nie
+// gespeichert und tauchen daher nicht in der Statistik auf.
+let brichLaufAb = null;
+
 function starteLauf() {
   if (laufAktiv) return;
   laufAktiv = true;
@@ -55,24 +59,46 @@ function starteLauf() {
   schleier.className = "laufschleier";
   schleier.innerHTML = `
     <div class="gross" id="zaehler">0</div>
-    <div class="hinweis">PROBELAUF · 10 SEKUNDEN<br>Klicken oder Feuerknopf drücken, jeder Treffer zählt.</div>
+    <div class="hinweis">PROBELAUF · 10 SEKUNDEN<br>Klicken oder Feuerknopf drücken, jeder Treffer zählt.<br>Esc bricht ab, ohne zu werten.</div>
     <div class="hinweis" id="restzeit">10,0 s</div>`;
   document.body.append(schleier);
   if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
 
   let punkte = 0;
+  let beendet = false;
   const ende = performance.now() + 10_000;
   schleier.addEventListener("pointerdown", () => { punkte += 1; });
 
+  // Chrome verbraucht das erste Esc im Vollbild oft selbst für den Vollbild-
+  // Ausstieg, ohne Tastenereignis an die Seite. Darum zählt das Verlassen des
+  // Vollbilds ebenso als Abbruch wie Esc; das Wegwechseln vom Tab auch, sonst
+  // liefe der Lauf unsichtbar weiter und speicherte am Ende einen Leerwert.
+  const raeumeAuf = () => {
+    beendet = true;
+    brichLaufAb = null;
+    document.removeEventListener("fullscreenchange", beiVollbildwechsel);
+    document.removeEventListener("visibilitychange", beiSichtwechsel);
+    schleier.remove();
+    laufAktiv = false;
+  };
+  const beiVollbildwechsel = () => { if (!document.fullscreenElement) brichLaufAb?.(); };
+  const beiSichtwechsel = () => { if (document.hidden) brichLaufAb?.(); };
+  brichLaufAb = async () => {
+    raeumeAuf();
+    if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
+  };
+  document.addEventListener("fullscreenchange", beiVollbildwechsel);
+  document.addEventListener("visibilitychange", beiSichtwechsel);
+
   const takt = async () => {
+    if (beendet) return;
     if (controls.knopfGedrueckt()) punkte += 1;
     document.getElementById("zaehler").textContent = punkte;
     const rest = Math.max(0, ende - performance.now());
     document.getElementById("restzeit").textContent = `${(rest / 1000).toFixed(1)} s`;
     if (rest > 0) { requestAnimationFrame(takt); return; }
+    raeumeAuf();
     if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
-    schleier.remove();
-    laufAktiv = false;
     try {
       await speicher.speichereLauf({
         profil: speicher.profil(),
@@ -98,7 +124,7 @@ function initialisiereSeite() {
   document.getElementById("missionsnummer").textContent = `MISSION 0${mission.nr}`;
 
   document.getElementById("start").addEventListener("click", starteLauf);
-  addEventListener("keydown", (e) => { if (e.key === "Escape" && document.querySelector(".laufschleier")) location.reload(); });
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && brichLaufAb) brichLaufAb(); });
 
   zeichneAuswertung();
   zeichneGeraete();
