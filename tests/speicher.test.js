@@ -246,3 +246,47 @@ test("Einstellungen werden je Profil gehalten", async () => {
   s.setzeProfil("luigi");
   assert.equal(await s.ladeEinstellung("totzone", 0.06), 0.06);
 });
+
+test("synce prueft bei leerer Warteschlange die Verbindung", async () => {
+  const rufe = [];
+  const fetchFn = async (adresse, optionen = {}) => {
+    rufe.push({ adresse, methode: optionen.method ?? "GET" });
+    return { ok: true, json: async () => [] };
+  };
+  const s = erzeugeSpeicher({ konfig, fetchFn, lager: attrappenLager() });
+  assert.equal(s.zustand(), "getrennt");
+  await s.synce();
+  assert.equal(s.zustand(), "verbunden");
+  assert.equal(rufe.length, 1);
+  assert.equal(rufe[0].methode, "GET");
+});
+
+test("loescheLaeufe reicht Netzfehler durch und laesst die oertliche Kopie stehen", async () => {
+  const lager = attrappenLager();
+  lager.setItem("p2-laeufe", JSON.stringify([lauf]));
+  const s = erzeugeSpeicher({ konfig, fetchFn: async () => { throw new Error("kein Netz"); }, lager });
+  await assert.rejects(s.loescheLaeufe("willi", null));
+  assert.equal(JSON.parse(lager.getItem("p2-laeufe")).length, 1);
+});
+
+test("loescheLaeufe ohne Zugang leert nur oertlich und wirft nicht", async () => {
+  const lager = attrappenLager();
+  lager.setItem("p2-laeufe", JSON.stringify([lauf]));
+  const s = erzeugeSpeicher({ konfig: { supabaseUrl: "", supabaseKey: "", version: 1 }, fetchFn: async () => { throw new Error("darf nicht gerufen werden"); }, lager });
+  await s.loescheLaeufe("willi", null);
+  assert.equal(JSON.parse(lager.getItem("p2-laeufe")).length, 0);
+});
+
+test("ladeEinstellung holt den Fernbestand und legt ihn oertlich ab", async () => {
+  const fetchFn = async (adresse, optionen = {}) => ({
+    ok: true,
+    json: async () => adresse.includes("/einstellungen") ? [{ wert: 0.12 }] : [],
+  });
+  const lager = attrappenLager();
+  const s = erzeugeSpeicher({ konfig, fetchFn, lager });
+  s.setzeProfil("willi");
+  assert.equal(await s.ladeEinstellung("totzone", 0.06), 0.12);
+  const kaputt = erzeugeSpeicher({ konfig, fetchFn: async () => { throw new Error("kein Netz"); }, lager });
+  kaputt.setzeProfil("willi");
+  assert.equal(await kaputt.ladeEinstellung("totzone", 0.06), 0.12);
+});

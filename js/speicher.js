@@ -115,6 +115,16 @@ export function erzeugeSpeicher({ konfig, fetchFn = fetch, lager = localStorage 
       // entferneAusSchlange, das die Schlange bei jedem Aufruf frisch liest,
       // damit während des Sendens neu eingereihte Läufe nie überschrieben werden.
       const momentaufnahme = liesJson(LAGER_WARTESCHLANGE, []);
+      if (momentaufnahme.length === 0) {
+        // Ohne Warteschlange findet sonst nie ein Netzruf statt, darum bliebe der
+        // Zustand bei einer funktionierenden Verbindung dauerhaft auf "getrennt"
+        // stehen. Eine leichte Prüfanfrage genügt, Fehler schluckt rufe() bereits.
+        if (zugang) {
+          try { await rufe(`${tabelle("laeufe")}?select=id&limit=1`); }
+          catch { /* Zustand wurde von rufe schon gesetzt */ }
+        }
+        return;
+      }
       for (const lauf of momentaufnahme) {
         const schluessel = schluesselVon(lauf);
         try {
@@ -153,15 +163,36 @@ export function erzeugeSpeicher({ konfig, fetchFn = fetch, lager = localStorage 
       const filter = bereichOderNull === null
         ? `?profil=eq.${profil}`
         : `?profil=eq.${profil}&bereich=eq.${bereichOderNull}`;
-      try { await rufe(`${tabelle("laeufe")}${filter}`, { method: "DELETE" }); } catch { /* örtlich trotzdem leeren */ }
+      // Mit Zugang zählt nur ein tatsächlich erfolgreiches Fernlöschen als Erfolg:
+      // scheitert es, wird der Fehler durchgereicht und örtlich NICHTS geleert,
+      // sonst meldet die App ein Zurücksetzen, das gar nicht stattgefunden hat.
+      // Nur ohne Zugang (kein gemeinsamer Bestand vorhanden) bleibt es beim
+      // stillen örtlichen Leeren.
+      if (zugang) {
+        await rufe(`${tabelle("laeufe")}${filter}`, { method: "DELETE" });
+      }
       const behalten = (l) => !(l.profil === profil && (bereichOderNull === null || l.bereich === bereichOderNull));
       schreibJsonStill(LAGER_LAEUFE, liesJson(LAGER_LAEUFE, []).filter(behalten));
       schreibJsonStill(LAGER_WARTESCHLANGE, liesJson(LAGER_WARTESCHLANGE, []).filter(behalten));
     },
 
     async ladeEinstellung(schluessel, vorgabe) {
+      const profil = aktuellesProfil();
+      if (zugang) {
+        try {
+          const antwort = await rufe(`${tabelle("einstellungen")}?profil=eq.${profil}&schluessel=eq.${schluessel}&select=wert`);
+          const treffer = await antwort.json();
+          if (treffer.length > 0) {
+            const wert = treffer[0].wert;
+            const alle = liesJson(LAGER_EINSTELLUNGEN, {});
+            alle[profil] = { ...(alle[profil] ?? {}), [schluessel]: wert };
+            schreibJsonStill(LAGER_EINSTELLUNGEN, alle);
+            return wert;
+          }
+        } catch { /* leere Antwort oder Fehler: örtlich mit Vorgabe weitermachen */ }
+      }
       const alle = liesJson(LAGER_EINSTELLUNGEN, {});
-      const je = alle[aktuellesProfil()] ?? {};
+      const je = alle[profil] ?? {};
       return schluessel in je ? je[schluessel] : vorgabe;
     },
 
