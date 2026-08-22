@@ -1496,13 +1496,17 @@ function starteLauf() {
     if (rest > 0) { requestAnimationFrame(takt); return; }
     if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
     schleier.remove();
-    await speicher.speichereLauf({
-      profil: speicher.profil(),
-      bereich: mission.nr,
-      zeitpunkt: new Date().toISOString(),
-      kennzahl: punkte,
-      daten: { art: "probelauf" },
-    });
+    try {
+      await speicher.speichereLauf({
+        profil: speicher.profil(),
+        bereich: mission.nr,
+        zeitpunkt: new Date().toISOString(),
+        kennzahl: punkte,
+        daten: { art: "probelauf" },
+      });
+    } catch {
+      alert("Der Lauf konnte nicht gesichert werden und geht verloren. Bitte Verbindung und Einrichtung prüfen.");
+    }
     zeichneAuswertung();
   };
   requestAnimationFrame(takt);
@@ -1597,7 +1601,8 @@ create table laeufe (
   bereich int not null check (bereich between 1 and 6),
   zeitpunkt timestamptz not null,
   kennzahl double precision not null,
-  daten jsonb not null default '{}'::jsonb
+  daten jsonb not null default '{}'::jsonb,
+  unique (profil, bereich, zeitpunkt)
 );
 alter table laeufe enable row level security;
 create policy "lesen" on laeufe for select using (true);
