@@ -13,30 +13,65 @@ const mission = MISSIONEN.find((m) => m.nr === nr);
 let laufAktiv = false;
 const controls = erzeugeControls(speicher);
 
-async function zeichneAuswertung() {
-  const laeufe = await speicher.ladeLaeufe(mission.nr);
+// Statistik je Schwierigkeit: von Hand umstellbar, sonst folgt sie der Stufe
+// des letzten eigenen Laufs. Läufe ohne Stufe zählen zur ersten Stufe.
+let alleLaeufe = [];
+let stufeVonHand = null;
+let laufStufe = null;
+
+const stufeVon = (l) => l.daten?.schwierigkeit ?? mission.schwierigkeiten[0];
+
+function letzteEigeneStufe() {
+  const eigene = sortiertNeueste(alleLaeufe.filter((l) => l.profil === speicher.profil()));
+  return eigene.length ? stufeVon(eigene[0]) : null;
+}
+
+const aktiveStufe = () => stufeVonHand ?? letzteEigeneStufe() ?? mission.schwierigkeiten[0];
+
+function zeichneStufenwahl() {
+  const knopf = (s, aktiv) => `<button class="stufe ${aktiv ? "aktiv" : ""}" data-stufe="${s}">${s.toUpperCase()}</button>`;
+  document.getElementById("stufenwahl-statistik").innerHTML =
+    mission.schwierigkeiten.map((s) => knopf(s, s === aktiveStufe())).join("");
+  document.getElementById("stufenwahl-lauf").innerHTML =
+    mission.schwierigkeiten.map((s) => knopf(s, s === laufStufe)).join("");
+}
+
+function zeichneStatistik() {
+  zeichneStufenwahl();
+  const laeufe = alleLaeufe.filter((l) => stufeVon(l) === aktiveStufe());
   zeichneDiagramm(laeufe);
   const eigene = laeufe.filter((l) => l.profil === speicher.profil());
-  const liste = document.getElementById("laufliste");
-  liste.innerHTML = sortiertNeueste(eigene).slice(0, 6)
-    .map((l) => `<li><span>${l.zeitpunkt.slice(0, 10)}</span><b>${l.kennzahl} ${mission.kennzahlName}</b></li>`)
-    .join("") || "<li><span>Noch kein Lauf</span></li>";
   document.getElementById("bestwert").textContent = bestwert(eigene) ?? "–";
   document.getElementById("durchschnitt").textContent = durchschnitt(eigene) ?? "–";
 
+  // Balken zeigen den Bestwert: bei Prozentkennzahlen gegen volle 100,
+  // sonst gegen den besseren der beiden Bestwerte.
   const v = vergleich(laeufe);
-  const maximum = Math.max(v.willi.durchschnitt ?? 0, v.luigi.durchschnitt ?? 0, 1);
+  const maximum = mission.kennzahlName.includes("%")
+    ? 100
+    : Math.max(v.willi.bestwert ?? 0, v.luigi.bestwert ?? 0, 1);
   document.getElementById("vergleich").innerHTML = ["willi", "luigi"].map((profil) => `
     <div style="display:flex;justify-content:space-between;"><span>${profil.toUpperCase()}</span>
       <span>Ø ${v[profil].durchschnitt ?? "–"} · Best ${v[profil].bestwert ?? "–"} · ${v[profil].anzahl} Läufe</span></div>
-    <div class="balken ${profil}"><span style="width:${((v[profil].durchschnitt ?? 0) / maximum) * 100}%"></span></div>
+    <div class="balken ${profil}"><span style="width:${((v[profil].bestwert ?? 0) / maximum) * 100}%"></span></div>
   `).join("");
+}
+
+async function zeichneAuswertung() {
+  alleLaeufe = await speicher.ladeLaeufe(mission.nr);
+  if (laufStufe === null) laufStufe = aktiveStufe();
+  zeichneStatistik();
 }
 
 // Verlauf beider Profile über der Laufnummer; das eigene Profil liegt oben und
 // trägt den Endwert, Identität sichern Legende, Endbeschriftung und Werkzeugtipp
-// gemeinsam, nie die Farbe allein.
+// gemeinsam, nie die Farbe allein. Gerechnet wird in Bildpunkten: ab elf Läufen
+// behält das Diagramm den Punktabstand und rollt nach rechts, die Y-Achse steht.
 const TAFELGRUND = "#0d1109";
+// Gezeichnet wird in Einheiten eines festen Rasters (Grundbreite 310, Höhe 172),
+// die Größe regelt CSS rein prozentual. Beim Rollen wächst nur die Einheitenzahl
+// in der Breite, der Maßstab bleibt gleich, darum braucht es keine Pixelmessung.
+const DIAGRAMM = { hoehe: 172, oben: 10, zeichenhoehe: 144, rand: 7, grundbreite: 310, sichtbareLaeufe: 10 };
 
 function zeichneDiagramm(laeufe) {
   const behaelter = document.getElementById("diagramm");
@@ -50,18 +85,26 @@ function zeichneDiagramm(laeufe) {
   if (maxAnzahl === 0) { behaelter.hidden = true; return; }
   behaelter.hidden = false;
 
-  const y = skala(reihen.flatMap((r) => r.werte), mission.kennzahlName.includes("%"));
-  const feld = { x: 34, y: 10, breite: 296, hoehe: 144 };
+  const rollen = document.getElementById("diagrammrollen");
+  const rollbar = maxAnzahl > DIAGRAMM.sichtbareLaeufe;
+  const schrittBreite = (DIAGRAMM.grundbreite - 2 * DIAGRAMM.rand) / (DIAGRAMM.sichtbareLaeufe - 1);
+  const gesamtBreite = rollbar
+    ? (maxAnzahl - 1) * schrittBreite + 2 * DIAGRAMM.rand
+    : DIAGRAMM.grundbreite;
+  const feld = { x: DIAGRAMM.rand, y: DIAGRAMM.oben, breite: gesamtBreite - 2 * DIAGRAMM.rand, hoehe: DIAGRAMM.zeichenhoehe };
   const xVon = (index) => feld.x + (maxAnzahl > 1 ? (index / (maxAnzahl - 1)) * feld.breite : feld.breite / 2);
+  const yVon = (w, maxWert) => feld.y + feld.hoehe - (w / maxWert) * feld.hoehe;
 
-  const gitter = y.schritte.map((w) => {
-    const yy = feld.y + feld.hoehe - (w / y.max) * feld.hoehe;
-    return `<line class="gitter" x1="${feld.x}" y1="${yy}" x2="${feld.x + feld.breite}" y2="${yy}"></line>
-      <text class="achse" x="${feld.x - 6}" y="${yy + 3}" text-anchor="end">${w}</text>`;
-  }).join("");
+  const y = skala(reihen.flatMap((r) => r.werte), mission.kennzahlName.includes("%"));
+  document.getElementById("achsensvg").innerHTML = y.schritte.map((w) =>
+    `<text class="achse" x="28" y="${(yVon(w, y.max) + 3).toFixed(1)}" text-anchor="end">${w}</text>`).join("");
 
-  const unten = laufnummern(maxAnzahl).map((n) =>
-    `<text class="achse" x="${xVon(n - 1)}" y="${feld.y + feld.hoehe + 15}" text-anchor="middle">${n}</text>`).join("");
+  const gitter = y.schritte.map((w) =>
+    `<line class="gitter" x1="0" y1="${yVon(w, y.max).toFixed(1)}" x2="${gesamtBreite.toFixed(1)}" y2="${yVon(w, y.max).toFixed(1)}"></line>`).join("");
+
+  const nummern = rollbar ? Array.from({ length: maxAnzahl }, (_, i) => i + 1) : laufnummern(maxAnzahl);
+  const unten = nummern.map((n) =>
+    `<text class="achse" x="${xVon(n - 1).toFixed(1)}" y="${feld.y + feld.hoehe + 15}" text-anchor="middle">${n}</text>`).join("");
 
   const linien = reihen.filter((r) => r.werte.length).map((r) => {
     const p = punkte(r.werte, feld, maxAnzahl, y.max);
@@ -69,7 +112,7 @@ function zeichneDiagramm(laeufe) {
       `<circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="4" fill="${PROFILFARBEN[r.profil]}" stroke="${TAFELGRUND}" stroke-width="2"></circle>`).join("");
     const spitze = p[p.length - 1];
     const endwert = r.profil === eigenes
-      ? `<text class="endwert" x="${spitze.x.toFixed(1)}" y="${(spitze.y - 9).toFixed(1)}" text-anchor="middle">${r.werte[r.werte.length - 1]}</text>`
+      ? `<text class="endwert" x="${spitze.x.toFixed(1)}" y="${Math.max(spitze.y - 9, 9).toFixed(1)}" text-anchor="middle">${r.werte[r.werte.length - 1]}</text>`
       : "";
     return `<path d="${pfad(p)}" fill="none" stroke="${PROFILFARBEN[r.profil]}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>${kreise}${endwert}`;
   }).join("");
@@ -78,17 +121,19 @@ function zeichneDiagramm(laeufe) {
     `<span class="schluessel"><i style="background:${PROFILFARBEN[profil]}"></i>${profil.toUpperCase()}</span>`).join("");
 
   const flaeche = document.getElementById("diagrammflaeche");
+  flaeche.style.width = `${(gesamtBreite / DIAGRAMM.grundbreite) * 100}%`;
   flaeche.innerHTML = `
-    <svg viewBox="0 0 340 172" role="img" aria-label="Verlauf der Läufe beider Profile">
+    <svg viewBox="0 0 ${gesamtBreite.toFixed(1)} ${DIAGRAMM.hoehe}" role="img" aria-label="Verlauf der Läufe beider Profile">
       ${gitter}${unten}${linien}
       <line class="fadenkreuz" y1="${feld.y}" y2="${feld.y + feld.hoehe}" style="display:none"></line>
     </svg>
     <div class="werkzeugtipp" hidden></div>`;
+  rollen.scrollLeft = rollen.scrollWidth;
 
-  verdrahteWerkzeugtipp(flaeche, reihen, maxAnzahl, xVon);
+  verdrahteWerkzeugtipp(flaeche, reihen, maxAnzahl, xVon, gesamtBreite);
 }
 
-function verdrahteWerkzeugtipp(flaeche, reihen, maxAnzahl, xVon) {
+function verdrahteWerkzeugtipp(flaeche, reihen, maxAnzahl, xVon, gesamtBreite) {
   const svg = flaeche.querySelector("svg");
   const kreuz = svg.querySelector(".fadenkreuz");
   const tipp = flaeche.querySelector(".werkzeugtipp");
@@ -114,13 +159,14 @@ function verdrahteWerkzeugtipp(flaeche, reihen, maxAnzahl, xVon) {
       zeile.append(schluessel, wert, document.createTextNode(` ${r.profil.toUpperCase()}`));
       tipp.append(zeile);
     }
-    const links = (xImBild / 340) * flaeche.clientWidth;
+    const links = (xImBild / gesamtBreite) * flaeche.clientWidth;
     tipp.style.left = `${Math.min(Math.max(links, 44), flaeche.clientWidth - 44)}px`;
   };
   const verberge = () => { kreuz.style.display = "none"; tipp.hidden = true; };
 
   svg.addEventListener("pointermove", (e) => {
-    const stelle = ((e.offsetX / flaeche.clientWidth) * 340 - 34) / 296;
+    const einheit = (e.offsetX / flaeche.clientWidth) * gesamtBreite;
+    const stelle = (einheit - DIAGRAMM.rand) / (gesamtBreite - 2 * DIAGRAMM.rand);
     index = Math.min(Math.max(Math.round(stelle * (maxAnzahl - 1)), 0), maxAnzahl - 1);
     zeige();
   });
@@ -211,11 +257,12 @@ function starteLauf() {
         bereich: mission.nr,
         zeitpunkt: new Date().toISOString(),
         kennzahl: punkte,
-        daten: { art: "probelauf" },
+        daten: { art: "probelauf", schwierigkeit: laufStufe },
       });
     } catch {
       alert("Der Lauf konnte nicht gesichert werden und geht verloren. Bitte Verbindung und Einrichtung prüfen.");
     }
+    stufeVonHand = null; // Statistik folgt wieder dem zuletzt gelaufenen Test
     zeichneAuswertung();
   };
   requestAnimationFrame(takt);
@@ -232,6 +279,15 @@ function initialisiereSeite() {
 
   document.getElementById("start").addEventListener("click", starteLauf);
   addEventListener("keydown", (e) => { if (e.key === "Escape" && brichLaufAb) brichLaufAb(); });
+
+  document.getElementById("stufenwahl-statistik").addEventListener("click", (e) => {
+    const stufe = e.target.dataset?.stufe;
+    if (stufe) { stufeVonHand = stufe; zeichneStatistik(); }
+  });
+  document.getElementById("stufenwahl-lauf").addEventListener("click", (e) => {
+    const stufe = e.target.dataset?.stufe;
+    if (stufe) { laufStufe = stufe; zeichneStufenwahl(); }
+  });
 
   zeichneAuswertung();
   zeichneGeraete();

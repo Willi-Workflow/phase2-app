@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <title>Phase II · Mission</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="stil.css?v=29">
+<link rel="stylesheet" href="stil.css?v=30">
 </head>
 <body>
 <button class="zurueck" onclick="location.href='uebersicht.html'">◄ ÜBERSICHT</button>
@@ -18,24 +18,27 @@
         Die echte Übung entsteht in einem eigenen Bauabschnitt. Der Probelauf prüft Speicherung,
         Auswertung und Vergleich: 10 Sekunden, jeder Klick oder Knopfdruck zählt einen Punkt.
       </p>
+      <div class="stufenzeile"><span>SCHWIERIGKEIT</span><div class="stufenwahl" id="stufenwahl-lauf"></div></div>
       <button class="startknopf" id="start">START</button>
       <p class="probehinweis" id="probehinweis" hidden>PROBEBETRIEB · LÄUFE WERDEN NICHT GEWERTET</p>
       <div class="geraetestand" id="geraetestand"></div>
     </section>
     <section class="missionsfeld">
       <h2>AUSWERTUNG</h2>
+      <div class="stufenwahl" id="stufenwahl-statistik"></div>
       <div class="diagramm" id="diagramm" hidden>
         <div class="diagrammlegende" id="diagrammlegende"></div>
-        <div class="diagrammflaeche" id="diagrammflaeche"></div>
+        <div class="diagrammkoerper">
+          <svg class="achsensvg" id="achsensvg" viewBox="0 0 34 172"></svg>
+          <div class="diagrammrollen" id="diagrammrollen"><div class="diagrammflaeche" id="diagrammflaeche"></div></div>
+        </div>
       </div>
-      <ul class="laufliste" id="laufliste"></ul>
       <div class="kennzeile"><span>Bestwert</span><b id="bestwert">–</b></div>
       <div class="kennzeile"><span>Durchschnitt</span><b id="durchschnitt">–</b></div>
-      <h2 style="margin-top:18px;">VERGLEICH</h2>
       <div class="balkenpaar" id="vergleich"></div>
     </section>
   </div>
 </main>
-<script type="module" src="js/mission.js?v=8"></script>
+<script type="module" src="js/mission.js?v=9"></script>
 </body>
 </html>
