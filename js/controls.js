@@ -104,8 +104,15 @@ export function erzeugeControls(speicher) {
       await speicher.setzeEinstellung(name, wert);
     },
 
+    setzeReglerFluechtig(name, wert) {
+      if (name === "totzone") totzone = wert;
+      if (name === "expo") expo = wert;
+    },
+
     regler() { return { totzone, expo }; },
 
+    // Dialog-Rückrufe erben das this von controls lexikalisch. oeffneDialog muss daher
+    // immer als controls.oeffneDialog() gerufen werden, nicht entnommen.
     oeffneDialog() {
       const schleier = document.createElement("div");
       schleier.className = "menueschleier";
@@ -144,6 +151,8 @@ export function erzeugeControls(speicher) {
         if (tat === "schliessen") schliesse();
         if (tat === "umkehren") this.kehreUm(e.target.dataset.rolle).then(zeigeStand);
         if (tat === "zuweisen") {
+          this.brichFangAb();
+          for (const k of dialog.querySelectorAll('[data-tat="zuweisen"]')) k.textContent = "Zuweisen";
           e.target.textContent = "Bewegen…";
           this.starteFang(e.target.dataset.rolle, () => { e.target.textContent = "Zuweisen"; zeigeStand(); });
         }
@@ -151,8 +160,10 @@ export function erzeugeControls(speicher) {
 
       dialog.querySelector("#totzone").value = this.regler().totzone;
       dialog.querySelector("#expo").value = this.regler().expo;
-      dialog.querySelector("#totzone").addEventListener("input", (e) => this.setzeRegler("totzone", Number(e.target.value)));
-      dialog.querySelector("#expo").addEventListener("input", (e) => this.setzeRegler("expo", Number(e.target.value)));
+      dialog.querySelector("#totzone").addEventListener("input", (e) => this.setzeReglerFluechtig("totzone", Number(e.target.value)));
+      dialog.querySelector("#totzone").addEventListener("change", (e) => this.setzeRegler("totzone", Number(e.target.value)));
+      dialog.querySelector("#expo").addEventListener("input", (e) => this.setzeReglerFluechtig("expo", Number(e.target.value)));
+      dialog.querySelector("#expo").addEventListener("change", (e) => this.setzeRegler("expo", Number(e.target.value)));
 
       let halteAn = false;
       const takt = () => {
