@@ -7,6 +7,8 @@ const ZUSTANDSTEXT = {
 };
 
 export function oeffneProfilmenue(speicher, { oeffneControls } = {}) {
+  if (document.querySelector(".profilmenue")) return;
+
   const schleier = document.createElement("div");
   schleier.className = "menueschleier";
   const menue = document.createElement("div");
@@ -19,8 +21,10 @@ export function oeffneProfilmenue(speicher, { oeffneControls } = {}) {
     <p class="zustand">${ZUSTANDSTEXT[speicher.zustand()]}</p>
   `;
 
-  const schliesse = () => { schleier.remove(); menue.remove(); };
+  const beiTaste = (ereignis) => { if (ereignis.key === "Escape") schliesse(); };
+  const schliesse = () => { schleier.remove(); menue.remove(); document.removeEventListener("keydown", beiTaste); };
   schleier.addEventListener("click", schliesse);
+  document.addEventListener("keydown", beiTaste);
 
   menue.addEventListener("click", async (ereignis) => {
     const tat = ereignis.target.dataset?.tat;
@@ -32,13 +36,11 @@ export function oeffneProfilmenue(speicher, { oeffneControls } = {}) {
         return;
       }
       location.href = "index.html";
-    }
-    if (tat === "controls") {
+    } else if (tat === "controls") {
       schliesse();
       if (oeffneControls) oeffneControls();
       else alert("Die Controls-Einrichtung folgt im nächsten Bauabschnitt.");
-    }
-    if (tat === "zuruecksetzen") {
+    } else if (tat === "zuruecksetzen") {
       const profil = speicher.profil();
       const sicher = confirm(`Wirklich alle Ergebnisse von ${profil.toUpperCase()} löschen? Das lässt sich nicht rückgängig machen.`);
       if (sicher) {
