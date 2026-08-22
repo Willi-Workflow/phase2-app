@@ -1,0 +1,48 @@
+@font-face {
+  font-family: "Black Ops One";
+  src: url("schrift/black-ops-one.woff2") format("woff2");
+  font-display: swap;
+}
+
+:root {
+  --hell: #dde1d5;
+  --gedeckt: #a8b49a;
+  --tafel-dunkel: #31373b;
+  --tafel-neben: #5c646a;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  min-height: 100vh;
+  font-family: "Black Ops One", system-ui, sans-serif;
+  color: var(--hell);
+  background: #232a19 url("bilder/tarn.svg") center / cover no-repeat fixed;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 10, 6, 0.5);
+  pointer-events: none;
+  z-index: 0;
+}
+
+main { position: relative; z-index: 1; }
+
+.she-titel {
+  text-align: center;
+  font-size: clamp(30px, 5vw, 52px);
+  letter-spacing: 0.22em;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+
+.she-untertitel {
+  text-align: center;
+  font-size: clamp(11px, 1.5vw, 17px);
+  letter-spacing: 0.75em;
+  color: var(--gedeckt);
+  margin-top: 8px;
+  padding-left: 0.75em; /* gleicht die Sperrung optisch aus */
+}
