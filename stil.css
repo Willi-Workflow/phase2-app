@@ -48,21 +48,23 @@ main { position: relative; z-index: 1; }
 }
 
 /* Profilwahl: zwei Bänder an einem gemeinsamen Bund */
+/* Alle Maße des Bunds hängen an der Bandbreite --b, damit die Ösen bei jeder
+   Fenstergröße exakt auf dem Ringstrang sitzen (Lochmitte im Bandbild: 47.1 % / 9.2 %,
+   Strangmitte im Ringbild vermessen). */
 .bund {
+  --b: clamp(120px, 16vw, 190px);
   position: relative;
   width: min(620px, 92vw);
-  height: 58vh;
-  margin: 7vh auto 0;
+  height: calc(var(--b) * 3.05);
+  margin: calc(5vh + var(--b) * 0.5) auto 0;
 }
-
-.bund { --bandbreite: clamp(120px, 16vw, 190px); }
 
 .bundring {
   position: absolute;
   left: 50%;
-  top: -52px;
-  width: 108px;
-  height: 108px;
+  top: calc(var(--b) * -0.75);
+  width: calc(var(--b) * 1.5);
+  height: calc(var(--b) * 1.5);
   transform: translateX(-50%);
   pointer-events: none;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
@@ -71,9 +73,9 @@ main { position: relative; z-index: 1; }
 .band {
   position: absolute;
   left: 50%;
-  top: calc(30px - var(--bandbreite) * 0.12);
-  width: var(--bandbreite);
-  transform-origin: 51% 4.5%;
+  top: calc(var(--b) * 0.086);
+  width: var(--b);
+  transform-origin: 47.1% 9.2%;
   border: 0;
   background: transparent;
   cursor: pointer;
@@ -81,8 +83,8 @@ main { position: relative; z-index: 1; }
   transition: transform 0.35s ease;
 }
 
-.band[data-profil="luigi"] { margin-left: calc(var(--bandbreite) / -2 + 26px); transform: rotate(-16deg); }
-.band[data-profil="willi"] { margin-left: calc(var(--bandbreite) / -2 - 26px); transform: rotate(16deg); z-index: 1; }
+.band[data-profil="luigi"] { margin-left: calc(var(--b) * -0.267); transform: rotate(-16deg); }
+.band[data-profil="willi"] { margin-left: calc(var(--b) * -0.675); transform: rotate(16deg); z-index: 1; }
 .band[data-profil="luigi"]:hover, .band[data-profil="luigi"]:focus-visible { transform: rotate(-20deg); }
 .band[data-profil="willi"]:hover, .band[data-profil="willi"]:focus-visible { transform: rotate(20deg); }
 .band.gezogen { transform: rotate(0deg) translateY(52vh); transition: transform 0.65s ease-in; z-index: 2; }
