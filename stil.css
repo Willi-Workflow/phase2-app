@@ -358,6 +358,7 @@ main { position: relative; z-index: 1; }
 .rueckmeldung.schlecht { color: #d07a5e; }
 .ergebnisgross { font-size: clamp(34px, 5vw, 54px); color: var(--hell); }
 .ergebniszeilen { display: grid; gap: 6px; font-size: 12px; letter-spacing: 0.1em; color: var(--gedeckt); text-align: center; }
+.ergebniszeilen .trefferzeile { font-size: 15px; color: var(--hell); }
 .ergebniszeilen .abgebrochen { color: #c9ae4a; margin-top: 4px; }
 .laufschleier.uebung4 .punkt { width: auto; padding: 12px 34px; background: #1a2113; color: var(--hell); border: 1px solid #39422c; border-radius: 6px; font-family: inherit; font-size: 14px; letter-spacing: 0.15em; cursor: pointer; }
 

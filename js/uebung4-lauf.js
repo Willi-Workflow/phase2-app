@@ -175,9 +175,9 @@ export function erzeugeUebung4({ speicher }) {
       const abbruchzeile = gewertet ? "" : `<span class="abgebrochen">ABGEBROCHEN · DER LAUF ZÄHLT NICHT ZUR STATISTIK</span>`;
       mitte.innerHTML = `
         <div class="frage">${gewertet ? "TEST BEENDET" : "TEST ABGEBROCHEN"}</div>
-        <div class="ergebnisgross">${wert} PUNKTE</div>
+        <div class="ergebnisgross">${quote} %</div>
         <div class="ergebniszeilen">
-          <span>${richtig} von ${gestellt} richtig · ${quote} % Trefferquote</span>
+          <span class="trefferzeile">${richtig} von ${gestellt} Aufgaben richtig</span>
           <span>Einstellung: ${zeit} s Anzeige · ${fragen} ${fragen === 1 ? "Frage" : "Fragen"} je Runde · ${dauer} min · Faktor ${faktor.toFixed(2)}</span>
           ${abbruchzeile}
         </div>
