@@ -11,10 +11,16 @@
   // Probeaufbau ohne App-Rahmen: schließt die Hangartür und startet den Lauf
   // sofort, damit der Ablauf headless prüfbar ist. Mit ?abbruch=<ms> wird nach
   // dieser Zeit abgebrochen, mit ?wissen=1 öffnet statt des Laufs der
-  // Karteikartenstapel.
+  // Karteikartenstapel, mit ?dauer=<min> wird die Testdauer der Probe gesetzt.
   import { erzeugeUebung5 } from "../js/uebung5-lauf.js";
   import { erzeugeHangartuer } from "../js/hangartuer.js";
-  const uebung = erzeugeUebung5();
+  const dauer = Number(new URLSearchParams(location.search).get("dauer")) || 5;
+  const speicher = {
+    ladeEinstellung: async () => ({ dauer }),
+    setzeEinstellung: async () => {},
+  };
+  const uebung = erzeugeUebung5({ speicher });
+  await uebung.ladeEinstellung();
   if (new URLSearchParams(location.search).get("wissen")) {
     const feld = document.createElement("div");
     document.body.append(feld);

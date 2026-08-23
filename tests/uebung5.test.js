@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  AUFGABENZAHL, AUFGABENZEIT, PRINZIPIEN,
+  TESTDAUERN, AUFGABENZEIT, PRINZIPIEN,
   waehlePrinzipien, erzeugeAufgabe, erzeugeLauf,
   ablenker, antwortenFuer, pruefeEingabe,
   punkteFuerAntwort, kennzahl,
@@ -15,9 +15,9 @@ function saatZufall(saat) {
   };
 }
 
-test("Rahmenwerte: zehn Aufgaben, dreißig Sekunden", () => {
-  assert.equal(AUFGABENZAHL, 10);
-  assert.equal(AUFGABENZEIT, 30);
+test("Rahmenwerte: zwanzig Sekunden je Aufgabe, drei Testdauern", () => {
+  assert.equal(AUFGABENZEIT, 20);
+  assert.deepEqual(TESTDAUERN, [5, 10, 30]);
 });
 
 test("waehlePrinzipien: alle vier Prinzipien mindestens einmal, gewünschte Länge", () => {
@@ -79,6 +79,14 @@ test("erzeugeLauf: volle Länge, alle Prinzipien, beide Formen kommen vor", () =
     }
   }
   assert.equal(formen.size, 2);
+});
+
+test("erzeugeLauf: ein Viererblock enthält jedes Prinzip genau einmal", () => {
+  const rnd = saatZufall(41);
+  for (let i = 0; i < 20; i++) {
+    const block = erzeugeLauf(4, rnd);
+    assert.deepEqual(block.map((a) => a.prinzip).sort(), [...PRINZIPIEN].sort());
+  }
 });
 
 test("ablenker: drei eindeutige, positive, ganzzahlige Werte ungleich der Antwort", () => {

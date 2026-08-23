@@ -4,8 +4,8 @@
 // bleibt.
 import { mische } from "./zufall.js";
 
-export const AUFGABENZAHL = 10;
-export const AUFGABENZEIT = 30; // Sekunden je Aufgabe
+export const AUFGABENZEIT = 20; // Sekunden je Aufgabe
+export const TESTDAUERN = [5, 10, 30]; // Minuten
 export const PRINZIPIEN = ["zeit", "weg", "geschwindigkeit", "rate"];
 
 // Wertelisten laut Entwurf: nur Paare, deren Ergebnis ganzzahlig ist und im
@@ -67,7 +67,7 @@ export function erzeugeAufgabe(prinzip, rnd = Math.random) {
 }
 
 // Ein Lauf: Prinzipienfolge, je Aufgabe die gewürfelte Erscheinungsform.
-export function erzeugeLauf(anzahl = AUFGABENZAHL, rnd = Math.random) {
+export function erzeugeLauf(anzahl, rnd = Math.random) {
   return waehlePrinzipien(anzahl, rnd).map((prinzip) => ({
     ...erzeugeAufgabe(prinzip, rnd),
     form: rnd() < 0.5 ? "auswahl" : "eingabe",
@@ -127,7 +127,8 @@ export function punkteFuerAntwort(richtig, restzeitMs, limitMs) {
   return 7 + 3 * anteil;
 }
 
-// Kennzahl des Laufs: Punktesumme auf 0 bis 100 hochgerechnet.
+// Kennzahl des Laufs: Punkteschnitt je gestellter Aufgabe, auf 0 bis 100
+// gebracht. So bleiben Läufe verschiedener Testdauern vergleichbar.
 export function kennzahl(punkteSumme, anzahl) {
   if (anzahl === 0) return 0;
   return Math.round((punkteSumme / (anzahl * 10)) * 100);

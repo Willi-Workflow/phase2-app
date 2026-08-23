@@ -1,9 +1,10 @@
-// Ablauf Mission 5 (Test Flugphysik) im Vollbild: zehn erzeugte Aufgaben mit
-// Ablaufbalken, je Aufgabe als Auswahlfrage oder Zahleneingabe, sofortige
-// Auflösung, danach die Ergebnistafel. Der Wissensbereich steht als
-// Karteikartenstapel fest auf der Missionsseite, nicht im Lauf.
+// Ablauf Mission 5 (Test Flugphysik) im Vollbild: Aufgaben am Stück in
+// Viererblöcken, bis die eingestellte Testdauer um ist, mit Ablaufbalken,
+// je Aufgabe als Auswahlfrage oder Zahleneingabe, sofortige Auflösung,
+// danach die Ergebnistafel. Der Wissensbereich steht als Karteikartenstapel
+// fest auf der Missionsseite, nicht im Lauf.
 import {
-  AUFGABENZAHL, AUFGABENZEIT, erzeugeLauf, antwortenFuer, pruefeEingabe,
+  TESTDAUERN, AUFGABENZEIT, erzeugeLauf, antwortenFuer, pruefeEingabe,
   punkteFuerAntwort, kennzahl,
 } from "./uebung5.js";
 import { KARTEN5 } from "./wissen5.js";
@@ -13,10 +14,30 @@ import { KARTEN5 } from "./wissen5.js";
 const RUECKMELDEDAUER_RICHTIG = 700;
 const RUECKMELDEDAUER_FALSCH = 1800;
 
-export function erzeugeUebung5() {
-  const hinweis = "Zehn gerechnete Aufgaben zu Weg, Zeit, Geschwindigkeit und Sink- oder "
-    + "Steigrate, je Aufgabe 30 Sekunden. Geantwortet wird per Auswahl oder Zahleneingabe. "
-    + "Punkte gibt es für richtige und schnelle Antworten, die Formeln stehen auf den Karteikarten darunter.";
+export function erzeugeUebung5({ speicher }) {
+  let einstellung = { dauer: 5 };
+  const hinweis = "Rechenaufgaben zu Weg, Zeit, Geschwindigkeit und Sink- oder Steigrate am Stück, "
+    + "bis die eingestellte Testdauer um ist, je Aufgabe 20 Sekunden. Geantwortet wird per Auswahl "
+    + "oder Zahleneingabe. Punkte gibt es für richtige und schnelle Antworten, die Formeln stehen "
+    + "auf den Karteikarten darunter.";
+
+  async function ladeEinstellung() {
+    const gespeichert = await speicher.ladeEinstellung("uebung5-einstellung", {});
+    einstellung = { ...einstellung, ...gespeichert };
+  }
+
+  function zeichneFeld(feld) {
+    feld.innerHTML = `
+      <div class="wahlzeile"><span class="wahltitel">TESTDAUER</span>
+        <select class="wahlliste" data-name="dauer">${TESTDAUERN.map((w) =>
+          `<option value="${w}" ${w === einstellung.dauer ? "selected" : ""}>${w} min</option>`).join("")}</select></div>`;
+    feld.onchange = (e) => {
+      const liste = e.target.closest(".wahlliste");
+      if (!liste) return;
+      einstellung[liste.dataset.name] = Number(liste.value);
+      speicher.setzeEinstellung("uebung5-einstellung", einstellung);
+    };
+  }
 
   // Wissensbereich fest unter Mission und Auswertung: je Größe eine
   // Karteikarte mit Formel, Merksatz und Beispielrechnung, blätterbar über
@@ -63,7 +84,13 @@ export function erzeugeUebung5() {
   }
 
   function starte({ tuer, beiEnde, registriereAbbruch }) {
-    const aufgaben = erzeugeLauf(AUFGABENZAHL);
+    const { dauer } = einstellung;
+    let vorrat = [];
+    const naechsteAufgabe = () => {
+      // Nachschub in Viererblöcken: jeder Block enthält jedes Prinzip einmal.
+      if (vorrat.length === 0) vorrat = erzeugeLauf(4);
+      return vorrat.shift();
+    };
     const limitMs = AUFGABENZEIT * 1000;
     // Der Aufrufer hat die Hangartür bereits geschlossen: der Testbildschirm
     // baut sich verdeckt auf, die Tür öffnet in die laufende Mission.
@@ -81,6 +108,9 @@ export function erzeugeUebung5() {
 
     const mitte = schleier.querySelector(".testmitte");
     const kopf = schleier.querySelector(".testkopf");
+    let testende = Infinity;
+    let restuhr = null;
+    let nummer = 0;
     let beendet = false;
     let gestellt = 0;
     let richtig = 0;
@@ -88,8 +118,14 @@ export function erzeugeUebung5() {
     const zeitgeber = new Set();
     const spaeter = (fn, ms) => { const t = setTimeout(() => { zeitgeber.delete(t); fn(); }, ms); zeitgeber.add(t); return t; };
 
+    const zeigeKopf = () => {
+      const rest = Math.max(0, testende - performance.now());
+      kopf.textContent = `AUFGABE ${nummer} · REST ${Math.floor(rest / 60_000)}:${String(Math.floor((rest % 60_000) / 1000)).padStart(2, "0")}`;
+    };
+
     const raeumeAuf = () => {
       beendet = true;
+      clearInterval(restuhr);
       for (const t of zeitgeber) clearTimeout(t);
       document.removeEventListener("fullscreenchange", beiVollbildwechsel);
       document.removeEventListener("visibilitychange", beiSichtwechsel);
@@ -104,11 +140,12 @@ export function erzeugeUebung5() {
     document.addEventListener("visibilitychange", beiSichtwechsel);
     registriereAbbruch(() => verlasse?.());
 
-    const stelle = (index) => {
+    const stelle = () => {
       if (beendet) return;
-      if (index >= aufgaben.length) { zeigeErgebnis(true); return; }
-      const aufgabe = aufgaben[index];
-      kopf.textContent = `AUFGABE ${index + 1} / ${aufgaben.length}`;
+      if (performance.now() >= testende) { zeigeErgebnis(true); return; }
+      nummer += 1;
+      const aufgabe = naechsteAufgabe();
+      zeigeKopf();
       const antwortfeld = aufgabe.form === "auswahl"
         ? `<div class="antworten">${antwortenFuer(aufgabe).map((w, i) =>
             `<button class="antwortknopf" data-nr="${i}" data-wert="${w}">${w} ${aufgabe.einheit}</button>`).join("")}</div>`
@@ -151,7 +188,7 @@ export function erzeugeUebung5() {
           if (weitergegangen || beendet) return;
           weitergegangen = true;
           schleier.removeEventListener("click", weiter);
-          stelle(index + 1);
+          stelle();
         };
         spaeter(weiter, getroffen ? RUECKMELDEDAUER_RICHTIG : RUECKMELDEDAUER_FALSCH);
         schleier.addEventListener("click", weiter);
@@ -183,6 +220,7 @@ export function erzeugeUebung5() {
     const zeigeErgebnis = async (gewertet) => {
       if (beendet || ergebnisOffen) return;
       ergebnisOffen = true;
+      clearInterval(restuhr);
       for (const t of zeitgeber) clearTimeout(t);
       document.removeEventListener("fullscreenchange", beiVollbildwechsel);
       document.removeEventListener("visibilitychange", beiSichtwechsel);
@@ -191,7 +229,7 @@ export function erzeugeUebung5() {
       await tuer.schliesse();
       tuer.verwische(true);
 
-      const wert = kennzahl(punkteSumme, aufgaben.length);
+      const wert = kennzahl(punkteSumme, gestellt);
       const quote = gestellt ? Math.round((richtig / gestellt) * 100) : 0;
       const abbruchzeile = gewertet ? "" : `<span class="abgebrochen">ABGEBROCHEN · DER LAUF ZÄHLT NICHT ZUR STATISTIK</span>`;
       const tafel = document.createElement("div");
@@ -204,7 +242,7 @@ export function erzeugeUebung5() {
         </div>
         <button class="punkt" id="u5-fertig">ZURÜCK ZUR MISSION</button>
         <div class="ergebnisfuss">
-          <span>${aufgaben.length} Aufgaben · ${AUFGABENZEIT} s je Aufgabe</span>
+          <span>${dauer} min Testdauer · ${AUFGABENZEIT} s je Aufgabe · ${gestellt} ${gestellt === 1 ? "Aufgabe" : "Aufgaben"}</span>
           ${abbruchzeile}
         </div>`;
       document.body.append(tafel);
@@ -221,7 +259,7 @@ export function erzeugeUebung5() {
         if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
         await beiEnde(gewertet ? {
           kennzahl: wert,
-          daten: { art: "flugphysik", gestellt, richtig, quote, punkte: wert },
+          daten: { art: "flugphysik", dauerMin: dauer, gestellt, richtig, quote, punkte: wert },
         } : null);
         await tuer.oeffne();
       };
@@ -233,9 +271,11 @@ export function erzeugeUebung5() {
     (async () => {
       await tuer.oeffne();
       if (beendet || ergebnisOffen) return;
-      stelle(0);
+      testende = performance.now() + dauer * 60_000;
+      restuhr = setInterval(zeigeKopf, 250);
+      stelle();
     })();
   }
 
-  return { hinweis, zeichneUnten, starte };
+  return { hinweis, ladeEinstellung, zeichneFeld, zeichneUnten, starte };
 }
