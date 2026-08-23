@@ -95,39 +95,73 @@ function bogen(gradVon, gradBis, r, farbe, breite) {
   return `<path d="M ${S(x1)} ${S(y1)} A ${r} ${r} 0 ${gross} 1 ${S(x2)} ${S(y2)}" fill="none" stroke="${farbe}" stroke-width="${breite}"/>`;
 }
 
-// Gemeinsame Verläufe und Muster; die Kennungen sind in jedem SVG identisch,
-// doppelte Definitionen im selben Dokument sind dadurch unschädlich.
+// Gemeinsame Verläufe, Muster und Filter; die Kennungen sind in jedem SVG
+// identisch, doppelte Definitionen im selben Dokument sind dadurch unschädlich.
+// Die Gehäuseanmutung (Platte, Fase, Schrauben, Bezel, Glasreflex) hängt
+// vollständig an diesem Block und an PLATTE/GEHAEUSE/SCHLIFF, damit alle
+// fünf Instrumente gleich behandelt sind.
 const DEFS = `<defs>
-  <radialGradient id="ins-schraube" cx="35%" cy="30%" r="85%">
-    <stop offset="0%" stop-color="#93969a"/><stop offset="55%" stop-color="#54575b"/><stop offset="100%" stop-color="#26282a"/>
-  </radialGradient>
-  <linearGradient id="ins-ring" x1="0" y1="0" x2="0.7" y2="1">
-    <stop offset="0%" stop-color="#83878b"/><stop offset="45%" stop-color="#3a3d40"/><stop offset="100%" stop-color="#121315"/>
+  <linearGradient id="ins-platte" x1="0.18" y1="0" x2="0.82" y2="1">
+    <stop offset="0%" stop-color="#313336"/><stop offset="48%" stop-color="#25272a"/><stop offset="100%" stop-color="#1a1c1e"/>
   </linearGradient>
-  <radialGradient id="ins-schatten" cx="50%" cy="46%" r="58%">
-    <stop offset="0%" stop-color="rgba(0,0,0,0)"/><stop offset="76%" stop-color="rgba(0,0,0,0)"/><stop offset="100%" stop-color="rgba(0,0,0,0.6)"/>
-  </radialGradient>
   <pattern id="ins-schraffur" width="4" height="4" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
     <rect width="4" height="4" fill="#0b0c0d"/><rect width="1.8" height="4" fill="${GEDECKT}"/>
   </pattern>
+  <clipPath id="ins-fase-hell"><polygon points="0,0 120,0 0,120"/></clipPath>
+  <clipPath id="ins-fase-dunkel"><polygon points="120,0 120,120 0,120"/></clipPath>
+  <radialGradient id="ins-schraube" cx="35%" cy="30%" r="85%">
+    <stop offset="0%" stop-color="#93969a"/><stop offset="55%" stop-color="#54575b"/><stop offset="100%" stop-color="#26282a"/>
+  </radialGradient>
+  <radialGradient id="ins-senkung" cx="50%" cy="50%" r="50%">
+    <stop offset="52%" stop-color="rgba(0,0,0,0)"/><stop offset="100%" stop-color="rgba(0,0,0,0.55)"/>
+  </radialGradient>
+  <radialGradient id="ins-bezel-aussen" cx="40%" cy="32%" r="78%">
+    <stop offset="0%" stop-color="#95989c"/><stop offset="45%" stop-color="#404346"/><stop offset="100%" stop-color="#0e0f10"/>
+  </radialGradient>
+  <radialGradient id="ins-bezel-innen" cx="46%" cy="38%" r="72%">
+    <stop offset="0%" stop-color="#5a5d61"/><stop offset="55%" stop-color="#28292b"/><stop offset="100%" stop-color="#0a0b0c"/>
+  </radialGradient>
+  <radialGradient id="ins-schatten" cx="50%" cy="46%" r="58%">
+    <stop offset="0%" stop-color="rgba(0,0,0,0)"/><stop offset="70%" stop-color="rgba(0,0,0,0)"/><stop offset="100%" stop-color="rgba(0,0,0,0.62)"/>
+  </radialGradient>
+  <filter id="ins-weich" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur stdDeviation="1.6"/>
+  </filter>
 </defs>`;
 
-function schraube(x, y, winkel) {
-  return `<circle cx="${x}" cy="${y}" r="4.4" fill="url(#ins-schraube)" stroke="#17181a" stroke-width="0.8"/>
-    <line x1="${x - 2.8}" y1="${y}" x2="${x + 2.8}" y2="${y}" stroke="#1a1b1d" stroke-width="1.3" transform="rotate(${winkel} ${x} ${y})"/>`;
+// Schraube mit Senkungsschatten, radialem Glanz und Kreuzschlitz; der Winkel
+// dreht den Schlitz je Schraube unterschiedlich, wie am echten Gerät.
+function schraube(x, y, winkel, r = 5) {
+  const arm = r * 0.62;
+  return `<circle cx="${x}" cy="${y}" r="${S(r + 1.9)}" fill="url(#ins-senkung)"/>
+    <circle cx="${x}" cy="${y}" r="${S(r)}" fill="url(#ins-schraube)" stroke="#17181a" stroke-width="0.8"/>
+    <g transform="rotate(${winkel} ${x} ${y})">
+      <line x1="${S(x - arm)}" y1="${y}" x2="${S(x + arm)}" y2="${y}" stroke="#131417" stroke-width="1.3"/>
+      <line x1="${x}" y1="${S(y - arm)}" x2="${x}" y2="${S(y + arm)}" stroke="#131417" stroke-width="1" opacity="0.75"/>
+    </g>`;
 }
 
-const PLATTE = `<rect x="1.5" y="1.5" width="117" height="117" rx="9" fill="#25272a"/>
+const PLATTE = `<rect x="1.5" y="1.5" width="117" height="117" rx="9" fill="url(#ins-platte)"/>
+  <rect x="1.5" y="1.5" width="117" height="117" rx="9" fill="url(#ins-schraffur)" opacity="0.045"/>
+  <rect x="2.4" y="2.4" width="115.2" height="115.2" rx="8.2" fill="none" stroke="#6f7276" stroke-width="0.9" opacity="0.5" clip-path="url(#ins-fase-hell)"/>
+  <rect x="2.4" y="2.4" width="115.2" height="115.2" rx="8.2" fill="none" stroke="#000000" stroke-width="0.9" opacity="0.55" clip-path="url(#ins-fase-dunkel)"/>
   <rect x="1.5" y="1.5" width="117" height="117" rx="9" fill="none" stroke="#0f1011" stroke-width="1"/>
   ${schraube(11.5, 11.5, 28)}${schraube(108.5, 11.5, -37)}${schraube(11.5, 108.5, 64)}${schraube(108.5, 108.5, 8)}`;
 
+// Plastischer Einfassring: zwei konzentrische Kreise mit radialem Verlauf,
+// dazu ein schmaler Lichtbogen oben und ein dunklerer Bogen unten.
 const GEHAEUSE = `${PLATTE}
-  <circle cx="60" cy="60" r="53.5" fill="url(#ins-ring)"/>
+  <circle cx="60" cy="60" r="54.5" fill="url(#ins-bezel-aussen)"/>
+  <circle cx="60" cy="60" r="50.6" fill="url(#ins-bezel-innen)"/>
+  ${bogen(-56, 56, 52.6, "rgba(255,255,255,0.4)", 1.7)}
+  ${bogen(120, 240, 52.6, "rgba(0,0,0,0.5)", 1.9)}
   <circle cx="60" cy="60" r="49" fill="#0b0c0d"/>`;
 
-// Dialschatten unter dem Glasreflex, beides über den Zeigern.
+// Dialschatten unter dem Glasreflex, beides über den Zeigern: der Schatten
+// lässt das Zifferblatt im Bezel eingelassen wirken, der weiche Reflex
+// bleibt bei knapp 5 Prozent Deckkraft, damit die Ablesbarkeit bleibt.
 const SCHLIFF = `<circle cx="60" cy="60" r="49" fill="url(#ins-schatten)"/>
-  <ellipse cx="44" cy="32" rx="28" ry="12" fill="rgba(255,255,255,0.05)" transform="rotate(-25 44 32)"/>`;
+  <ellipse cx="44" cy="32" rx="28" ry="12" fill="rgba(255,255,255,0.05)" transform="rotate(-25 44 32)" filter="url(#ins-weich)"/>`;
 
 function zeiger(laenge, breite, grad, farbe = HELL) {
   return `<g transform="rotate(${S(grad)} 60 60)">
