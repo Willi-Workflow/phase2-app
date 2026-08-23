@@ -7,7 +7,10 @@ import {
   schwierigkeitsfaktor, kennzahlAus, waehleInstrumente, antwortmoeglichkeiten, istGleich,
 } from "./uebung4.js";
 
-const RUECKMELDEDAUER = 1600; // Millisekunden je Richtig-falsch-Einblendung
+// Rückmeldung: nach richtigen Antworten geht es zügig weiter, nach falschen
+// bleibt Zeit, den wahren Wert zu lesen. Ein Klick überspringt die Wartezeit.
+const RUECKMELDEDAUER_RICHTIG = 700;
+const RUECKMELDEDAUER_FALSCH = 1800;
 
 export function erzeugeUebung4({ speicher }) {
   let einstellung = { zeit: 5, fragen: 3, dauer: 5 };
@@ -122,11 +125,19 @@ export function erzeugeUebung4({ speicher }) {
         rueck.textContent = getroffen ? "RICHTIG"
           : `${nr === null ? "ZEIT ABGELAUFEN" : "FALSCH"} · richtig: ${formatiere(id, wert)}`;
         rueck.classList.add(getroffen ? "gut" : "schlecht");
-        spaeter(() => frageFolge(werte, ids, index + 1), RUECKMELDEDAUER);
+        let weitergegangen = false;
+        const weiter = () => {
+          if (weitergegangen || beendet) return;
+          weitergegangen = true;
+          schleier.removeEventListener("click", weiter);
+          frageFolge(werte, ids, index + 1);
+        };
+        spaeter(weiter, getroffen ? RUECKMELDEDAUER_RICHTIG : RUECKMELDEDAUER_FALSCH);
+        schleier.addEventListener("click", weiter);
       };
       mitte.querySelector(".antworten").addEventListener("click", (e) => {
         const knopf = e.target.closest(".antwortknopf");
-        if (knopf) entscheide(Number(knopf.dataset.nr));
+        if (knopf) { e.stopPropagation(); entscheide(Number(knopf.dataset.nr)); }
       });
     };
 

@@ -103,7 +103,8 @@ export function svgFahrt(wert) {
     <text x="60" y="42" font-size="6.5" fill="#9a978d" text-anchor="middle" letter-spacing="1">KNOTEN</text>
     <rect x="47" y="74" width="26" height="11" fill="#050607" stroke="#4a4d50" stroke-width="0.8"/>
     <text x="60" y="79.5" font-size="8.5" fill="#e8e6df" text-anchor="middle" dominant-baseline="central">${wert}</text>
-    ${zeiger(46, 3, gradFahrt(wert))}${NABE}`);
+    ${zeiger(46, 3, gradFahrt(wert))}
+    <circle cx="60" cy="60" r="5" fill="#0f1113" stroke="#c9c6bc" stroke-width="2"/>`);
 }
 
 export function svgHoehe(wert) {
@@ -135,8 +136,11 @@ export function svgKurs(wert) {
   const flugzeug = `<path fill="#e8e6df" d="M60 24 C62 28 63.5 32 63.5 40 L63.5 48 L94 62 L94 69 L63.5 60
     L63.5 74 L77 81 L77 86 L62 82.5 L62 87 L58 87 L58 82.5 L43 86 L43 81 L56.5 74 L56.5 60
     L26 69 L26 62 L56.5 48 L56.5 40 C56.5 32 58 28 60 24 Z"/>`;
+  let winkelmarken = "";
+  for (const g of [45, 135, 225, 315]) winkelmarken += strich(g, 46, 53, 2.2, "#e8a13f");
   return svgRahmen(`${GEHAEUSE}
     <g transform="rotate(${S(-wert)} 60 60)">${rose}</g>
+    ${winkelmarken}
     <polygon points="60,7 56.5,13 63.5,13" fill="#e8a13f"/>
     ${flugzeug}
     <rect x="45" y="88" width="30" height="12" fill="#050607" stroke="#4a4d50" stroke-width="0.8"/>
@@ -163,37 +167,43 @@ export function svgVario(wert) {
 export function svgHorizont(wert) {
   const { roll, nick } = wert;
   const versatz = nick * 1.5;
-  let leiter = "";
-  for (const p of [10, 20]) {
-    const halb = p === 10 ? 14 : 20;
-    for (const richtung of [-1, 1]) {
-      const y = 60 + richtung * p * 1.5;
-      leiter += `<line x1="${60 - halb}" y1="${S(y)}" x2="${60 + halb}" y2="${S(y)}" stroke="#f2f0e9" stroke-width="1.4"/>`;
+  // Nickleiter wie auf dem Vorbildfoto: kräftige weiße Balken, bei 10 Grad
+  // geteilt mit Lücke in der Mitte, bei 20 Grad durchgehend lang, bei 5 kurz.
+  const balken = (y, art) => {
+    if (art === "geteilt") {
+      return `<line x1="34" y1="${S(y)}" x2="52" y2="${S(y)}" stroke="#f2f0e9" stroke-width="2"/>
+        <line x1="68" y1="${S(y)}" x2="86" y2="${S(y)}" stroke="#f2f0e9" stroke-width="2"/>`;
     }
-  }
-  let rollmarken = "";
-  for (const g of [-60, -45, -30, -20, -10, 0, 10, 20, 30, 45, 60]) {
-    rollmarken += strich(g, g === 0 ? 43 : 46, 51, g % 30 === 0 ? 1.8 : 1.1, "#f2f0e9");
+    const halb = art === "lang" ? 28 : 10;
+    return `<line x1="${60 - halb}" y1="${S(y)}" x2="${60 + halb}" y2="${S(y)}" stroke="#f2f0e9" stroke-width="2"/>`;
+  };
+  let leiter = "";
+  for (const richtung of [-1, 1]) {
+    leiter += balken(60 + richtung * 7.5, "kurz");
+    leiter += balken(60 + richtung * 15, "geteilt");
+    leiter += balken(60 + richtung * 30, "lang");
   }
   return svgRahmen(`
-    <defs><clipPath id="hzk"><circle cx="60" cy="60" r="52"/></clipPath></defs>
-    ${GEHAEUSE}
-    <g clip-path="url(#hzk)">
+    <defs><clipPath id="hzr"><rect x="9" y="13" width="102" height="94" rx="11"/></clipPath></defs>
+    <rect x="5" y="9" width="110" height="102" rx="14" fill="#2a2c2e"/>
+    <rect x="8" y="12" width="104" height="96" rx="12" fill="#0f1113"/>
+    <g clip-path="url(#hzr)">
       <g transform="rotate(${S(-roll)} 60 60) translate(0 ${S(versatz)})">
-        <rect x="-30" y="-90" width="180" height="150" fill="#2f7ec7"/>
-        <rect x="-30" y="60" width="180" height="150" fill="#8a5a2b"/>
-        <line x1="-30" y1="60" x2="150" y2="60" stroke="#f2f0e9" stroke-width="2"/>
+        <rect x="-40" y="-100" width="200" height="160" fill="#2f7ec7"/>
+        <rect x="-40" y="60" width="200" height="160" fill="#8a5a2b"/>
+        <line x1="-40" y1="60" x2="160" y2="60" stroke="#f2f0e9" stroke-width="2.2"/>
         ${leiter}
       </g>
       <g transform="rotate(${S(-roll)} 60 60)">
-        <polygon points="60,16 56.5,23 63.5,23" fill="#f2f0e9"/>
+        <polygon points="60,15 56,22 64,22" fill="#f2f0e9"/>
       </g>
-      ${rollmarken}
     </g>
-    <rect x="26" y="58" width="17" height="4" rx="1.5" fill="#e8a13f"/>
-    <rect x="77" y="58" width="17" height="4" rx="1.5" fill="#e8a13f"/>
-    <circle cx="60" cy="60" r="3" fill="#e8a13f"/>
-    <circle cx="60" cy="60" r="54" fill="none" stroke="#6a6d70" stroke-width="1.6"/>`);
+    <path d="M34 60 L52 60 L52 67" fill="none" stroke="#f2f0e9" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M86 60 L68 60 L68 67" fill="none" stroke="#f2f0e9" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M34 60 L52 60 L52 67" fill="none" stroke="#1a1b1c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M86 60 L68 60 L68 67" fill="none" stroke="#1a1b1c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="60" cy="60" r="3.6" fill="#f2f0e9"/><circle cx="60" cy="60" r="2" fill="#1a1b1c"/>
+    <rect x="8" y="12" width="104" height="96" rx="12" fill="none" stroke="#6a6d70" stroke-width="1.6"/>`);
 }
 
 export function svgInstrument(id, wert) {
