@@ -361,10 +361,13 @@ main { position: relative; z-index: 1; }
 /* Mission 4: Merkphase im Cockpit. Die Bühne hält das Seitenverhältnis des
    Bildes, die Instrumente liegen scharf auf dem Panel; in der Fragephase
    verwischt die ganze Bühne, die Frage liegt scharf darüber. */
-.laufschleier.uebung4 { display: grid; place-items: center; padding: 0; background: linear-gradient(rgba(13, 17, 9, 0.55), rgba(13, 17, 9, 0.55)), url("bilder/cockpit.jpg") center / cover no-repeat #0d1109; }
-.cockpitbuehne { position: absolute; inset: 0; margin: auto; width: min(100vw, calc(100vh * (2688 / 1536))); aspect-ratio: 2688 / 1536; background: url("bilder/cockpit.jpg") center / contain no-repeat; transition: filter 0.45s; }
+.laufschleier.uebung4 { display: grid; place-items: center; padding: 0; overflow: hidden; background: #0d1109; }
+/* Die Bühne füllt jedes Fensterformat randlos: sie sitzt am Boden verankert
+   und wird mindestens fensterbreit und fensterhoch; überschüssiger Himmel
+   wird oben beschnitten, überschüssige Seitenfenster links und rechts. */
+.cockpitbuehne { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: max(100vw, calc(100vh * (2528 / 1696))); aspect-ratio: 2528 / 1696; background: url("bilder/cockpit.jpg") center / cover no-repeat; transition: filter 0.45s; }
 .cockpitbuehne.verwischt { filter: blur(18px) brightness(0.72); }
-.panelflaeche { position: absolute; left: 13%; top: 62%; width: 74%; display: flex; justify-content: center; }
+.panelflaeche { position: absolute; left: 29.5%; top: 56.5%; width: 41%; display: flex; justify-content: center; }
 .laufschleier.uebung4 .testkopf { position: relative; z-index: 2; margin-top: 3vh; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8); }
 .laufschleier.uebung4 .testmitte { position: relative; z-index: 2; width: min(760px, 90vw); }
 .laufschleier.uebung4 .testmitte:not(:empty) { background: rgba(13, 17, 9, 0.55); border-radius: 10px; padding: 22px; }
