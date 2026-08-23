@@ -52,17 +52,18 @@ Fester Prüfungsrahmen ohne Einstellungen:
 
 ## Wissensbereich als Karteikartenstapel
 
-- Auf der Seite von Mission 5 öffnet ein Schild WISSEN einen Kartenstapel, der sich vor die Seite legt. Schließen-Knopf oder Esc führt zurück, ohne die Seite neu zu laden.
+Fassung nach Willis Sichtung vom 23.08.2026; die erste Fassung (Schild WISSEN öffnet eine Schicht vor der Seite, sechs Karten mit getrennten Beispielkarten) ist verworfen.
+
+- Der Kartenstapel steht fest auf der Seite von Mission 5, unterhalb von Missionsbeschreibung und Auswertung. Kein Knopf, keine Schicht, kein Schließen.
 - Gestaltung wie echte Karteikarten, passend zur Papieroptik des Prüfungskalenders: helles Papier mit Linienraster und roter Kopflinie, die oberste Karte leicht gedreht, der Stapel dahinter angedeutet, Inhalt in Handschrift-Anmutung.
-- Geblättert wird vor und zurück per Knopf, Klick auf die Karte oder Pfeiltasten, mit Zähler (etwa 3/6) und kurzer Blätterbewegung beim Wechsel.
-- Kartensatz zum Start, sechs Karten:
-  1. Geschwindigkeit = Weg / Zeit (Knoten sind NM je Stunde)
-  2. Weg = Geschwindigkeit mal Zeit
-  3. Zeit in Minuten = Weg / Geschwindigkeit mal 60 (die 60er-Regel)
-  4. Sink/Steigrate = Höhenänderung / Zeit in Minuten
-  5. Beispielaufgabe Flugzeit (100 kt, 500 NM) mit Rechenweg in Schritten
-  6. Beispielaufgabe Sinkrate mit Rechenweg in Schritten
-- Karteninhalte und Reihenfolge liegen in `js/wissen5.js`; weitere Karten lassen sich dort ergänzen, ohne den Aufbau anzufassen.
+- Geblättert wird vor und zurück per Knopf oder Klick auf die Karte, mit Zähler (etwa 3/4) und kurzer Blätterbewegung beim Wechsel. Keine globalen Tastenkürzel, damit die Karten der übrigen Seite nichts wegfangen.
+- Jede Karte erklärt ihre Größe vollständig selbst: die Formel, ein Merksatz in Worten und eine durchgerechnete Beispielrechnung in Schritten direkt auf der Karte. Vier Karten:
+  1. Geschwindigkeit (v = Weg / Zeit mal 60, Beispiel 360 NM in 90 min)
+  2. Weg (s = Geschwindigkeit mal Zeit / 60, Beispiel 240 kt für 45 min)
+  3. Zeit mit der 60er-Regel (t = Weg / Geschwindigkeit mal 60, Beispiel 100 kt und 500 NM)
+  4. Sink- und Steigrate (Rate = Höhenänderung / Zeit in Minuten, Beispiel 6000 ft in 3 min)
+- Karteninhalte und Reihenfolge liegen in `js/wissen5.js` (`{ titel, zeilen, beispiel }` je Karte); weitere Karten lassen sich dort ergänzen, ohne den Aufbau anzufassen.
+- Einhängung: `mission.html` erhält unter dem Missionsraster einen Behälter, `mission.js` ruft wahlweise `zeichneUnten(feld)` der Übung auf; Übungen ohne Unterbereich lassen ihn leer.
 
 ## Bausteine
 
