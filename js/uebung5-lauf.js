@@ -69,7 +69,13 @@ export function erzeugeUebung5() {
     // baut sich verdeckt auf, die Tür öffnet in die laufende Mission.
     const schleier = document.createElement("div");
     schleier.className = "laufschleier uebung5";
-    schleier.innerHTML = `<div class="testkopf"></div><div class="testmitte"></div>`;
+    schleier.innerHTML = `
+      <div class="rechnerbuehne">
+        <div class="monitorflaeche">
+          <div class="testkopf"></div>
+          <div class="testmitte"></div>
+        </div>
+      </div>`;
     document.body.append(schleier);
     if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
 
@@ -109,7 +115,6 @@ export function erzeugeUebung5() {
         : `<form class="eingabezeile" id="u5-form">
             <input class="zahlenfeld" id="u5-eingabe" inputmode="decimal" autocomplete="off" placeholder="Antwort">
             <span class="einheit">${aufgabe.einheit}</span>
-            <button class="punkt" type="submit">ABGEBEN</button>
           </form>`;
       mitte.innerHTML = `
         <div class="frage">${aufgabe.frage}</div>
