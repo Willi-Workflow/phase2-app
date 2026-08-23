@@ -236,27 +236,30 @@ export function svgHorizont(wert) {
   };
   let leiter = "";
   for (const p of [-20, -15, -10, -5, 5, 10, 15, 20]) leiter += leitersprosse(p);
-  let rollskala = `<polygon points="60,13 56.5,20 63.5,20" fill="#f4f2ea"/>`;
+  // Rollskala und ihr Nullpfeil sitzen auf der Kugel und drehen mit der Rolllage,
+  // der Ablesezeiger oben ist fest am Gehäuse: so steht die Anzeige bei Linkslage
+  // links vom Zeiger, wie am echten Gerät.
+  let rollskala = `<polygon points="60,13 55.8,21 64.2,21" fill="#f4f2ea"/>`;
   for (const g of [-60, -45, -30, -20, -10, 10, 20, 30, 45, 60]) {
     rollskala += strich(g, g % 30 === 0 ? 41 : 43.5, 47.5, g % 30 === 0 ? 1.8 : 1.1, "#f4f2ea");
   }
   return svgRahmen(`${GEHAEUSE}
     <defs><clipPath id="ins-hzkreis"><circle cx="60" cy="60" r="48"/></clipPath></defs>
     <g clip-path="url(#ins-hzkreis)">
-      <g transform="rotate(${S(-roll)} 60 60) translate(0 ${S(versatz)})">
-        <rect x="-45" y="-105" width="210" height="165" fill="#4d8ec9"/>
-        <rect x="-45" y="60" width="210" height="165" fill="#7d5a33"/>
-        <line x1="-45" y1="60" x2="165" y2="60" stroke="#f4f2ea" stroke-width="2.4"/>
-        ${leiter}
-      </g>
       <g transform="rotate(${S(-roll)} 60 60)">
-        <polygon points="60,17 55.8,25 64.2,25" fill="#f4f2ea"/>
+        <g transform="translate(0 ${S(versatz)})">
+          <rect x="-45" y="-105" width="210" height="165" fill="#4d8ec9"/>
+          <rect x="-45" y="60" width="210" height="165" fill="#7d5a33"/>
+          <line x1="-45" y1="60" x2="165" y2="60" stroke="#f4f2ea" stroke-width="2.4"/>
+          ${leiter}
+        </g>
+        ${rollskala}
       </g>
-      ${rollskala}
+      <polygon points="60,22 55.5,13 64.5,13" fill="#f4f2ea" stroke="#141516" stroke-width="0.7"/>
     </g>
-    <path d="M32 62 L50 62 L56 67 L60 62 L64 67 L70 62 L88 62" stroke="#141516" stroke-width="3.4" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
-    <path d="M32 62 L50 62 L56 67 L60 62 L64 67 L70 62 L88 62" stroke="${ORANGE}" stroke-width="1.8" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
-    <circle cx="60" cy="62" r="1.4" fill="${ORANGE}" stroke="#141516" stroke-width="0.6"/>
+    <path d="M32 60 L50 60 L56 65 L60 60 L64 65 L70 60 L88 60" stroke="#141516" stroke-width="3.4" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M32 60 L50 60 L56 65 L60 60 L64 65 L70 60 L88 60" stroke="${ORANGE}" stroke-width="1.8" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="60" cy="60" r="1.4" fill="${ORANGE}" stroke="#141516" stroke-width="0.6"/>
     ${SCHLIFF}`);
 }
 
