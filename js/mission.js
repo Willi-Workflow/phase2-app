@@ -6,6 +6,7 @@ import { erzeugeControls } from "./controls.js";
 import { rollenStand } from "./geraetestand.js";
 import { PROFILFARBEN, reihe, skala, punkte, pfad, laufnummern } from "./diagramm.js";
 import { erzeugeUebung4 } from "./uebung4-lauf.js";
+import { erzeugeUebung5 } from "./uebung5-lauf.js";
 import { erzeugeHangartuer } from "./hangartuer.js";
 
 const speicher = erzeugeSpeicher({ konfig: KONFIG });
@@ -14,7 +15,9 @@ const mission = MISSIONEN.find((m) => m.nr === nr);
 
 let laufAktiv = false;
 const controls = erzeugeControls(speicher);
-const uebung4 = mission?.nr === 4 ? erzeugeUebung4({ speicher }) : null;
+// Bereiche mit echter Übung; alle übrigen laufen über den Probelauf.
+const UEBUNGEN = { 4: erzeugeUebung4, 5: erzeugeUebung5 };
+const uebung = mission && UEBUNGEN[mission.nr] ? UEBUNGEN[mission.nr]({ speicher }) : null;
 
 let alleLaeufe = [];
 
@@ -184,12 +187,12 @@ let brichLaufAb = null;
 
 function starteLauf() {
   if (laufAktiv) return;
-  if (uebung4) {
+  if (uebung) {
     laufAktiv = true;
     // Die Hangartür fährt über der Missionsseite zu, dahinter baut sich der
     // Test auf, dann öffnet die Übung die Tür selbst.
     const tuer = erzeugeHangartuer();
-    tuer.schliesse().then(() => uebung4.starte({
+    tuer.schliesse().then(() => uebung.starte({
       tuer,
       registriereAbbruch: (fn) => { brichLaufAb = fn; },
       beiEnde: async (ergebnis) => {
@@ -300,13 +303,10 @@ function initialisiereSeite() {
   document.getElementById("missionsnummer").textContent = `MISSION 0${mission.nr}`;
   document.getElementById("probehinweis").hidden = Boolean(mission.wertung);
 
-  if (uebung4) {
-    document.getElementById("uebungshinweis").textContent =
-      "Die fünf Instrumente erscheinen mit zufälligen Werten für die eingestellte Zeit. "
-      + "Danach fragt der Test einzelne Instrumente ab: vier Antworten, zehn Sekunden Zeit. "
-      + "Runden folgen am Stück, bis die Testdauer um ist.";
-    uebung4.ladeEinstellung().then(() =>
-      uebung4.zeichneEinstellungen(document.getElementById("uebungsfeld")));
+  if (uebung) {
+    document.getElementById("uebungshinweis").textContent = uebung.hinweis;
+    Promise.resolve(uebung.ladeEinstellung?.()).then(() =>
+      uebung.zeichneFeld?.(document.getElementById("uebungsfeld")));
   }
 
   document.getElementById("start").addEventListener("click", starteLauf);

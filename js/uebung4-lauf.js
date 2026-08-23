@@ -14,13 +14,16 @@ const RUECKMELDEDAUER_FALSCH = 1800;
 
 export function erzeugeUebung4({ speicher }) {
   let einstellung = { zeit: 5, fragen: 3, dauer: 5 };
+  const hinweis = "Die fünf Instrumente erscheinen mit zufälligen Werten für die eingestellte Zeit. "
+    + "Danach fragt der Test einzelne Instrumente ab: vier Antworten, zehn Sekunden Zeit. "
+    + "Runden folgen am Stück, bis die Testdauer um ist.";
 
   async function ladeEinstellung() {
     const gespeichert = await speicher.ladeEinstellung("uebung4-einstellung", {});
     einstellung = { ...einstellung, ...gespeichert };
   }
 
-  function zeichneEinstellungen(feld) {
+  function zeichneFeld(feld) {
     const zeile = (titel, name, werte, aktiv, einheit) => `
       <div class="wahlzeile"><span class="wahltitel">${titel}</span>
         <select class="wahlliste" data-name="${name}">${werte.map((w) =>
@@ -214,5 +217,5 @@ export function erzeugeUebung4({ speicher }) {
     })();
   }
 
-  return { ladeEinstellung, zeichneEinstellungen, starte };
+  return { hinweis, ladeEinstellung, zeichneFeld, starte };
 }
