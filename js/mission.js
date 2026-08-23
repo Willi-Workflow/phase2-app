@@ -215,18 +215,20 @@ function starteLauf() {
   }
   laufAktiv = true;
 
+  // Auch der Probelauf läuft hinter dem Hangartür-Übergang: Tür zu, Aufbau
+  // verdeckt, Tür auf, erst dann läuft die Zeit.
+  const tuer = erzeugeHangartuer();
+
   const schleier = document.createElement("div");
   schleier.className = "laufschleier";
   schleier.innerHTML = `
     <div class="gross" id="zaehler">0</div>
     <div class="hinweis">PROBELAUF · 10 SEKUNDEN<br>Klicken oder Feuerknopf drücken, jeder Treffer zählt.<br>Esc bricht ab, ohne zu werten.</div>
     <div class="hinweis" id="restzeit">10,0 s</div>`;
-  document.body.append(schleier);
-  if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
 
   let punkte = 0;
   let beendet = false;
-  const ende = performance.now() + 10_000;
+  let ende = Infinity;
   schleier.addEventListener("pointerdown", () => { punkte += 1; });
 
   // Chrome verbraucht das erste Esc im Vollbild oft selbst für den Vollbild-
@@ -246,6 +248,7 @@ function starteLauf() {
   brichLaufAb = async () => {
     raeumeAuf();
     if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
+    await tuer.oeffne(); // räumt die Tür auch bei Abbruch während der Fahrt weg
   };
   document.addEventListener("fullscreenchange", beiVollbildwechsel);
   document.addEventListener("visibilitychange", beiSichtwechsel);
@@ -257,23 +260,35 @@ function starteLauf() {
     const rest = Math.max(0, ende - performance.now());
     document.getElementById("restzeit").textContent = `${(rest / 1000).toFixed(1)} s`;
     if (rest > 0) { requestAnimationFrame(takt); return; }
+    await tuer.schliesse();
     raeumeAuf();
     if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
-    if (!mission.wertung) return; // Probebetrieb: Lauf zählt nicht
-    try {
-      await speicher.speichereLauf({
-        profil: speicher.profil(),
-        bereich: mission.nr,
-        zeitpunkt: new Date().toISOString(),
-        kennzahl: punkte,
-        daten: { art: "probelauf" },
-      });
-    } catch {
-      alert("Der Lauf konnte nicht gesichert werden und geht verloren. Bitte Verbindung und Einrichtung prüfen.");
+    if (mission.wertung) { // im Probebetrieb zählt der Lauf nicht
+      try {
+        await speicher.speichereLauf({
+          profil: speicher.profil(),
+          bereich: mission.nr,
+          zeitpunkt: new Date().toISOString(),
+          kennzahl: punkte,
+          daten: { art: "probelauf" },
+        });
+      } catch {
+        alert("Der Lauf konnte nicht gesichert werden und geht verloren. Bitte Verbindung und Einrichtung prüfen.");
+      }
+      await zeichneAuswertung();
     }
-    zeichneAuswertung();
+    await tuer.oeffne();
   };
-  requestAnimationFrame(takt);
+
+  tuer.schliesse().then(() => {
+    document.body.append(schleier);
+    if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+    tuer.oeffne().then(() => {
+      if (beendet) return;
+      ende = performance.now() + 10_000;
+      requestAnimationFrame(takt);
+    });
+  });
 }
 
 function initialisiereSeite() {
