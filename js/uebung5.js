@@ -73,3 +73,46 @@ export function erzeugeLauf(anzahl = AUFGABENZAHL, rnd = Math.random) {
     form: rnd() < 0.5 ? "auswahl" : "eingabe",
   }));
 }
+
+// Der klassische 60er-Fehler je Prinzip: Faktor 60 vergessen oder doppelt
+// gerechnet. Bei der Rate gibt es keinen.
+function sechzigerFehler(aufgabe) {
+  const a = aufgabe.antwort;
+  if (aufgabe.prinzip === "zeit" || aufgabe.prinzip === "geschwindigkeit") {
+    return Number.isInteger(a / 60) ? a / 60 : null;
+  }
+  if (aufgabe.prinzip === "weg") return a * 60;
+  return null;
+}
+
+// Drei Ablenker: bevorzugt der 60er-Fehler, dazu Nachbarwerte in plausibler
+// Nähe. Die Schlussschleife garantiert drei Werte auch bei Rundungskollisionen.
+export function ablenker(aufgabe, rnd = Math.random) {
+  const a = aufgabe.antwort;
+  const kandidaten = [];
+  const fehler = sechzigerFehler(aufgabe);
+  if (fehler && fehler !== a) kandidaten.push(fehler);
+  kandidaten.push(...mische([0.5, 0.75, 0.9, 1.1, 1.25, 1.5, 2].map((f) => Math.round(a * f)), rnd));
+  const eindeutig = [];
+  for (const k of kandidaten) {
+    if (k > 0 && k !== a && !eindeutig.includes(k)) eindeutig.push(k);
+    if (eindeutig.length === 3) return eindeutig;
+  }
+  for (let k = 1; eindeutig.length < 3; k++) {
+    if (!eindeutig.includes(a + k)) eindeutig.push(a + k);
+  }
+  return eindeutig;
+}
+
+export function antwortenFuer(aufgabe, rnd = Math.random) {
+  return mische([aufgabe.antwort, ...ablenker(aufgabe, rnd)], rnd);
+}
+
+// Eingaben gelten mit Komma oder Punkt, Leerzeichen werden ignoriert.
+// Richtig ist nur der exakte Wert, die Erzeugung liefert glatte Zahlen.
+export function pruefeEingabe(text, antwort) {
+  const bereinigt = String(text ?? "").replace(/\s/g, "").replace(",", ".");
+  if (bereinigt === "") return false;
+  const zahl = Number(bereinigt);
+  return Number.isFinite(zahl) && zahl === antwort;
+}

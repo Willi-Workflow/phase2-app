@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   AUFGABENZAHL, AUFGABENZEIT, PRINZIPIEN,
   waehlePrinzipien, erzeugeAufgabe, erzeugeLauf,
+  ablenker, antwortenFuer, pruefeEingabe,
 } from "../js/uebung5.js";
 
 function saatZufall(saat) {
@@ -77,4 +78,55 @@ test("erzeugeLauf: volle Länge, alle Prinzipien, beide Formen kommen vor", () =
     }
   }
   assert.equal(formen.size, 2);
+});
+
+test("ablenker: drei eindeutige, positive, ganzzahlige Werte ungleich der Antwort", () => {
+  const rnd = saatZufall(17);
+  for (let i = 0; i < 100; i++) {
+    for (const prinzip of PRINZIPIEN) {
+      const aufgabe = erzeugeAufgabe(prinzip, rnd);
+      const falsche = ablenker(aufgabe, rnd);
+      assert.equal(falsche.length, 3);
+      assert.equal(new Set(falsche).size, 3);
+      for (const w of falsche) {
+        assert.ok(Number.isInteger(w) && w > 0);
+        assert.notEqual(w, aufgabe.antwort);
+      }
+    }
+  }
+});
+
+test("ablenker: der 60er-Fehler ist beim Weg dabei", () => {
+  const aufgabe = { prinzip: "weg", antwort: 180 };
+  assert.ok(ablenker(aufgabe, saatZufall(3)).includes(180 * 60));
+});
+
+test("ablenker: der 60er-Fehler ist bei der Zeit dabei, wenn er ganzzahlig ist", () => {
+  const aufgabe = { prinzip: "zeit", antwort: 300 };
+  assert.ok(ablenker(aufgabe, saatZufall(3)).includes(5));
+});
+
+test("antwortenFuer: vier eindeutige Werte, die Antwort ist dabei", () => {
+  const rnd = saatZufall(23);
+  for (let i = 0; i < 50; i++) {
+    const aufgabe = erzeugeAufgabe(PRINZIPIEN[i % 4], rnd);
+    const auswahl = antwortenFuer(aufgabe, rnd);
+    assert.equal(auswahl.length, 4);
+    assert.equal(new Set(auswahl).size, 4);
+    assert.ok(auswahl.includes(aufgabe.antwort));
+  }
+});
+
+test("pruefeEingabe: Komma, Punkt und Leerzeichen gelten", () => {
+  assert.ok(pruefeEingabe("300", 300));
+  assert.ok(pruefeEingabe(" 300 ", 300));
+  assert.ok(pruefeEingabe("300,0", 300));
+  assert.ok(pruefeEingabe("300.0", 300));
+});
+
+test("pruefeEingabe: falsche, leere und unlesbare Eingaben gelten nicht", () => {
+  assert.ok(!pruefeEingabe("299", 300));
+  assert.ok(!pruefeEingabe("", 300));
+  assert.ok(!pruefeEingabe("dreihundert", 300));
+  assert.ok(!pruefeEingabe(null, 300));
 });
