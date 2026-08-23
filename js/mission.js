@@ -5,6 +5,7 @@ import { bestwert, durchschnitt, vergleich } from "./auswertung.js";
 import { erzeugeControls } from "./controls.js";
 import { rollenStand } from "./geraetestand.js";
 import { PROFILFARBEN, reihe, skala, punkte, pfad, laufnummern } from "./diagramm.js";
+import { erzeugeUebung4 } from "./uebung4-lauf.js";
 
 const speicher = erzeugeSpeicher({ konfig: KONFIG });
 const nr = Number(new URLSearchParams(location.search).get("bereich"));
@@ -12,6 +13,7 @@ const mission = MISSIONEN.find((m) => m.nr === nr);
 
 let laufAktiv = false;
 const controls = erzeugeControls(speicher);
+const uebung4 = mission?.nr === 4 ? erzeugeUebung4({ speicher }) : null;
 
 let alleLaeufe = [];
 
@@ -22,12 +24,10 @@ function zeichneStatistik() {
   document.getElementById("bestwert").textContent = bestwert(eigene) ?? "–";
   document.getElementById("durchschnitt").textContent = durchschnitt(eigene) ?? "–";
 
-  // Balken zeigen den Bestwert: bei Prozentkennzahlen gegen volle 100,
+  // Balken zeigen den Bestwert: bei fester Skala gegen deren Obergrenze,
   // sonst gegen den besseren der beiden Bestwerte.
   const v = vergleich(laeufe);
-  const maximum = mission.kennzahlName.includes("%")
-    ? 100
-    : Math.max(v.willi.bestwert ?? 0, v.luigi.bestwert ?? 0, 1);
+  const maximum = mission.maximal ?? Math.max(v.willi.bestwert ?? 0, v.luigi.bestwert ?? 0, 1);
   document.getElementById("vergleich").innerHTML = ["willi", "luigi"].map((profil) => `
     <div style="display:flex;justify-content:space-between;"><span>${profil.toUpperCase()}</span>
       <span>Ø ${v[profil].durchschnitt ?? "–"} · Best ${v[profil].bestwert ?? "–"} · ${v[profil].anzahl} Läufe</span></div>
@@ -74,7 +74,7 @@ function zeichneDiagramm(laeufe) {
   const xVon = (index) => feld.x + (index / (plaetze - 1)) * feld.breite;
   const yVon = (w, maxWert) => feld.y + feld.hoehe - (w / maxWert) * feld.hoehe;
 
-  const y = skala(reihen.flatMap((r) => r.werte), mission.kennzahlName.includes("%"));
+  const y = skala(reihen.flatMap((r) => r.werte), mission.maximal === 100);
   document.getElementById("achsensvg").innerHTML = y.schritte.map((w) =>
     `<text class="achse" x="28" y="${(yVon(w, y.max) + 3).toFixed(1)}" text-anchor="end">${w}</text>`).join("");
 
@@ -183,6 +183,31 @@ let brichLaufAb = null;
 
 function starteLauf() {
   if (laufAktiv) return;
+  if (uebung4) {
+    laufAktiv = true;
+    uebung4.starte({
+      registriereAbbruch: (fn) => { brichLaufAb = fn; },
+      beiEnde: async (ergebnis) => {
+        laufAktiv = false;
+        brichLaufAb = null;
+        if (ergebnis && mission.wertung) {
+          try {
+            await speicher.speichereLauf({
+              profil: speicher.profil(),
+              bereich: mission.nr,
+              zeitpunkt: new Date().toISOString(),
+              kennzahl: ergebnis.kennzahl,
+              daten: ergebnis.daten,
+            });
+          } catch {
+            alert("Der Lauf konnte nicht gesichert werden und geht verloren. Bitte Verbindung und Einrichtung prüfen.");
+          }
+        }
+        zeichneAuswertung();
+      },
+    });
+    return;
+  }
   laufAktiv = true;
 
   const schleier = document.createElement("div");
@@ -254,6 +279,15 @@ function initialisiereSeite() {
   document.getElementById("missionstitel").textContent = mission.name.toUpperCase();
   document.getElementById("missionsnummer").textContent = `MISSION 0${mission.nr}`;
   document.getElementById("probehinweis").hidden = Boolean(mission.wertung);
+
+  if (uebung4) {
+    document.getElementById("uebungshinweis").textContent =
+      "Die fünf Instrumente erscheinen mit zufälligen Werten für die eingestellte Zeit. "
+      + "Danach fragt der Test einzelne Instrumente ab: vier Antworten, zehn Sekunden Zeit. "
+      + "Runden folgen am Stück, bis die Testdauer um ist.";
+    uebung4.ladeEinstellung().then(() =>
+      uebung4.zeichneEinstellungen(document.getElementById("uebungsfeld")));
+  }
 
   document.getElementById("start").addEventListener("click", starteLauf);
   addEventListener("keydown", (e) => { if (e.key === "Escape" && brichLaufAb) brichLaufAb(); });
