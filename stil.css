@@ -604,8 +604,9 @@ main { position: relative; z-index: 1; }
 .laufschleier.uebung5 .zahlenfeld.richtig { border-color: #2f6b2f; box-shadow: 0 0 0 2px rgba(47, 107, 47, 0.35); }
 .laufschleier.uebung5 .zahlenfeld.falsch { border-color: #a03028; box-shadow: 0 0 0 2px rgba(160, 48, 40, 0.35); }
 .laufschleier.uebung5 .eingabezeile .einheit { color: #1a1a1a; font-family: inherit; font-weight: 700; font-size: clamp(12px, 1.3vw, 18px); }
+/* Der Füllstand behält seine Ampelfarben aus der Laufanimation (Grün nach
+   Rot), nur die Schiene wird an die helle Mattscheibe angepasst. */
 .laufschleier.uebung5 .zeitbalken { width: 72%; background: rgba(26, 26, 26, 0.15); }
-.laufschleier.uebung5 .zeitbalken span { background: #1a1a1a; }
 .laufschleier.uebung5 .rueckmeldung { font-family: inherit; font-weight: 700; font-size: clamp(11px, 1.2vw, 15px); }
 .laufschleier.uebung5 .rueckmeldung.gut { color: #2f6b2f; }
 .laufschleier.uebung5 .rueckmeldung.schlecht { color: #a03028; }
