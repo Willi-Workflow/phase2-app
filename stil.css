@@ -362,14 +362,22 @@ main { position: relative; z-index: 1; }
    Bildes, die Instrumente liegen scharf auf dem Panel; in der Fragephase
    verwischt die ganze Bühne, die Frage liegt scharf darüber. */
 .laufschleier.uebung4 { display: grid; place-items: center; padding: 0; overflow: hidden; background: #0d1109; }
-/* Die Bühne füllt jedes Fensterformat randlos: sie sitzt am Boden verankert
-   und wird mindestens fensterbreit und fensterhoch; überschüssiger Himmel
-   wird oben beschnitten, überschüssige Seitenfenster links und rechts. */
-.cockpitbuehne { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: max(100vw, calc(100vh * (2528 / 1696))); aspect-ratio: 2528 / 1696; background: url("bilder/cockpit.jpg") center / cover no-repeat; transition: filter 0.45s; }
+/* Die Bühne zeigt das Bild in fester Größe, am Boden verankert und mittig:
+   ein größeres oder anders geschnittenes Fenster gibt nur mehr Bildrand frei,
+   nichts wird vergrößert oder verschoben. Erst jenseits der Bildmaße wächst
+   das Bild mit, damit nie Balken entstehen. */
+.cockpitbuehne { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: max(2200px, 100vw, calc(100vh * (2528 / 1696))); aspect-ratio: 2528 / 1696; background: url("bilder/cockpit.jpg") center / cover no-repeat; transition: filter 0.45s; }
 .cockpitbuehne.verwischt { filter: blur(18px) brightness(0.72); }
-.panelflaeche { position: absolute; left: 29.5%; top: 56.5%; width: 41%; display: flex; justify-content: center; }
-.laufschleier.uebung4 .testkopf { position: relative; z-index: 2; margin-top: 3vh; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8); }
-.laufschleier.uebung4 .testmitte { position: relative; z-index: 2; width: min(760px, 90vw); }
+/* Die fünf Anzeigen sitzen ohne eigenen Tafelkasten direkt im Panelfeld,
+   in fester Pixelgröße, damit sie auf jedem Bildschirm gleich groß und
+   ablesbar bleiben und wie eingebaut wirken. */
+.panelflaeche { position: absolute; left: 50%; bottom: 32.5%; transform: translateX(-50%); display: flex; justify-content: center; }
+.panelflaeche .instrumententafel { background: none; border: 0; border-radius: 0; padding: 0; box-shadow: none; gap: 16px; }
+.panelflaeche .instrumententafel .tafelgruppe { gap: 16px; }
+.panelflaeche .instrumententafel .tafelsteg { display: none; }
+.panelflaeche .instrumententafel .instrument { width: 150px; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45)); }
+.laufschleier.uebung4 .testkopf { position: absolute; top: 3vh; left: 50%; transform: translateX(-50%); z-index: 2; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8); }
+.laufschleier.uebung4 .testmitte { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 2; width: min(760px, 90vw); }
 .laufschleier.uebung4 .testmitte:not(:empty) { background: rgba(13, 17, 9, 0.55); border-radius: 10px; padding: 22px; }
 .testkopf { min-height: 20px; font-size: 13px; letter-spacing: 0.2em; color: var(--gedeckt); }
 .testmitte { display: grid; gap: 24px; justify-items: center; }
