@@ -23,7 +23,7 @@ Regeln für die Erzeugung:
 - Wertelisten für Weg-Zeit-Geschwindigkeit: v aus {60, 80, 90, 100, 120, 150, 180, 200, 240, 300, 360, 420, 480} kt, t aus {12, 15, 20, 30, 45, 60, 90, 120, 150, 180, 240, 300} min, nur Paare mit ganzzahligem s = v mal t / 60 und s zwischen 20 und 2400 NM.
 - Werteliste für die Rate: r aus 200 bis 4000 ft/min in Schritten von 100, t aus 2 bis 12 min, h = r mal t, h zwischen 500 und 30000 ft. Steigen oder Sinken wird gewürfelt, der Fragetext nennt die Richtung.
 - Einheiten sind fest (kt, NM, Minuten, ft/min) und stehen immer im Fragetext, damit klar ist, was einzugeben ist.
-- Das gefragte Prinzip wird je Aufgabe gewürfelt; innerhalb eines Laufs kommen alle vier Prinzipien mindestens einmal vor.
+- Das gefragte Prinzip wird je Aufgabe gewürfelt; durch den Nachschub in Viererblöcken (siehe Laufrahmen) kommt jedes Prinzip in jedem Block genau einmal vor.
 - Der Zufall ist als Funktion einspeisbar, damit die Erzeugung mit node --test prüfbar bleibt.
 
 ## Zwei Erscheinungsformen
@@ -35,9 +35,12 @@ Jede Aufgabe erscheint in einer von zwei Formen; die Form wird je Aufgabe mit gl
 
 ## Laufrahmen
 
-Fester Prüfungsrahmen ohne Einstellungen:
+Fassung nach Willis Vorgabe vom 23.08.2026: Testdauer statt fester Aufgabenzahl.
 
-- 10 Aufgaben je Lauf, 30 Sekunden je Aufgabe mit Ablaufbalken wie in Mission 4.
+- Die Testdauer ist einstellbar (5, 10 oder 30 Minuten, Vorgabe 5), gespeichert je Profil wie bei Mission 4 (`uebung5-einstellung` über die Einstellungen-Tabelle). Aufgaben folgen am Stück, bis die Testdauer um ist; eine bereits laufende Aufgabe wird noch zu Ende beantwortet.
+- Der Aufgabennachschub kommt in Viererblöcken, jeder Block enthält jedes der vier Prinzipien genau einmal in gemischter Reihenfolge.
+- 20 Sekunden Antwortzeit je Aufgabe mit Ablaufbalken wie in Mission 4.
+- Die Kopfzeile auf der Mattscheibe zählt die Aufgaben fortlaufend und zeigt die Test-Restzeit.
 - Nach jeder Antwort sofort die Auflösung: richtig grün, falsch oder Zeit abgelaufen rot samt richtigem Wert. Weiter nach kurzer Wartezeit oder per Klick, nach Fehlern bleibt mehr Lesezeit (Werte wie in Mission 4).
 - Vollbild mit Hangartür-Übergang: Tür zu, Aufbau verdeckt, Tür auf, erst dann läuft die Zeit.
 - Abbruch über Esc, Verlassen des Vollbilds oder Tabwechsel führt zur Ergebnistafel ohne Wertung, gleiche Semantik wie Mission 4.
@@ -46,10 +49,10 @@ Fester Prüfungsrahmen ohne Einstellungen:
 ## Wertung
 
 - Je Aufgabe höchstens 10 Punkte. Falsch oder Zeit abgelaufen gibt 0. Richtig gibt einen Grundanteil plus einen Zeitbonus, der linear mit der Restzeit wächst. Vorgabe: 6 Punkte Grund, bis zu 4 Punkte Bonus. Die endgültige Aufteilung legt Willi beim Bau in der Funktion `punkteFuerAntwort` fest; der Grundanteil bleibt dabei mindestens die Hälfte, damit eine langsame richtige Antwort immer vor jeder falschen liegt.
-- Kennzahl des Laufs: Punktesumme, hochgerechnet auf 0 bis 100. Gerechnet wird Summe geteilt durch (Aufgabenzahl mal 10), das Ganze mal 100 und gerundet. Bei 10 Aufgaben ist das die Summe selbst.
+- Kennzahl des Laufs: der Punkteschnitt je gestellter Aufgabe, hochgerechnet auf 0 bis 100. Gerechnet wird Punktesumme geteilt durch (gestellte Aufgaben mal 10), das Ganze mal 100 und gerundet. So bleiben Läufe verschiedener Testdauern untereinander vergleichbar; belohnt wird Richtigkeit und Tempo je Aufgabe, nicht die bloße Menge.
 - `js/missionen.js`: Mission 5 erhält `kennzahlName: "Punkte"` und `maximal: 100`. `wertung` bleibt auf `false` (Probebetrieb), bis Willi die Übung als fertig einstuft.
-- Gespeicherte Laufdaten (`daten`): `art: "flugphysik"`, `gestellt`, `richtig`, `quote` (Prozent), `punkte`. Einzelne Aufgaben werden nicht gespeichert.
-- Die Ergebnistafel führt mit den Punkten, darunter Richtige von Gestellt und die Trefferquote; die Fußzeile nennt den festen Rahmen (10 Aufgaben, 30 s je Aufgabe).
+- Gespeicherte Laufdaten (`daten`): `art: "flugphysik"`, `dauerMin`, `gestellt`, `richtig`, `quote` (Prozent), `punkte`. Einzelne Aufgaben werden nicht gespeichert.
+- Die Ergebnistafel führt mit den Punkten, darunter Richtige von Gestellt und die Trefferquote; die Fußzeile nennt Testdauer, Antwortzeit je Aufgabe und die Zahl der gestellten Aufgaben.
 
 ## Wissensbereich als Karteikartenstapel
 
@@ -90,6 +93,6 @@ Nach dem Baumuster von Mission 4:
 
 ## Nicht Teil dieses Entwurfs
 
-- Schwierigkeitsstufen oder Einstellungen für Mission 5.
+- Schwierigkeitsstufen für Mission 5 über die wählbare Testdauer hinaus.
 - Eine Wiederholsperre für Aufgaben über Läufe hinweg.
 - Weitere Aufgabentypen (etwa Verbrauch oder Einheitenumrechnung) und weitere Karteikartensätze; beides ist später über `uebung5.js` und `wissen5.js` ergänzbar.
