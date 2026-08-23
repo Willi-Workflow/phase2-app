@@ -1,7 +1,10 @@
-// Die fünf Instrumente für Mission 4 nach dem Vorbild klassischer Rundinstrumente:
-// Fahrtmesser, künstlicher Horizont, Höhenmesser, Steuerkurs, Variometer.
-// Reine Funktionen: Wertebereiche, Zeigerwinkel und SVG-Zeichenketten ohne DOM,
-// die Winkelrechnung ist mit node --test prüfbar.
+// Die fünf Instrumente für Mission 4, gezeichnet nach Fotos echter
+// Rundinstrumente (Sechserpaket einer Cessna, Dreizeiger-Höhenmesser,
+// Kurskreisel, Variometer): Gehäuseplatte mit Schrauben, Metallring,
+// Farbbögen am Fahrtmesser, Druckfenster am Höhenmesser, Umriss-Flugzeug
+// im Kurskreisel, orangefarbenes Flugzeugsymbol im Horizont. Die Beschriftung
+// der Skalen ist wie am echten Gerät englisch.
+// Reine Funktionen ohne DOM, die Winkelrechnung ist mit node --test prüfbar.
 
 export const INSTRUMENTE = [
   { id: "fahrt", name: "Fahrtmesser", frage: "Welche Geschwindigkeit zeigte der FAHRTMESSER?" },
@@ -60,150 +63,216 @@ export const FAHRTSKALA = { von: 40, bis: 340 };
 export function gradFahrt(wert) { return -150 + ((wert - FAHRTSKALA.von) * 300) / (FAHRTSKALA.bis - FAHRTSKALA.von); }
 export function gradHoehe100(wert) { return ((wert % 1000) / 1000) * 360; }
 export function gradHoehe1000(wert) { return ((wert % 10000) / 10000) * 360; }
+export function gradHoehe10000(wert) { return ((wert % 100000) / 100000) * 360; }
 export function gradVario(wert) { return (wert / RASTER.vario.max) * 150; }
 
-// Gemeinsame Zeichenhelfer
+// ---------- Zeichenhelfer ----------
 const S = (n) => n.toFixed(2);
+const HELL = "#e8e6dd";
+const GEDECKT = "#b9b6ab";
+const ORANGE = "#e59a2f";
 
-function zeiger(laenge, breite, grad, farbe = "#e8e6df") {
-  return `<g transform="rotate(${S(grad)} 60 60)">
-    <polygon points="60,${60 - laenge} ${60 - breite},62 60,66 ${60 + breite},62" fill="${farbe}"/>
-  </g>`;
+function punktAuf(grad, r) {
+  const a = ((grad - 90) * Math.PI) / 180;
+  return [60 + r * Math.cos(a), 60 + r * Math.sin(a)];
 }
 
-function strich(grad, r1, r2, staerke, farbe = "#cfccc2") {
-  const a = ((grad - 90) * Math.PI) / 180;
-  const [x1, y1] = [60 + r1 * Math.cos(a), 60 + r1 * Math.sin(a)];
-  const [x2, y2] = [60 + r2 * Math.cos(a), 60 + r2 * Math.sin(a)];
+function strich(grad, r1, r2, staerke, farbe = HELL) {
+  const [x1, y1] = punktAuf(grad, r1);
+  const [x2, y2] = punktAuf(grad, r2);
   return `<line x1="${S(x1)}" y1="${S(y1)}" x2="${S(x2)}" y2="${S(y2)}" stroke="${farbe}" stroke-width="${staerke}"/>`;
 }
 
-function zahl(grad, r, text, groesse = 9) {
-  const a = ((grad - 90) * Math.PI) / 180;
-  const [x, y] = [60 + r * Math.cos(a), 60 + r * Math.sin(a)];
-  return `<text x="${S(x)}" y="${S(y)}" font-size="${groesse}" fill="#dcd9cf" text-anchor="middle" dominant-baseline="central">${text}</text>`;
+function zahl(grad, r, text, groesse = 9, farbe = HELL) {
+  const [x, y] = punktAuf(grad, r);
+  return `<text x="${S(x)}" y="${S(y)}" font-size="${groesse}" fill="${farbe}" text-anchor="middle" dominant-baseline="central">${text}</text>`;
 }
 
-const GEHAEUSE = `<circle cx="60" cy="60" r="57" fill="#2a2c2e"/>
-  <circle cx="60" cy="60" r="54" fill="#0f1113" stroke="#6a6d70" stroke-width="1.6"/>`;
-const NABE = `<circle cx="60" cy="60" r="3.4" fill="#c9c6bc"/>`;
+function bogen(gradVon, gradBis, r, farbe, breite) {
+  const [x1, y1] = punktAuf(gradVon, r);
+  const [x2, y2] = punktAuf(gradBis, r);
+  const gross = gradBis - gradVon > 180 ? 1 : 0;
+  return `<path d="M ${S(x1)} ${S(y1)} A ${r} ${r} 0 ${gross} 1 ${S(x2)} ${S(y2)}" fill="none" stroke="${farbe}" stroke-width="${breite}"/>`;
+}
+
+// Gemeinsame Verläufe und Muster; die Kennungen sind in jedem SVG identisch,
+// doppelte Definitionen im selben Dokument sind dadurch unschädlich.
+const DEFS = `<defs>
+  <radialGradient id="ins-schraube" cx="35%" cy="30%" r="85%">
+    <stop offset="0%" stop-color="#93969a"/><stop offset="55%" stop-color="#54575b"/><stop offset="100%" stop-color="#26282a"/>
+  </radialGradient>
+  <linearGradient id="ins-ring" x1="0" y1="0" x2="0.7" y2="1">
+    <stop offset="0%" stop-color="#83878b"/><stop offset="45%" stop-color="#3a3d40"/><stop offset="100%" stop-color="#121315"/>
+  </linearGradient>
+  <radialGradient id="ins-schatten" cx="50%" cy="46%" r="58%">
+    <stop offset="0%" stop-color="rgba(0,0,0,0)"/><stop offset="76%" stop-color="rgba(0,0,0,0)"/><stop offset="100%" stop-color="rgba(0,0,0,0.6)"/>
+  </radialGradient>
+  <pattern id="ins-schraffur" width="4" height="4" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+    <rect width="4" height="4" fill="#0b0c0d"/><rect width="1.8" height="4" fill="${GEDECKT}"/>
+  </pattern>
+</defs>`;
+
+function schraube(x, y, winkel) {
+  return `<circle cx="${x}" cy="${y}" r="4.4" fill="url(#ins-schraube)" stroke="#17181a" stroke-width="0.8"/>
+    <line x1="${x - 2.8}" y1="${y}" x2="${x + 2.8}" y2="${y}" stroke="#1a1b1d" stroke-width="1.3" transform="rotate(${winkel} ${x} ${y})"/>`;
+}
+
+const PLATTE = `<rect x="1.5" y="1.5" width="117" height="117" rx="9" fill="#25272a"/>
+  <rect x="1.5" y="1.5" width="117" height="117" rx="9" fill="none" stroke="#0f1011" stroke-width="1"/>
+  ${schraube(11.5, 11.5, 28)}${schraube(108.5, 11.5, -37)}${schraube(11.5, 108.5, 64)}${schraube(108.5, 108.5, 8)}`;
+
+const GEHAEUSE = `${PLATTE}
+  <circle cx="60" cy="60" r="53.5" fill="url(#ins-ring)"/>
+  <circle cx="60" cy="60" r="49" fill="#0b0c0d"/>`;
+
+// Dialschatten unter dem Glasreflex, beides über den Zeigern.
+const SCHLIFF = `<circle cx="60" cy="60" r="49" fill="url(#ins-schatten)"/>
+  <ellipse cx="44" cy="32" rx="28" ry="12" fill="rgba(255,255,255,0.05)" transform="rotate(-25 44 32)"/>`;
+
+function zeiger(laenge, breite, grad, farbe = HELL) {
+  return `<g transform="rotate(${S(grad)} 60 60)">
+    <polygon points="60,${60 - laenge} ${60 - breite},${60 - laenge + 12} ${60 - breite},67 ${60 + breite},67 ${60 + breite},${60 - laenge + 12}" fill="${farbe}"/>
+  </g>`;
+}
+
+const NABE = `<circle cx="60" cy="60" r="5.6" fill="#1d1f21" stroke="#43464a" stroke-width="1"/>`;
 
 function svgRahmen(inhalt) {
-  return `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif">${inhalt}</svg>`;
+  return `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif">${DEFS}${inhalt}</svg>`;
 }
 
+// ---------- Fahrtmesser ----------
 export function svgFahrt(wert) {
   let skala = "";
   for (let w = FAHRTSKALA.von; w <= FAHRTSKALA.bis; w += 10) {
     const gross = w % 40 === 0;
-    skala += strich(gradFahrt(w), gross ? 44 : 47, 51, gross ? 1.8 : 1);
-    if (gross) skala += zahl(gradFahrt(w), 36, w, 8.5);
+    skala += strich(gradFahrt(w), gross ? 39 : 42.5, 46.5, gross ? 1.8 : 1);
+    if (gross) skala += zahl(gradFahrt(w), 32, w, 8);
   }
-  return svgRahmen(`${GEHAEUSE}${skala}
-    <text x="60" y="42" font-size="6.5" fill="#9a978d" text-anchor="middle" letter-spacing="1">KNOTEN</text>
-    <rect x="47" y="74" width="26" height="11" fill="#050607" stroke="#4a4d50" stroke-width="0.8"/>
-    <text x="60" y="79.5" font-size="8.5" fill="#e8e6df" text-anchor="middle" dominant-baseline="central">${wert}</text>
-    ${zeiger(46, 3, gradFahrt(wert))}
-    <circle cx="60" cy="60" r="5" fill="#0f1113" stroke="#c9c6bc" stroke-width="2"/>`);
+  const farbboegen = bogen(gradFahrt(60), gradFahrt(250), 48, "#3f8f4a", 2.6)
+    + bogen(gradFahrt(250), gradFahrt(320), 48, "#d9b02f", 2.6)
+    + bogen(gradFahrt(50), gradFahrt(140), 44.5, "#e6e4dc", 2)
+    + strich(gradFahrt(320), 44, 49, 2.6, "#c33a2a");
+  return svgRahmen(`${GEHAEUSE}${farbboegen}${skala}
+    <text x="60" y="42" font-size="6.2" fill="${HELL}" text-anchor="middle" letter-spacing="1">AIRSPEED</text>
+    <text x="60" y="49" font-size="5" fill="${GEDECKT}" text-anchor="middle" letter-spacing="1.4">KNOTS</text>
+    ${zeiger(43, 3, gradFahrt(wert))}${NABE}${SCHLIFF}`);
 }
 
+// ---------- Höhenmesser ----------
 export function svgHoehe(wert) {
   let skala = "";
   for (let i = 0; i < 50; i++) {
     const gross = i % 5 === 0;
-    skala += strich(i * 7.2, gross ? 44 : 47, 51, gross ? 1.8 : 1);
-    if (gross) skala += zahl(i * 7.2, 37, i / 5, 9.5);
+    skala += strich(i * 7.2, gross ? 40 : 43, 46.5, gross ? 1.8 : 1);
+    if (gross) skala += zahl(i * 7.2, 33, i / 5, 9.5);
   }
-  return svgRahmen(`${GEHAEUSE}${skala}
-    <text x="60" y="38" font-size="6.5" fill="#9a978d" text-anchor="middle" letter-spacing="1">FUSS</text>
-    <rect x="29" y="54" width="27" height="12" fill="#050607" stroke="#4a4d50" stroke-width="0.8"/>
-    <text x="42.5" y="60.5" font-size="8.5" fill="#e8e6df" text-anchor="middle" dominant-baseline="central">${wert}</text>
-    ${zeiger(30, 4.5, gradHoehe1000(wert))}
-    ${zeiger(46, 2.6, gradHoehe100(wert))}${NABE}`);
+  // Schraffierte Flagge unter der Nabe, wie am Dreizeiger-Gerät unter 10000 ft.
+  const [f1x, f1y] = punktAuf(205, 12);
+  const [f2x, f2y] = punktAuf(205, 26);
+  const [f3x, f3y] = punktAuf(250, 26);
+  const [f4x, f4y] = punktAuf(250, 12);
+  const flagge = `<path d="M ${S(f1x)} ${S(f1y)} L ${S(f2x)} ${S(f2y)} A 26 26 0 0 1 ${S(f3x)} ${S(f3y)} L ${S(f4x)} ${S(f4y)} A 12 12 0 0 0 ${S(f1x)} ${S(f1y)} Z" fill="url(#ins-schraffur)" stroke="${GEDECKT}" stroke-width="0.6"/>`;
+  const fenster = `<rect x="79" y="52" width="17" height="16" fill="#050607" stroke="#4a4d50" stroke-width="0.8"/>
+    <text x="87.5" y="57.5" font-size="5" fill="${HELL}" text-anchor="middle" dominant-baseline="central">29.8</text>
+    <text x="87.5" y="63.5" font-size="5" fill="${HELL}" text-anchor="middle" dominant-baseline="central">29.9</text>`;
+  const zehntausender = `<g transform="rotate(${S(gradHoehe10000(wert))} 60 60)">
+    <line x1="60" y1="60" x2="60" y2="18" stroke="${HELL}" stroke-width="1"/>
+    <polygon points="60,13 56,20 64,20" fill="${HELL}"/>
+  </g>`;
+  return svgRahmen(`${GEHAEUSE}
+    <text x="45" y="21.5" font-size="4.6" fill="${GEDECKT}" text-anchor="middle">100</text>
+    <text x="75" y="21.5" font-size="4.6" fill="${GEDECKT}" text-anchor="middle">FEET</text>
+    <text x="34" y="61" font-size="5.6" fill="${GEDECKT}" text-anchor="middle" letter-spacing="0.6">ALT</text>
+    ${skala}${flagge}${fenster}${zehntausender}
+    ${zeiger(28, 4.6, gradHoehe1000(wert))}
+    ${zeiger(42, 2.4, gradHoehe100(wert))}${NABE}${SCHLIFF}`);
 }
 
+// ---------- Kurskreisel ----------
 export function svgKurs(wert) {
   const BUCHSTABEN = { 0: "N", 90: "E", 180: "S", 270: "W" };
   let rose = "";
-  for (let g = 0; g < 360; g += 10) {
+  for (let g = 0; g < 360; g += 5) {
+    const mittel = g % 10 === 0;
     const gross = g % 30 === 0;
-    rose += strich(g, gross ? 45 : 48, 52, gross ? 1.6 : 1);
+    rose += strich(g, gross ? 40 : mittel ? 42 : 44, 46.5, gross ? 1.6 : 1);
     if (gross) {
       const beschriftung = BUCHSTABEN[g] ?? String(g / 10);
-      rose += `<g transform="rotate(${g} 60 60)"><text x="60" y="21" font-size="8.5" fill="#dcd9cf" text-anchor="middle" dominant-baseline="central">${beschriftung}</text></g>`;
+      rose += `<g transform="rotate(${g} 60 60)"><text x="60" y="27" font-size="8" fill="${HELL}" text-anchor="middle" dominant-baseline="central">${beschriftung}</text></g>`;
     }
   }
-  const flugzeug = `<path fill="#e8e6df" d="M60 24 C62 28 63.5 32 63.5 40 L63.5 48 L94 62 L94 69 L63.5 60
-    L63.5 74 L77 81 L77 86 L62 82.5 L62 87 L58 87 L58 82.5 L43 86 L43 81 L56.5 74 L56.5 60
-    L26 69 L26 62 L56.5 48 L56.5 40 C56.5 32 58 28 60 24 Z"/>`;
-  let winkelmarken = "";
-  for (const g of [45, 135, 225, 315]) winkelmarken += strich(g, 46, 53, 2.2, "#e8a13f");
+  const marken = strich(45, 47, 52.5, 1.8) + strich(135, 47, 52.5, 1.8)
+    + strich(225, 47, 52.5, 1.8) + strich(315, 47, 52.5, 1.8)
+    + `<polygon points="60,8 56.5,14.5 63.5,14.5" fill="${HELL}"/>`
+    + strich(180, 47, 52.5, 1.8) + strich(90, 47, 52.5, 1.8) + strich(270, 47, 52.5, 1.8);
+  const flugzeug = `<g stroke="${GEDECKT}" stroke-width="2.6" stroke-linecap="round" fill="none">
+    <path d="M60 38 L60 82"/>
+    <path d="M37 63 L83 63"/>
+    <path d="M50 78 L70 78"/>
+  </g><circle cx="60" cy="38" r="1.6" fill="${GEDECKT}"/>`;
   return svgRahmen(`${GEHAEUSE}
     <g transform="rotate(${S(-wert)} 60 60)">${rose}</g>
-    ${winkelmarken}
-    <polygon points="60,7 56.5,13 63.5,13" fill="#e8a13f"/>
-    ${flugzeug}
-    <rect x="45" y="88" width="30" height="12" fill="#050607" stroke="#4a4d50" stroke-width="0.8"/>
-    <text x="60" y="94.5" font-size="8.5" fill="#e8e6df" text-anchor="middle" dominant-baseline="central">${String(wert).padStart(3, "0")}°</text>`);
+    ${marken}${flugzeug}${SCHLIFF}`);
 }
 
+// ---------- Variometer ----------
 export function svgVario(wert) {
   let skala = "";
   for (let w = -2000; w <= 2000; w += 250) {
     const gross = w % 500 === 0;
-    const grad = gradVario(w) - 90; // Skala liegt um die Neun-Uhr-Lage
-    skala += strich(grad, gross ? 44 : 47, 51, gross ? 1.8 : 1);
-    if (gross) skala += zahl(grad, 37, Math.abs(w) / 100, 8.5);
+    const grad = gradVario(w) - 90;
+    skala += strich(grad, gross ? 39.5 : 42.5, 46.5, gross ? 1.8 : 1);
+    if (gross) skala += zahl(grad, 32.5, Math.abs(w) / 100, 8);
   }
   return svgRahmen(`${GEHAEUSE}${skala}
-    <text x="72" y="34" font-size="7" fill="#9a978d" text-anchor="middle" letter-spacing="1">STEIGEN</text>
-    <text x="72" y="88" font-size="7" fill="#9a978d" text-anchor="middle" letter-spacing="1">SINKEN</text>
-    <text x="74" y="60" font-size="6" fill="#9a978d" text-anchor="middle">FT/MIN ×100</text>
+    <text x="60" y="44.5" font-size="5.4" fill="${HELL}" text-anchor="middle" letter-spacing="0.8">VERTICAL</text>
+    <text x="60" y="51" font-size="5.4" fill="${HELL}" text-anchor="middle" letter-spacing="0.8">SPEED</text>
+    <text x="33" y="51" font-size="4.8" fill="${GEDECKT}" text-anchor="middle">UP</text>
+    <text x="33" y="71.5" font-size="4.8" fill="${GEDECKT}" text-anchor="middle">DOWN</text>
+    <text x="60" y="87" font-size="4" fill="${GEDECKT}" text-anchor="middle" letter-spacing="0.3">100 FEET PER MINUTE</text>
     <g transform="rotate(${S(gradVario(wert))} 60 60)">
-      <polygon points="${60 - 46},60 62,${60 - 3} 66,60 62,${60 + 3}" fill="#e8e6df"/>
-    </g>${NABE}`);
+      <polygon points="${60 - 44},60 63,${60 - 2.8} 68,60 63,${60 + 2.8}" fill="${HELL}"/>
+    </g>${NABE}${SCHLIFF}`);
 }
 
+// ---------- Künstlicher Horizont ----------
 export function svgHorizont(wert) {
   const { roll, nick } = wert;
-  const versatz = nick * 1.5;
-  // Nickleiter wie auf dem Vorbildfoto: kräftige weiße Balken, bei 10 Grad
-  // geteilt mit Lücke in der Mitte, bei 20 Grad durchgehend lang, bei 5 kurz.
-  const balken = (y, art) => {
-    if (art === "geteilt") {
-      return `<line x1="34" y1="${S(y)}" x2="52" y2="${S(y)}" stroke="#f2f0e9" stroke-width="2"/>
-        <line x1="68" y1="${S(y)}" x2="86" y2="${S(y)}" stroke="#f2f0e9" stroke-width="2"/>`;
-    }
-    const halb = art === "lang" ? 28 : 10;
-    return `<line x1="${60 - halb}" y1="${S(y)}" x2="${60 + halb}" y2="${S(y)}" stroke="#f2f0e9" stroke-width="2"/>`;
+  const versatz = nick * 1.4;
+  const leitersprosse = (p) => {
+    const y = 60 + p * 1.4;
+    const halb = Math.abs(p) % 10 === 0 ? 13 : 6;
+    const beschriftung = Math.abs(p) % 10 === 0
+      ? `<text x="${60 - halb - 6}" y="${S(y)}" font-size="4.6" fill="#f4f2ea" text-anchor="middle" dominant-baseline="central">${Math.abs(p)}</text>
+         <text x="${60 + halb + 6}" y="${S(y)}" font-size="4.6" fill="#f4f2ea" text-anchor="middle" dominant-baseline="central">${Math.abs(p)}</text>`
+      : "";
+    return `<line x1="${60 - halb}" y1="${S(y)}" x2="${60 + halb}" y2="${S(y)}" stroke="#f4f2ea" stroke-width="1.6"/>${beschriftung}`;
   };
   let leiter = "";
-  for (const richtung of [-1, 1]) {
-    leiter += balken(60 + richtung * 7.5, "kurz");
-    leiter += balken(60 + richtung * 15, "geteilt");
-    leiter += balken(60 + richtung * 30, "lang");
+  for (const p of [-20, -15, -10, -5, 5, 10, 15, 20]) leiter += leitersprosse(p);
+  let rollskala = `<polygon points="60,13 56.5,20 63.5,20" fill="#f4f2ea"/>`;
+  for (const g of [-60, -45, -30, -20, -10, 10, 20, 30, 45, 60]) {
+    rollskala += strich(g, g % 30 === 0 ? 41 : 43.5, 47.5, g % 30 === 0 ? 1.8 : 1.1, "#f4f2ea");
   }
-  return svgRahmen(`
-    <defs><clipPath id="hzr"><rect x="9" y="13" width="102" height="94" rx="11"/></clipPath></defs>
-    <rect x="5" y="9" width="110" height="102" rx="14" fill="#2a2c2e"/>
-    <rect x="8" y="12" width="104" height="96" rx="12" fill="#0f1113"/>
-    <g clip-path="url(#hzr)">
+  return svgRahmen(`${GEHAEUSE}
+    <defs><clipPath id="ins-hzkreis"><circle cx="60" cy="60" r="48"/></clipPath></defs>
+    <g clip-path="url(#ins-hzkreis)">
       <g transform="rotate(${S(-roll)} 60 60) translate(0 ${S(versatz)})">
-        <rect x="-40" y="-100" width="200" height="160" fill="#2f7ec7"/>
-        <rect x="-40" y="60" width="200" height="160" fill="#8a5a2b"/>
-        <line x1="-40" y1="60" x2="160" y2="60" stroke="#f2f0e9" stroke-width="2.2"/>
+        <rect x="-45" y="-105" width="210" height="165" fill="#4d8ec9"/>
+        <rect x="-45" y="60" width="210" height="165" fill="#7d5a33"/>
+        <line x1="-45" y1="60" x2="165" y2="60" stroke="#f4f2ea" stroke-width="2.4"/>
         ${leiter}
       </g>
       <g transform="rotate(${S(-roll)} 60 60)">
-        <polygon points="60,15 56,22 64,22" fill="#f2f0e9"/>
+        <polygon points="60,17 55.8,25 64.2,25" fill="#f4f2ea"/>
       </g>
+      ${rollskala}
     </g>
-    <path d="M34 60 L52 60 L52 67" fill="none" stroke="#f2f0e9" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M86 60 L68 60 L68 67" fill="none" stroke="#f2f0e9" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M34 60 L52 60 L52 67" fill="none" stroke="#1a1b1c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M86 60 L68 60 L68 67" fill="none" stroke="#1a1b1c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="60" cy="60" r="3.6" fill="#f2f0e9"/><circle cx="60" cy="60" r="2" fill="#1a1b1c"/>
-    <rect x="8" y="12" width="104" height="96" rx="12" fill="none" stroke="#6a6d70" stroke-width="1.6"/>`);
+    <path d="M30 62 L50 62 L56 68 L60 62 L64 68 L70 62 L90 62" stroke="#141516" stroke-width="5.4" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M30 62 L50 62 L56 68 L60 62 L64 68 L70 62 L90 62" stroke="${ORANGE}" stroke-width="3.2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="60" cy="62" r="2" fill="${ORANGE}" stroke="#141516" stroke-width="0.8"/>
+    ${SCHLIFF}`);
 }
 
 export function svgInstrument(id, wert) {
