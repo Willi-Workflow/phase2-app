@@ -245,7 +245,7 @@ export function svgHorizont(wert) {
   // links vom Zeiger, wie am echten Gerät. Die Nickleiter ist auf ein inneres
   // Sichtfenster begrenzt, damit sie bei starken Lagen nicht in die Rollskala
   // und die Pfeile läuft.
-  let rollskala = `<polygon points="60,24 56,31 64,31" fill="#f4f2ea"/>`;
+  let rollskala = `<polygon points="60,19 56,26.5 64,26.5" fill="#f4f2ea"/>`;
   for (const g of [-60, -45, -30, -20, -10, 10, 20, 30, 45, 60]) {
     rollskala += strich(g, g % 30 === 0 ? 41 : 43.5, 47.5, g % 30 === 0 ? 1.8 : 1.1, "#f4f2ea");
   }
@@ -267,8 +267,8 @@ export function svgHorizont(wert) {
       <g clip-path="url(#ins-hzleiter)">
         <g transform="${kugeldrehung}"><g transform="translate(0 ${S(versatz)})">${leiter}</g></g>
       </g>
-      <polygon points="60,22 55.5,13 64.5,13" fill="#f4f2ea" stroke="#141516" stroke-width="0.7"/>
     </g>
+    <polygon points="60,13.5 55.5,7 64.5,7" fill="#f4f2ea" stroke="#141516" stroke-width="0.7"/>
     <path d="M32 60 L50 60 L56 65 L60 60 L64 65 L70 60 L88 60" stroke="#141516" stroke-width="3.4" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
     <path d="M32 60 L50 60 L56 65 L60 60 L64 65 L70 60 L88 60" stroke="${ORANGE}" stroke-width="1.8" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
     <circle cx="60" cy="60" r="1.4" fill="${ORANGE}" stroke="#141516" stroke-width="0.6"/>
