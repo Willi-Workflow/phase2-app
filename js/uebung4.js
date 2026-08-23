@@ -2,6 +2,8 @@
 // Antwortauswahlen und die gewichtete Trefferquote. Reine Logik ohne DOM,
 // der Zufall ist einspeisbar, damit alles mit node --test prüfbar bleibt.
 import { INSTRUMENTE, RASTER, rasterwerte } from "./instrumente.js";
+import { mische } from "./zufall.js";
+export { mische };
 
 export const ANZEIGEZEITEN = [3, 5, 7, 10, 15]; // Sekunden
 export const FRAGENANZAHLEN = [1, 2, 3, 4, 5];
@@ -20,15 +22,6 @@ export function schwierigkeitsfaktor(anzeigezeit, fragenanzahl) {
 export function kennzahlAus(richtig, gestellt, faktor) {
   if (gestellt === 0) return 0;
   return Math.round((richtig / gestellt) * 100 * faktor);
-}
-
-export function mische(feld, rnd = Math.random) {
-  const kopie = [...feld];
-  for (let i = kopie.length - 1; i > 0; i--) {
-    const j = Math.floor(rnd() * (i + 1));
-    [kopie[i], kopie[j]] = [kopie[j], kopie[i]];
-  }
-  return kopie;
 }
 
 // Zufällig gewählte Instrumente ohne Doppelung.
