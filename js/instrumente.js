@@ -167,24 +167,11 @@ export function svgHoehe(wert) {
     skala += strich(i * 7.2, gross ? 40 : 43, 46.5, gross ? 1.8 : 1);
     if (gross) skala += zahl(i * 7.2, 33, i / 5, 9.5);
   }
-  // Schraffierte Flagge unter der Nabe, wie am Dreizeiger-Gerät unter 10000 ft.
-  const [f1x, f1y] = punktAuf(205, 12);
-  const [f2x, f2y] = punktAuf(205, 26);
-  const [f3x, f3y] = punktAuf(250, 26);
-  const [f4x, f4y] = punktAuf(250, 12);
-  const flagge = `<path d="M ${S(f1x)} ${S(f1y)} L ${S(f2x)} ${S(f2y)} A 26 26 0 0 1 ${S(f3x)} ${S(f3y)} L ${S(f4x)} ${S(f4y)} A 12 12 0 0 0 ${S(f1x)} ${S(f1y)} Z" fill="url(#ins-schraffur)" stroke="${GEDECKT}" stroke-width="0.6"/>`;
-  const fenster = `<rect x="79" y="52" width="17" height="16" fill="#050607" stroke="#4a4d50" stroke-width="0.8"/>
-    <text x="87.5" y="57.5" font-size="5" fill="${HELL}" text-anchor="middle" dominant-baseline="central">29.8</text>
-    <text x="87.5" y="63.5" font-size="5" fill="${HELL}" text-anchor="middle" dominant-baseline="central">29.9</text>`;
-  const zehntausender = `<g transform="rotate(${S(gradHoehe10000(wert))} 60 60)">
-    <line x1="60" y1="60" x2="60" y2="18" stroke="${HELL}" stroke-width="1"/>
-    <polygon points="60,13 56,20 64,20" fill="${HELL}"/>
-  </g>`;
   return svgRahmen(`${GEHAEUSE}
     <text x="45" y="21.5" font-size="4.6" fill="${GEDECKT}" text-anchor="middle">100</text>
     <text x="75" y="21.5" font-size="4.6" fill="${GEDECKT}" text-anchor="middle">FEET</text>
     <text x="34" y="61" font-size="5.6" fill="${GEDECKT}" text-anchor="middle" letter-spacing="0.6">ALT</text>
-    ${skala}${flagge}${fenster}${zehntausender}
+    ${skala}
     ${zeiger(28, 4.6, gradHoehe1000(wert))}
     ${zeiger(42, 2.4, gradHoehe100(wert))}${NABE}${SCHLIFF}`);
 }
@@ -206,11 +193,9 @@ export function svgKurs(wert) {
     + strich(225, 47, 52.5, 1.8) + strich(315, 47, 52.5, 1.8)
     + `<polygon points="60,8 56.5,14.5 63.5,14.5" fill="${HELL}"/>`
     + strich(180, 47, 52.5, 1.8) + strich(90, 47, 52.5, 1.8) + strich(270, 47, 52.5, 1.8);
-  const flugzeug = `<g stroke="${GEDECKT}" stroke-width="2.6" stroke-linecap="round" fill="none">
-    <path d="M60 38 L60 82"/>
-    <path d="M37 63 L83 63"/>
-    <path d="M50 78 L70 78"/>
-  </g><circle cx="60" cy="38" r="1.6" fill="${GEDECKT}"/>`;
+  const flugzeug = `<path fill="${HELL}" d="M60 30 C61.7 33.5 63 37 63 43.5 L63 50 L89 62 L89 68 L63 60.5
+    L63 72.5 L74.5 78.5 L74.5 82.5 L61.7 79.5 L61.7 83.5 L58.3 83.5 L58.3 79.5 L45.5 82.5 L45.5 78.5 L57 72.5 L57 60.5
+    L31 68 L31 62 L57 50 L57 43.5 C57 37 58.3 33.5 60 30 Z"/>`;
   return svgRahmen(`${GEHAEUSE}
     <g transform="rotate(${S(-wert)} 60 60)">${rose}</g>
     ${marken}${flugzeug}${SCHLIFF}`);
@@ -269,9 +254,9 @@ export function svgHorizont(wert) {
       </g>
       ${rollskala}
     </g>
-    <path d="M30 62 L50 62 L56 68 L60 62 L64 68 L70 62 L90 62" stroke="#141516" stroke-width="5.4" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
-    <path d="M30 62 L50 62 L56 68 L60 62 L64 68 L70 62 L90 62" stroke="${ORANGE}" stroke-width="3.2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
-    <circle cx="60" cy="62" r="2" fill="${ORANGE}" stroke="#141516" stroke-width="0.8"/>
+    <path d="M32 62 L50 62 L56 67 L60 62 L64 67 L70 62 L88 62" stroke="#141516" stroke-width="3.4" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M32 62 L50 62 L56 67 L60 62 L64 67 L70 62 L88 62" stroke="${ORANGE}" stroke-width="1.8" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="60" cy="62" r="1.4" fill="${ORANGE}" stroke="#141516" stroke-width="0.6"/>
     ${SCHLIFF}`);
 }
 
