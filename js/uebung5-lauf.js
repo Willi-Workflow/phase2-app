@@ -1,7 +1,7 @@
 // Ablauf Mission 5 (Test Flugphysik) im Vollbild: zehn erzeugte Aufgaben mit
 // Ablaufbalken, je Aufgabe als Auswahlfrage oder Zahleneingabe, sofortige
-// Auflösung, danach die Ergebnistafel. Der Wissensbereich liegt als
-// Karteikartenstapel über der Missionsseite, nicht im Lauf.
+// Auflösung, danach die Ergebnistafel. Der Wissensbereich steht als
+// Karteikartenstapel fest auf der Missionsseite, nicht im Lauf.
 import {
   AUFGABENZAHL, AUFGABENZEIT, erzeugeLauf, antwortenFuer, pruefeEingabe,
   punkteFuerAntwort, kennzahl,

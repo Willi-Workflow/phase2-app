@@ -60,7 +60,7 @@ Fassung nach Willis Sichtung vom 23.08.2026; die erste Fassung (Schild WISSEN ö
 - Jede Karte erklärt ihre Größe vollständig selbst: die Formel, ein Merksatz in Worten und eine durchgerechnete Beispielrechnung in Schritten direkt auf der Karte. Vier Karten:
   1. Geschwindigkeit (v = Weg / Zeit mal 60, Beispiel 360 NM in 90 min)
   2. Weg (s = Geschwindigkeit mal Zeit / 60, Beispiel 240 kt für 45 min)
-  3. Zeit mit der 60er-Regel (t = Weg / Geschwindigkeit mal 60, Beispiel 100 kt und 500 NM)
+  3. Zeit, die 60er-Regel (t = Weg / Geschwindigkeit mal 60, Beispiel 100 kt und 500 NM)
   4. Sink- und Steigrate (Rate = Höhenänderung / Zeit in Minuten, Beispiel 6000 ft in 3 min)
 - Karteninhalte und Reihenfolge liegen in `js/wissen5.js` (`{ titel, zeilen, beispiel }` je Karte); weitere Karten lassen sich dort ergänzen, ohne den Aufbau anzufassen.
 - Einhängung: `mission.html` erhält unter dem Missionsraster einen Behälter, `mission.js` ruft wahlweise `zeichneUnten(feld)` der Übung auf; Übungen ohne Unterbereich lassen ihn leer.
@@ -73,7 +73,7 @@ Nach dem Baumuster von Mission 4:
 - `js/uebung5-lauf.js`: Ablauf im Vollbild, beide Erscheinungsformen, Auflösung, Ergebnistafel, Abbruchwege.
 - `js/wissen5.js`: Kartensatz des Wissensbereichs.
 - `js/mission.js`: Der fest verdrahtete `uebung4`-Sonderfall wird durch eine Zuordnung Bereichsnummer zu Übungsfabrik ersetzt. Der Hinweistext je Übung kommt aus der Übung selbst; Übungen ohne Einstellungen lassen das Einstellungsfeld leer. Der dritte Bereich braucht damit später keinen Umbau mehr.
-- `stil.css`: Klassen für Zahleneingabe, Karteikarten und das Wissens-Schild.
+- `stil.css`: Klassen für Zahleneingabe, Karteikarten und den festen Wissensbereich.
 - `mission.html`: Versionsmarke des Einstiegsskripts hochzählen.
 
 ## Fehlerverhalten
