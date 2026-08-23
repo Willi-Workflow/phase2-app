@@ -376,6 +376,15 @@ main { position: relative; z-index: 1; }
 .panelflaeche .instrumententafel .tafelgruppe { gap: 16px; }
 .panelflaeche .instrumententafel .tafelsteg { display: none; }
 .panelflaeche .instrumententafel .instrument { width: 150px; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45)); }
+/* Im Cockpit-Lauf kommt das Gehäuse aus dem Foto (Willis Wahl), die SVG
+   zeichnet nur noch Zifferblatt und Zeiger scharf darüber. */
+.panelflaeche .instrument { background: url("bilder/gehaeuse.jpg") center / cover no-repeat; border-radius: 20px; overflow: hidden; }
+.panelflaeche .instrument svg .svg-gehaeuse { display: none; }
+/* Das leere Zifferblatt im Foto sitzt etwas höher als die Mitte und ist
+   knapper geschnitten als die SVG-viewBox (0 0 120 120) es annimmt: die SVG
+   wird leicht verkleinert und nach oben verschoben, damit ihr Zifferblattkreis
+   sauber im Fotoring liegt und nirgends auf den Fotorand übergreift. */
+.panelflaeche .instrument svg { transform: scale(0.94) translateY(-1%); transform-origin: center; }
 .laufschleier.uebung4 .testkopf { position: absolute; top: 3vh; left: 50%; transform: translateX(-50%); z-index: 2; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8); }
 .laufschleier.uebung4 .testmitte { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 2; width: min(760px, 90vw); }
 .laufschleier.uebung4 .testmitte:not(:empty) { background: rgba(13, 17, 9, 0.55); border-radius: 10px; padding: 22px; }

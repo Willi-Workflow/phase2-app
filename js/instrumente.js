@@ -149,19 +149,27 @@ const PLATTE = `<rect x="1.5" y="1.5" width="117" height="117" rx="9" fill="url(
   ${schraube(11.5, 11.5, 28)}${schraube(108.5, 11.5, -37)}${schraube(11.5, 108.5, 64)}${schraube(108.5, 108.5, 8)}`;
 
 // Plastischer Einfassring: zwei konzentrische Kreise mit radialem Verlauf,
-// dazu ein schmaler Lichtbogen oben und ein dunklerer Bogen unten.
-const GEHAEUSE = `${PLATTE}
+// dazu ein schmaler Lichtbogen oben und ein dunklerer Bogen unten. Platte,
+// Schrauben, Bezel und das schwarze Zifferblattfeld stecken zusammen in
+// "svg-gehaeuse": Im Cockpit-Lauf blendet das Stylesheet diese Gruppe aus
+// und legt stattdessen das Foto unter die SVG, überall sonst (Vorschau,
+// Übersicht) bleibt die Gruppe sichtbar und die SVG zeigt das komplette Gerät.
+const GEHAEUSE = `<g class="svg-gehaeuse">${PLATTE}
   <circle cx="60" cy="60" r="54.5" fill="url(#ins-bezel-aussen)"/>
   <circle cx="60" cy="60" r="50.6" fill="url(#ins-bezel-innen)"/>
   ${bogen(-56, 56, 52.6, "rgba(255,255,255,0.4)", 1.7)}
   ${bogen(120, 240, 52.6, "rgba(0,0,0,0.5)", 1.9)}
-  <circle cx="60" cy="60" r="49" fill="#0b0c0d"/>`;
+  <circle cx="60" cy="60" r="49" fill="#0b0c0d"/></g>`;
 
 // Dialschatten unter dem Glasreflex, beides über den Zeigern: der Schatten
 // lässt das Zifferblatt im Bezel eingelassen wirken, der weiche Reflex
-// bleibt bei knapp 5 Prozent Deckkraft, damit die Ablesbarkeit bleibt.
-const SCHLIFF = `<circle cx="60" cy="60" r="49" fill="url(#ins-schatten)"/>
-  <ellipse cx="44" cy="32" rx="28" ry="12" fill="rgba(255,255,255,0.05)" transform="rotate(-25 44 32)" filter="url(#ins-weich)"/>`;
+// bleibt bei knapp 5 Prozent Deckkraft, damit die Ablesbarkeit bleibt. Der
+// Schatten gehört zum Gehäuse (steckt mit in "svg-gehaeuse" und verschwindet
+// im Lauf, weil ihn das Foto schon mitbringt), der Glasreflex bleibt darüber
+// immer sichtbar, auch über dem Foto, für den einheitlichen Glaslook.
+const DIALSCHATTEN = `<circle cx="60" cy="60" r="49" fill="url(#ins-schatten)"/>`;
+const GLASREFLEX = `<ellipse cx="44" cy="32" rx="28" ry="12" fill="rgba(255,255,255,0.05)" transform="rotate(-25 44 32)" filter="url(#ins-weich)"/>`;
+const SCHLIFF = `<g class="svg-gehaeuse">${DIALSCHATTEN}</g>${GLASREFLEX}`;
 
 function zeiger(laenge, breite, grad, farbe = HELL) {
   return `<g transform="rotate(${S(grad)} 60 60)">
