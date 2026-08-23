@@ -310,6 +310,7 @@ function initialisiereSeite() {
     document.getElementById("uebungshinweis").textContent = uebung.hinweis;
     Promise.resolve(uebung.ladeEinstellung?.()).then(() =>
       uebung.zeichneFeld?.(document.getElementById("uebungsfeld")));
+    uebung.zeichneUnten?.(document.getElementById("uebungsunten"));
   }
 
   document.getElementById("start").addEventListener("click", starteLauf);

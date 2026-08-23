@@ -16,40 +16,35 @@ const RUECKMELDEDAUER_FALSCH = 1800;
 export function erzeugeUebung5() {
   const hinweis = "Zehn gerechnete Aufgaben zu Weg, Zeit, Geschwindigkeit und Sink- oder "
     + "Steigrate, je Aufgabe 30 Sekunden. Geantwortet wird per Auswahl oder Zahleneingabe. "
-    + "Punkte gibt es für richtige und schnelle Antworten, die Formeln stehen unter WISSEN.";
+    + "Punkte gibt es für richtige und schnelle Antworten, die Formeln stehen auf den Karteikarten darunter.";
 
-  function zeichneFeld(feld) {
-    feld.innerHTML = `<button class="punkt wissensknopf" id="u5-wissen">WISSEN · KARTEIKARTEN</button>`;
-    feld.querySelector("#u5-wissen").addEventListener("click", zeigeWissen);
-  }
-
-  // Karteikartenstapel über der Missionsseite: blättern per Knopf, Klick auf
-  // die Karte oder Pfeiltasten, Esc oder SCHLIESSEN führt zurück.
-  function zeigeWissen() {
-    if (document.querySelector(".wissensschicht")) return;
+  // Wissensbereich fest unter Mission und Auswertung: je Größe eine
+  // Karteikarte mit Formel, Merksatz und Beispielrechnung, blätterbar über
+  // Knöpfe oder Klick auf die Karte. Keine globalen Tastenkürzel.
+  function zeichneUnten(feld) {
     let index = 0;
-    const schicht = document.createElement("div");
-    schicht.className = "wissensschicht";
-    schicht.innerHTML = `
-      <div class="kartenstapel">
-        <div class="karteikarte dahinter zwei"></div>
-        <div class="karteikarte dahinter eins"></div>
-        <div class="karteikarte oben"></div>
-      </div>
-      <div class="kartenleiste">
-        <button class="punkt" id="k-zurueck">◄</button>
-        <span class="kartenzaehler" id="k-zaehler"></span>
-        <button class="punkt" id="k-weiter">►</button>
-        <button class="punkt" id="k-schliessen">SCHLIESSEN</button>
-      </div>`;
-    document.body.append(schicht);
-    const karte = schicht.querySelector(".karteikarte.oben");
-    const zaehler = schicht.querySelector("#k-zaehler");
-
+    feld.innerHTML = `
+      <section class="wissensbereich">
+        <h2>WISSEN</h2>
+        <div class="kartenstapel">
+          <div class="karteikarte dahinter zwei"></div>
+          <div class="karteikarte dahinter eins"></div>
+          <div class="karteikarte oben"></div>
+        </div>
+        <div class="kartenleiste">
+          <button class="punkt" id="k-zurueck">◄</button>
+          <span class="kartenzaehler" id="k-zaehler"></span>
+          <button class="punkt" id="k-weiter">►</button>
+        </div>
+      </section>`;
+    const karte = feld.querySelector(".karteikarte.oben");
+    const zaehler = feld.querySelector("#k-zaehler");
     const zeichne = () => {
       const k = KARTEN5[index];
       karte.innerHTML = `<div class="kartenkopf">${k.titel}</div>`
-        + k.zeilen.map((z) => `<div class="kartenzeile">${z}</div>`).join("");
+        + k.zeilen.map((z) => `<div class="kartenzeile">${z}</div>`).join("")
+        + `<div class="kartenzeile beispielkopf">Beispiel:</div>`
+        + k.beispiel.map((z) => `<div class="kartenzeile">${z}</div>`).join("");
       zaehler.textContent = `${index + 1}/${KARTEN5.length}`;
     };
     const blaettere = (schritt) => {
@@ -59,21 +54,9 @@ export function erzeugeUebung5() {
       karte.classList.add("blaettert");
       zeichne();
     };
-    const schliesse = () => {
-      removeEventListener("keydown", beiTaste, true);
-      schicht.remove();
-    };
-    const beiTaste = (e) => {
-      if (e.key === "Escape") { e.stopPropagation(); schliesse(); }
-      if (e.key === "ArrowRight") blaettere(1);
-      if (e.key === "ArrowLeft") blaettere(-1);
-    };
-    addEventListener("keydown", beiTaste, true);
     karte.addEventListener("click", () => blaettere(1));
-    schicht.querySelector("#k-weiter").addEventListener("click", () => blaettere(1));
-    schicht.querySelector("#k-zurueck").addEventListener("click", () => blaettere(-1));
-    schicht.querySelector("#k-schliessen").addEventListener("click", schliesse);
-    schicht.addEventListener("click", (e) => { if (e.target === schicht) schliesse(); });
+    feld.querySelector("#k-weiter").addEventListener("click", () => blaettere(1));
+    feld.querySelector("#k-zurueck").addEventListener("click", () => blaettere(-1));
     zeichne();
   }
 
@@ -247,5 +230,5 @@ export function erzeugeUebung5() {
     })();
   }
 
-  return { hinweis, zeichneFeld, starte };
+  return { hinweis, zeichneUnten, starte };
 }
