@@ -20,32 +20,30 @@ export function erzeugeUebung5() {
 
   // Wissensbereich fest unter Mission und Auswertung: je Größe eine
   // Karteikarte mit Formel, Merksatz und Beispielrechnung, blätterbar über
-  // Knöpfe oder Klick auf die Karte. Keine globalen Tastenkürzel.
+  // die Tintenpfeile auf der Karte oder Klick auf die Karte. Keine globalen
+  // Tastenkürzel.
   function zeichneUnten(feld) {
     let index = 0;
     feld.innerHTML = `
       <section class="wissensbereich">
-        <h2>WISSEN</h2>
         <div class="kartenstapel">
           <div class="karteikarte dahinter zwei"></div>
           <div class="karteikarte dahinter eins"></div>
           <div class="karteikarte oben"></div>
         </div>
-        <div class="kartenleiste">
-          <button class="punkt" id="k-zurueck">◄</button>
-          <span class="kartenzaehler" id="k-zaehler"></span>
-          <button class="punkt" id="k-weiter">►</button>
-        </div>
       </section>`;
     const karte = feld.querySelector(".karteikarte.oben");
-    const zaehler = feld.querySelector("#k-zaehler");
     const zeichne = () => {
       const k = KARTEN5[index];
       karte.innerHTML = `<div class="kartenkopf">${k.titel}</div>`
         + k.zeilen.map((z) => `<div class="kartenzeile">${z}</div>`).join("")
         + `<div class="kartenzeile beispielkopf">Beispiel:</div>`
-        + k.beispiel.map((z) => `<div class="kartenzeile">${z}</div>`).join("");
-      zaehler.textContent = `${index + 1}/${KARTEN5.length}`;
+        + k.beispiel.map((z) => `<div class="kartenzeile">${z}</div>`).join("")
+        + `<div class="kartenfuss">
+            <button class="kartenpfeil" data-schritt="-1" aria-label="Vorherige Karte">←</button>
+            <span class="kartenzaehler">${index + 1}/${KARTEN5.length}</span>
+            <button class="kartenpfeil" data-schritt="1" aria-label="Nächste Karte">→</button>
+          </div>`;
     };
     const blaettere = (schritt) => {
       index = (index + schritt + KARTEN5.length) % KARTEN5.length;
@@ -54,9 +52,13 @@ export function erzeugeUebung5() {
       karte.classList.add("blaettert");
       zeichne();
     };
-    karte.addEventListener("click", () => blaettere(1));
-    feld.querySelector("#k-weiter").addEventListener("click", () => blaettere(1));
-    feld.querySelector("#k-zurueck").addEventListener("click", () => blaettere(-1));
+    // Ein Hörer für alles: Pfeile blättern gezielt, jeder andere Klick auf die
+    // Karte blättert vorwärts. Die Pfeile werden je Blättern neu gezeichnet,
+    // darum läuft alles über Delegation statt Einzelbindung.
+    karte.addEventListener("click", (e) => {
+      const pfeil = e.target.closest(".kartenpfeil");
+      blaettere(pfeil ? Number(pfeil.dataset.schritt) : 1);
+    });
     zeichne();
   }
 

@@ -383,7 +383,7 @@ main { position: relative; z-index: 1; }
 .ergebniszeilen .trefferzeile { font-size: 15px; color: var(--hell); }
 .ergebnisfuss { position: fixed; bottom: 26px; left: 0; right: 0; display: grid; gap: 5px; text-align: center; font-size: 11px; letter-spacing: 0.1em; color: var(--gedeckt); }
 .ergebnisfuss .abgebrochen { color: #c9ae4a; }
-.laufschleier.uebung4 .punkt, .laufschleier.uebung5 .punkt, .ergebnisschicht .punkt, .wissensbereich .punkt { width: auto; padding: 12px 34px; background: #1a2113; color: var(--hell); border: 1px solid #39422c; border-radius: 6px; font-family: inherit; font-size: 14px; letter-spacing: 0.15em; cursor: pointer; }
+.laufschleier.uebung4 .punkt, .laufschleier.uebung5 .punkt, .ergebnisschicht .punkt { width: auto; padding: 12px 34px; background: #1a2113; color: var(--hell); border: 1px solid #39422c; border-radius: 6px; font-family: inherit; font-size: 14px; letter-spacing: 0.15em; cursor: pointer; }
 
 /* Platzhalter-Lauf im Vollbild */
 .laufschleier { position: fixed; inset: 0; background: #0b0f08; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
@@ -596,9 +596,10 @@ main { position: relative; z-index: 1; }
 @keyframes blaettern { from { transform: rotate(-1.2deg) translateX(28px); opacity: 0.15; } to { transform: rotate(-1.2deg) translateX(0); opacity: 1; } }
 .kartenkopf { font-size: 27px; line-height: 34px; border-bottom: 2px solid rgba(190, 60, 50, 0.75); }
 .kartenzeile { font-size: 22px; line-height: 34px; }
-.kartenleiste { display: flex; align-items: center; gap: 12px; }
-.kartenzaehler { min-width: 46px; text-align: center; font-size: 13px; letter-spacing: 0.15em; color: var(--hell); }
+.kartenfuss { position: absolute; left: 26px; right: 26px; bottom: 8px; display: flex; justify-content: center; align-items: center; gap: 22px; }
+.kartenpfeil { background: none; border: none; padding: 0 6px; font-family: inherit; font-size: 26px; line-height: 1; color: #2b2b33; cursor: pointer; }
+.kartenpfeil:hover { color: rgba(190, 60, 50, 0.9); }
+.kartenzaehler { font-size: 20px; color: #2b2b33; letter-spacing: 0.05em; min-width: 40px; text-align: center; }
 
 .wissensbereich { margin: 34px auto 0; width: min(560px, 88vw); display: grid; gap: 16px; justify-items: center; }
-.wissensbereich h2 { font-size: 13px; letter-spacing: 0.25em; color: var(--gedeckt); margin-bottom: 14px; text-align: center; }
 .kartenzeile.beispielkopf { color: rgba(190, 60, 50, 0.9); }
