@@ -332,10 +332,9 @@ main { position: relative; z-index: 1; }
 
 /* Übungseinstellungen (Wahlzeilen) und Testablauf Mission 4 */
 .wahlzeile { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; font-size: 10px; letter-spacing: 0.12em; color: var(--gedeckt); }
-.wahlknoepfe { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; }
-.wahlknopf { font-family: inherit; font-size: 10px; letter-spacing: 0.08em; color: var(--gedeckt); background: transparent; border: 1px solid #39422c; border-radius: 4px; padding: 5px 8px; cursor: pointer; }
-.wahlknopf:hover { color: var(--hell); }
-.wahlknopf.aktiv { color: var(--hell); border-color: var(--gedeckt); background: #1a2113; }
+.wahlliste { font-family: inherit; font-size: 11px; letter-spacing: 0.08em; color: var(--hell); background: #1a2113; border: 1px solid #39422c; border-radius: 4px; padding: 6px 10px; cursor: pointer; color-scheme: dark; min-width: 96px; }
+.wahlliste:hover { border-color: var(--gedeckt); }
+.wahlliste:focus-visible { outline: 1px dashed var(--gedeckt); outline-offset: 2px; }
 
 .laufschleier.uebung4 { justify-content: flex-start; padding: 6vh 24px 24px; gap: 26px; }
 .testkopf { min-height: 20px; font-size: 13px; letter-spacing: 0.2em; color: var(--gedeckt); }

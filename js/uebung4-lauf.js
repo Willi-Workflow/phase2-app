@@ -22,18 +22,18 @@ export function erzeugeUebung4({ speicher }) {
 
   function zeichneEinstellungen(feld) {
     const zeile = (titel, name, werte, aktiv, einheit) => `
-      <div class="wahlzeile"><span class="wahltitel">${titel}</span><div class="wahlknoepfe">${werte.map((w) =>
-        `<button class="wahlknopf ${w === aktiv ? "aktiv" : ""}" data-name="${name}" data-wert="${w}">${w}${einheit}</button>`).join("")}</div></div>`;
+      <div class="wahlzeile"><span class="wahltitel">${titel}</span>
+        <select class="wahlliste" data-name="${name}">${werte.map((w) =>
+          `<option value="${w}" ${w === aktiv ? "selected" : ""}>${w}${einheit}</option>`).join("")}</select></div>`;
     feld.innerHTML =
       zeile("ANZEIGEZEIT", "zeit", ANZEIGEZEITEN, einstellung.zeit, " s")
       + zeile("FRAGEN JE RUNDE", "fragen", FRAGENANZAHLEN, einstellung.fragen, "")
       + zeile("TESTDAUER", "dauer", TESTDAUERN, einstellung.dauer, " min");
-    feld.onclick = (e) => {
-      const knopf = e.target.closest(".wahlknopf");
-      if (!knopf) return;
-      einstellung[knopf.dataset.name] = Number(knopf.dataset.wert);
+    feld.onchange = (e) => {
+      const liste = e.target.closest(".wahlliste");
+      if (!liste) return;
+      einstellung[liste.dataset.name] = Number(liste.value);
       speicher.setzeEinstellung("uebung4-einstellung", einstellung);
-      zeichneEinstellungen(feld);
     };
   }
 
