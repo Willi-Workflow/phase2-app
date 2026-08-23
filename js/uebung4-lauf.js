@@ -46,10 +46,17 @@ export function erzeugeUebung4({ speicher }) {
     // baut sich verdeckt auf, die Tür öffnet in die laufende Mission.
     const schleier = document.createElement("div");
     schleier.className = "laufschleier uebung4";
-    schleier.innerHTML = `<div class="testkopf"></div><div class="testmitte"></div>`;
+    schleier.innerHTML = `
+      <div class="cockpitbuehne">
+        <div class="panelflaeche"></div>
+      </div>
+      <div class="testkopf"></div>
+      <div class="testmitte"></div>`;
     document.body.append(schleier);
     if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
 
+    const buehne = schleier.querySelector(".cockpitbuehne");
+    const panel = schleier.querySelector(".panelflaeche");
     const mitte = schleier.querySelector(".testmitte");
     const restfeld = schleier.querySelector(".testkopf");
     let testende = Infinity;
@@ -80,7 +87,9 @@ export function erzeugeUebung4({ speicher }) {
     const runde = () => {
       if (beendet) return;
       const werte = zufallswerte();
-      mitte.innerHTML = tafelHtml(werte);
+      panel.innerHTML = tafelHtml(werte);
+      mitte.innerHTML = "";
+      buehne.classList.remove("verwischt");
       spaeter(() => frageFolge(werte, waehleInstrumente(fragen), 0), zeit * 1000);
     };
 
@@ -99,6 +108,7 @@ export function erzeugeUebung4({ speicher }) {
       // Querlage oben, Nicklage darunter.
       const knoepfe = optionen.map((o, i) =>
         `<button class="antwortknopf" data-nr="${i}">${formatiere(id, o).replace(", ", "<br>")}</button>`).join("");
+      buehne.classList.add("verwischt");
       mitte.innerHTML = `
         <div class="frage">${beschreibung.frage}</div>
         <div class="antworten">${knoepfe}</div>

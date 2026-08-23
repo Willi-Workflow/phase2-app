@@ -358,7 +358,16 @@ main { position: relative; z-index: 1; }
 .wahlliste:hover { border-color: var(--gedeckt); }
 .wahlliste:focus-visible { outline: 1px dashed var(--gedeckt); outline-offset: 2px; }
 
-.laufschleier.uebung4 { justify-content: flex-start; padding: 6vh 24px 24px; gap: 26px; }
+/* Mission 4: Merkphase im Cockpit. Die Bühne hält das Seitenverhältnis des
+   Bildes, die Instrumente liegen scharf auf dem Panel; in der Fragephase
+   verwischt die ganze Bühne, die Frage liegt scharf darüber. */
+.laufschleier.uebung4 { display: grid; place-items: center; padding: 0; background: linear-gradient(rgba(13, 17, 9, 0.55), rgba(13, 17, 9, 0.55)), url("bilder/cockpit.jpg") center / cover no-repeat #0d1109; }
+.cockpitbuehne { position: absolute; inset: 0; margin: auto; width: min(100vw, calc(100vh * (2688 / 1536))); aspect-ratio: 2688 / 1536; background: url("bilder/cockpit.jpg") center / contain no-repeat; }
+.cockpitbuehne.verwischt { filter: blur(18px) brightness(0.72); }
+.panelflaeche { position: absolute; left: 13%; top: 62%; width: 74%; display: flex; justify-content: center; }
+.laufschleier.uebung4 .testkopf { position: relative; z-index: 2; margin-top: 3vh; }
+.laufschleier.uebung4 .testmitte { position: relative; z-index: 2; width: min(760px, 90vw); }
+.laufschleier.uebung4 .testmitte:not(:empty) { background: rgba(13, 17, 9, 0.55); border-radius: 10px; padding: 22px; }
 .testkopf { min-height: 20px; font-size: 13px; letter-spacing: 0.2em; color: var(--gedeckt); }
 .testmitte { display: grid; gap: 24px; justify-items: center; }
 .testmitte .frage, .ergebnisschicht .frage { font-size: clamp(16px, 2vw, 22px); letter-spacing: 0.12em; color: var(--hell); text-align: center; }
