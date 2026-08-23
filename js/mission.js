@@ -25,8 +25,11 @@ function zeichneStatistik() {
   const laeufe = alleLaeufe;
   zeichneDiagramm(laeufe);
   const eigene = laeufe.filter((l) => l.profil === speicher.profil());
-  document.getElementById("bestwert").textContent = bestwert(eigene) ?? "–";
-  document.getElementById("durchschnitt").textContent = durchschnitt(eigene) ?? "–";
+  // Bei fester 100er-Skala lesen sich die Werte als Prozent, sonst nackte Zahl.
+  const einheit = mission.maximal === 100 ? " %" : "";
+  const mitEinheit = (wert) => wert == null ? "–" : `${wert}${einheit}`;
+  document.getElementById("bestwert").textContent = mitEinheit(bestwert(eigene));
+  document.getElementById("durchschnitt").textContent = mitEinheit(durchschnitt(eigene));
 
   // Balken zeigen den Bestwert: bei fester Skala gegen deren Obergrenze,
   // sonst gegen den besseren der beiden Bestwerte.
@@ -34,7 +37,7 @@ function zeichneStatistik() {
   const maximum = mission.maximal ?? Math.max(v.willi.bestwert ?? 0, v.luigi.bestwert ?? 0, 1);
   document.getElementById("vergleich").innerHTML = ["willi", "luigi"].map((profil) => `
     <div style="display:flex;justify-content:space-between;"><span>${profil.toUpperCase()}</span>
-      <span>Ø ${v[profil].durchschnitt ?? "–"} · Best ${v[profil].bestwert ?? "–"} · ${v[profil].anzahl} Läufe</span></div>
+      <span>Ø ${mitEinheit(v[profil].durchschnitt)} · Best ${mitEinheit(v[profil].bestwert)} · ${v[profil].anzahl} Läufe</span></div>
     <div class="balken ${profil}"><span style="width:${((v[profil].bestwert ?? 0) / maximum) * 100}%"></span></div>
   `).join("");
 }
