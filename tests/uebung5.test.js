@@ -4,6 +4,7 @@ import {
   AUFGABENZAHL, AUFGABENZEIT, PRINZIPIEN,
   waehlePrinzipien, erzeugeAufgabe, erzeugeLauf,
   ablenker, antwortenFuer, pruefeEingabe,
+  punkteFuerAntwort, kennzahl,
 } from "../js/uebung5.js";
 
 function saatZufall(saat) {
@@ -129,4 +130,31 @@ test("pruefeEingabe: falsche, leere und unlesbare Eingaben gelten nicht", () => 
   assert.ok(!pruefeEingabe("", 300));
   assert.ok(!pruefeEingabe("dreihundert", 300));
   assert.ok(!pruefeEingabe(null, 300));
+});
+
+test("punkteFuerAntwort: falsch gibt null Punkte", () => {
+  assert.equal(punkteFuerAntwort(false, 30000, 30000), 0);
+  assert.equal(punkteFuerAntwort(false, 0, 30000), 0);
+});
+
+test("punkteFuerAntwort: richtig liegt zwischen Grundanteil und zehn", () => {
+  assert.equal(punkteFuerAntwort(true, 30000, 30000), 10);
+  const grund = punkteFuerAntwort(true, 0, 30000);
+  assert.ok(grund >= 5 && grund < 10);
+});
+
+test("punkteFuerAntwort: mehr Restzeit gibt nie weniger Punkte", () => {
+  let vorher = 0;
+  for (let rest = 0; rest <= 30000; rest += 3000) {
+    const p = punkteFuerAntwort(true, rest, 30000);
+    assert.ok(p >= vorher);
+    vorher = p;
+  }
+});
+
+test("kennzahl: Summe auf hundert hochgerechnet und gerundet", () => {
+  assert.equal(kennzahl(100, 10), 100);
+  assert.equal(kennzahl(0, 10), 0);
+  assert.equal(kennzahl(55.6, 10), 56);
+  assert.equal(kennzahl(0, 0), 0);
 });

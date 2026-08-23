@@ -116,3 +116,19 @@ export function pruefeEingabe(text, antwort) {
   const zahl = Number(bereinigt);
   return Number.isFinite(zahl) && zahl === antwort;
 }
+
+// Punktrechnung je Aufgabe, Aufteilung von Willi festgelegt: falsch gibt
+// nichts, richtig gibt den Grundanteil plus einen mit der Restzeit linear
+// wachsenden Bonus. Eine langsame richtige Antwort schlägt so immer jede
+// falsche.
+export function punkteFuerAntwort(richtig, restzeitMs, limitMs) {
+  if (!richtig) return 0;
+  const anteil = Math.max(0, Math.min(1, restzeitMs / limitMs));
+  return 7 + 3 * anteil;
+}
+
+// Kennzahl des Laufs: Punktesumme auf 0 bis 100 hochgerechnet.
+export function kennzahl(punkteSumme, anzahl) {
+  if (anzahl === 0) return 0;
+  return Math.round((punkteSumme / (anzahl * 10)) * 100);
+}
