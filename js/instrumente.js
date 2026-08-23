@@ -222,11 +222,15 @@ export function svgVario(wert) {
 }
 
 // ---------- Künstlicher Horizont ----------
+// Bildeinheiten je Grad Nicklage: bewusst gedämpft, damit der Ausschlag der
+// Kugel bei vollem Nickwert nicht übertrieben wirkt.
+const NICKMASSSTAB = 0.9;
+
 export function svgHorizont(wert) {
   const { roll, nick } = wert;
-  const versatz = nick * 1.4;
+  const versatz = nick * NICKMASSSTAB;
   const leitersprosse = (p) => {
-    const y = 60 + p * 1.4;
+    const y = 60 + p * NICKMASSSTAB;
     const halb = Math.abs(p) % 10 === 0 ? 13 : 6;
     const beschriftung = Math.abs(p) % 10 === 0
       ? `<text x="${60 - halb - 6}" y="${S(y)}" font-size="4.6" fill="#f4f2ea" text-anchor="middle" dominant-baseline="central">${Math.abs(p)}</text>

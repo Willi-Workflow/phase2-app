@@ -1,7 +1,7 @@
 // Ablauf Mission 4 (Instrumente merken) im Vollbild: Merkphase ohne Countdown,
 // Fragen mit Ablaufbalken und kurzer Rückmeldung, Runden bis zum Ende der
 // Testdauer, danach die Ergebnistafel. Oben läuft dezent die Test-Restzeit.
-import { INSTRUMENTE, zufallswerte, formatiere, tafelHtml, svgInstrument } from "./instrumente.js";
+import { INSTRUMENTE, zufallswerte, formatiere, tafelHtml } from "./instrumente.js";
 import {
   ANZEIGEZEITEN, FRAGENANZAHLEN, TESTDAUERN, ANTWORTZEIT,
   schwierigkeitsfaktor, kennzahlAus, waehleInstrumente, antwortmoeglichkeiten, istGleich,
@@ -97,12 +97,13 @@ export function erzeugeUebung4({ speicher }) {
       const wert = id === "horizont" ? werte.horizont : werte[id];
       const optionen = antwortmoeglichkeiten(id, wert);
       const beschreibung = INSTRUMENTE.find((i) => i.id === id);
-      const knoepfe = optionen.map((o, i) => (id === "horizont"
-        ? `<button class="antwortknopf bild" data-nr="${i}">${svgInstrument("horizont", o)}</button>`
-        : `<button class="antwortknopf" data-nr="${i}">${formatiere(id, o)}</button>`)).join("");
+      // Auch der Horizont wird über die Winkel beantwortet, zweizeilig:
+      // Querlage oben, Nicklage darunter.
+      const knoepfe = optionen.map((o, i) =>
+        `<button class="antwortknopf" data-nr="${i}">${formatiere(id, o).replace(", ", "<br>")}</button>`).join("");
       mitte.innerHTML = `
         <div class="frage">${beschreibung.frage}</div>
-        <div class="antworten ${id === "horizont" ? "bilder" : ""}">${knoepfe}</div>
+        <div class="antworten">${knoepfe}</div>
         <div class="zeitbalken"><span style="animation-duration:${ANTWORTZEIT}s"></span></div>
         <div class="rueckmeldung"></div>`;
 

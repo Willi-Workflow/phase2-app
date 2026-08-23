@@ -340,13 +340,9 @@ main { position: relative; z-index: 1; }
 .testkopf { min-height: 20px; font-size: 13px; letter-spacing: 0.2em; color: var(--gedeckt); }
 .testmitte { display: grid; gap: 24px; justify-items: center; }
 .testmitte .frage { font-size: clamp(16px, 2vw, 22px); letter-spacing: 0.12em; color: var(--hell); text-align: center; }
-.antworten { display: grid; grid-template-columns: repeat(2, minmax(180px, 260px)); gap: 12px; }
-.antworten.bilder { grid-template-columns: repeat(4, minmax(120px, 170px)); }
-@media (max-width: 900px) { .antworten.bilder { grid-template-columns: repeat(2, minmax(130px, 180px)); } }
-.antwortknopf { font-family: inherit; font-size: 17px; letter-spacing: 0.1em; color: var(--hell); background: #161a10; border: 1px solid #39422c; border-radius: 8px; padding: 16px 10px; cursor: pointer; }
+.antworten { display: grid; grid-template-columns: repeat(2, minmax(200px, 280px)); gap: 12px; }
+.antwortknopf { font-family: inherit; font-size: 16px; line-height: 1.5; letter-spacing: 0.1em; color: var(--hell); background: #161a10; border: 1px solid #39422c; border-radius: 8px; padding: 14px 10px; cursor: pointer; }
 .antwortknopf:hover:not(:disabled) { background: #232c18; }
-.antwortknopf.bild { padding: 8px; background: #101113; }
-.antwortknopf.bild svg { display: block; width: 100%; height: auto; }
 .antwortknopf.richtig { border-color: #7da05a; box-shadow: 0 0 0 2px rgba(125, 160, 90, 0.5); }
 .antwortknopf.falsch { border-color: #b0563c; box-shadow: 0 0 0 2px rgba(176, 86, 60, 0.5); }
 .zeitbalken { width: min(560px, 76vw); height: 6px; border-radius: 3px; background: #1a2113; overflow: hidden; }
