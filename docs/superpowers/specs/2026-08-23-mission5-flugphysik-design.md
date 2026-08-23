@@ -31,7 +31,7 @@ Regeln für die Erzeugung:
 Jede Aufgabe erscheint in einer von zwei Formen; die Form wird je Aufgabe mit gleicher Wahrscheinlichkeit gewürfelt:
 
 - **Auswahlfrage:** vier gerechnete Antworten, eine richtig. Die drei Ablenker liegen in plausibler Nähe des Ergebnisses, darunter bevorzugt der klassische 60er-Fehler (Faktor 60 vergessen oder doppelt gerechnet), keine Doppelungen, Reihenfolge gemischt.
-- **Zahleneingabe:** ein Eingabefeld mit der Einheit daneben. Komma und Punkt gelten beide als Dezimaltrenner, Leerzeichen werden ignoriert. Enter oder der Abgabeknopf gibt ab. Richtig ist nur der exakte Wert; da die Erzeugung glatte Zahlen liefert, braucht es keine Toleranz.
+- **Zahleneingabe:** ein Eingabefeld mit der Einheit daneben. Komma und Punkt gelten beide als Dezimaltrenner, Leerzeichen werden ignoriert. Enter gibt ab, einen Abgabeknopf gibt es nicht (Fassung nach Willis Sichtung vom 23.08.2026). Richtig ist nur der exakte Wert; da die Erzeugung glatte Zahlen liefert, braucht es keine Toleranz.
 
 ## Laufrahmen
 
@@ -41,6 +41,7 @@ Fester Prüfungsrahmen ohne Einstellungen:
 - Nach jeder Antwort sofort die Auflösung: richtig grün, falsch oder Zeit abgelaufen rot samt richtigem Wert. Weiter nach kurzer Wartezeit oder per Klick, nach Fehlern bleibt mehr Lesezeit (Werte wie in Mission 4).
 - Vollbild mit Hangartür-Übergang: Tür zu, Aufbau verdeckt, Tür auf, erst dann läuft die Zeit.
 - Abbruch über Esc, Verlassen des Vollbilds oder Tabwechsel führt zur Ergebnistafel ohne Wertung, gleiche Semantik wie Mission 4.
+- Bühne der Abfrage (Fassung nach Willis Sichtung vom 23.08.2026): Der Lauf spielt auf dem Bild eines Fliegerschreibtischs mit Flachbildschirm aus den frühen 2000ern (`bilder/rechner.jpg`, Quelle `entwurf/bilder/rechner-entwurf-8.png`, über Higgsfield erzeugt, von Willi aus acht Entwürfen gewählt). Aufgabenzähler, Fragetext, Antworten, Eingabefeld, Ablaufbalken und Rückmeldung liegen in schwarzer Schreibmaschinenschrift auf der hellen Mattscheibe des Bildschirms; Auswahlfragen zeigen ihre vier Knöpfe als schwarz umrandete Felder an derselben Stelle. Um das Bild herum füllt eine abgedunkelte, vergrößerte Fassung derselben Szene den Rest des Fensters.
 
 ## Wertung
 
