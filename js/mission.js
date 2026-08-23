@@ -203,7 +203,7 @@ function starteLauf() {
             alert("Der Lauf konnte nicht gesichert werden und geht verloren. Bitte Verbindung und Einrichtung prüfen.");
           }
         }
-        location.href = "uebersicht.html";
+        zeichneAuswertung();
       },
     });
     return;

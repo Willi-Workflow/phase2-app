@@ -178,10 +178,12 @@ export function erzeugeUebung4({ speicher }) {
         <div class="ergebnisgross">${quote} %</div>
         <div class="ergebniszeilen">
           <span class="trefferzeile">${richtig} von ${gestellt} Aufgaben richtig</span>
+        </div>
+        <button class="punkt" id="u4-fertig">ZURÜCK ZUR MISSION</button>
+        <div class="ergebnisfuss">
           <span>Einstellung: ${zeit} s Anzeige · ${fragen} ${fragen === 1 ? "Frage" : "Fragen"} je Runde · ${dauer} min · Faktor ${faktor.toFixed(2)}</span>
           ${abbruchzeile}
-        </div>
-        <button class="punkt" id="u4-fertig">ZURÜCK ZUR MISSIONSÜBERSICHT</button>`;
+        </div>`;
       mitte.querySelector("#u4-fertig").addEventListener("click", schliesse);
     };
 
