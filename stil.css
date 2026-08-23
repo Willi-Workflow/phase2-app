@@ -371,7 +371,7 @@ main { position: relative; z-index: 1; }
 /* Die fünf Anzeigen sitzen ohne eigenen Tafelkasten direkt im Panelfeld,
    in fester Pixelgröße, damit sie auf jedem Bildschirm gleich groß und
    ablesbar bleiben und wie eingebaut wirken. */
-.panelflaeche { position: absolute; left: 50%; bottom: 32.5%; transform: translateX(-50%); display: flex; justify-content: center; }
+.panelflaeche { position: absolute; left: 50%; bottom: 29.5%; transform: translateX(-50%); display: flex; justify-content: center; }
 .panelflaeche .instrumententafel { background: none; border: 0; border-radius: 0; padding: 0; box-shadow: none; gap: 16px; }
 .panelflaeche .instrumententafel .tafelgruppe { gap: 16px; }
 .panelflaeche .instrumententafel .tafelsteg { display: none; }
