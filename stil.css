@@ -212,6 +212,23 @@ main { position: relative; z-index: 1; }
 .punkt.klein { width: auto; margin-top: 0; padding: 6px 10px; font-size: 11px; }
 .controlsdialog input[type="range"] { width: 100%; }
 
+/* Instrumententafel Mission 4 */
+.instrumententafel {
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 1vw, 14px);
+  background: linear-gradient(180deg, #232527, #191b1d);
+  border: 1px solid #3c3f42;
+  border-radius: 8px;
+  padding: clamp(10px, 1.4vw, 18px) clamp(12px, 1.6vw, 22px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  width: fit-content;
+}
+.instrumententafel .tafelgruppe { display: flex; gap: clamp(8px, 1vw, 14px); }
+.instrumententafel .tafelsteg { width: 2px; align-self: stretch; background: #0b0c0d; border-right: 1px solid #3c3f42; }
+.instrumententafel .instrument { width: clamp(96px, 13vw, 170px); display: block; }
+.instrument svg { display: block; width: 100%; height: auto; }
+
 /* Missionsseite */
 .missionsraster {
   display: grid;

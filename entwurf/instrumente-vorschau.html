@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Instrumente · Vorschau</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../stil.css?v=33">
+<style>
+  .vorschau { display: grid; gap: 40px; justify-items: center; margin: 6vh auto; padding: 0 20px; }
+  .vorschau h1 { font-size: 20px; letter-spacing: 0.2em; color: var(--hell); }
+  .vorschau p { font-size: 11px; letter-spacing: 0.1em; color: var(--gedeckt); }
+</style>
+</head>
+<body>
+<main class="vorschau">
+  <h1>INSTRUMENTE · VORSCHAU</h1>
+  <div>
+    <p>Fahrt 230 kt · Horizont waagerecht · Höhe 4300 ft · Kurs 285° · Vario +700 ft/min</p>
+    <div id="tafel1"></div>
+  </div>
+  <div>
+    <p>Fahrt 120 kt · Horizont 30° links, Nase 10° hoch · Höhe 7800 ft · Kurs 045° · Vario −1500 ft/min</p>
+    <div id="tafel2"></div>
+  </div>
+</main>
+<script type="module">
+  import { tafelHtml } from "../js/instrumente.js";
+  document.getElementById("tafel1").innerHTML = tafelHtml({
+    fahrt: 230, horizont: { roll: 0, nick: 0 }, hoehe: 4300, kurs: 285, vario: 700,
+  });
+  document.getElementById("tafel2").innerHTML = tafelHtml({
+    fahrt: 120, horizont: { roll: -30, nick: 10 }, hoehe: 7800, kurs: 45, vario: -1500,
+  });
+</script>
+</body>
+</html>
