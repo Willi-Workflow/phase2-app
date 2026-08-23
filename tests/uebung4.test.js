@@ -10,11 +10,13 @@ function saatZufall(saat) {
   };
 }
 
-test("schwierigkeitsfaktor: schwerste Einstellung voll, leichteste etwa halb", () => {
+test("schwierigkeitsfaktor: schwerste Einstellung voll, leichtere deckeln tiefer", () => {
   assert.equal(schwierigkeitsfaktor(3, 5), 1);
   assert.ok(Math.abs(schwierigkeitsfaktor(10, 1) - 0.5) < 0.01);
   assert.ok(schwierigkeitsfaktor(5, 3) > schwierigkeitsfaktor(7, 3));
   assert.ok(schwierigkeitsfaktor(5, 4) > schwierigkeitsfaktor(5, 2));
+  assert.ok(schwierigkeitsfaktor(15, 3) < schwierigkeitsfaktor(10, 3));
+  assert.ok(schwierigkeitsfaktor(15, 1) > 0.4);
 });
 
 test("kennzahlAus: Quote mal Faktor, gerundet", () => {

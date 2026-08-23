@@ -3,14 +3,14 @@
 // der Zufall ist einspeisbar, damit alles mit node --test prüfbar bleibt.
 import { INSTRUMENTE, RASTER, rasterwerte } from "./instrumente.js";
 
-export const ANZEIGEZEITEN = [3, 5, 7, 10]; // Sekunden
+export const ANZEIGEZEITEN = [3, 5, 7, 10, 15]; // Sekunden
 export const FRAGENANZAHLEN = [1, 2, 3, 4, 5];
 export const TESTDAUERN = [5, 10, 15]; // Minuten
 export const ANTWORTZEIT = 10; // Sekunden je Frage
 
 // Schwierigkeitsfaktor: die schwerste Einstellung (3 s, 5 Fragen) erreicht 1,0,
 // die leichteste (10 s, 1 Frage) rund 0,5. Kennzahl = Trefferquote mal Faktor.
-const ZEITFAKTOR = { 3: 1.0, 5: 0.92, 7: 0.85, 10: 0.75 };
+const ZEITFAKTOR = { 3: 1.0, 5: 0.92, 7: 0.85, 10: 0.75, 15: 0.65 };
 const ANZAHLFAKTOR = { 1: 0.67, 2: 0.78, 3: 0.87, 4: 0.94, 5: 1.0 };
 
 export function schwierigkeitsfaktor(anzeigezeit, fragenanzahl) {
