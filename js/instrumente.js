@@ -238,22 +238,30 @@ export function svgHorizont(wert) {
   for (const p of [-20, -15, -10, -5, 5, 10, 15, 20]) leiter += leitersprosse(p);
   // Rollskala und ihr Nullpfeil sitzen auf der Kugel und drehen mit der Rolllage,
   // der Ablesezeiger oben ist fest am Gehäuse: so steht die Anzeige bei Linkslage
-  // links vom Zeiger, wie am echten Gerät.
-  let rollskala = `<polygon points="60,13 55.8,21 64.2,21" fill="#f4f2ea"/>`;
+  // links vom Zeiger, wie am echten Gerät. Die Nickleiter ist auf ein inneres
+  // Sichtfenster begrenzt, damit sie bei starken Lagen nicht in die Rollskala
+  // und die Pfeile läuft.
+  let rollskala = `<polygon points="60,24 56,31 64,31" fill="#f4f2ea"/>`;
   for (const g of [-60, -45, -30, -20, -10, 10, 20, 30, 45, 60]) {
     rollskala += strich(g, g % 30 === 0 ? 41 : 43.5, 47.5, g % 30 === 0 ? 1.8 : 1.1, "#f4f2ea");
   }
+  const kugeldrehung = `rotate(${S(-roll)} 60 60)`;
   return svgRahmen(`${GEHAEUSE}
-    <defs><clipPath id="ins-hzkreis"><circle cx="60" cy="60" r="48"/></clipPath></defs>
+    <defs>
+      <clipPath id="ins-hzkreis"><circle cx="60" cy="60" r="48"/></clipPath>
+      <clipPath id="ins-hzleiter"><circle cx="60" cy="60" r="36.5"/></clipPath>
+    </defs>
     <g clip-path="url(#ins-hzkreis)">
-      <g transform="rotate(${S(-roll)} 60 60)">
+      <g transform="${kugeldrehung}">
         <g transform="translate(0 ${S(versatz)})">
           <rect x="-45" y="-105" width="210" height="165" fill="#4d8ec9"/>
           <rect x="-45" y="60" width="210" height="165" fill="#7d5a33"/>
           <line x1="-45" y1="60" x2="165" y2="60" stroke="#f4f2ea" stroke-width="2.4"/>
-          ${leiter}
         </g>
         ${rollskala}
+      </g>
+      <g clip-path="url(#ins-hzleiter)">
+        <g transform="${kugeldrehung}"><g transform="translate(0 ${S(versatz)})">${leiter}</g></g>
       </g>
       <polygon points="60,22 55.5,13 64.5,13" fill="#f4f2ea" stroke="#141516" stroke-width="0.7"/>
     </g>
