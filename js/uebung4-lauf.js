@@ -69,12 +69,9 @@ export function erzeugeUebung4({ speicher }) {
     };
     const beiVollbildwechsel = () => { if (!document.fullscreenElement) verlasse?.(); };
     const beiSichtwechsel = () => { if (document.hidden) verlasse?.(); };
-    // Vor dem Ergebnis heißt Verlassen Abbruch ohne Wertung, danach nur noch Schließen.
-    let verlasse = async () => {
-      raeumeAuf();
-      if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
-      beiEnde(null);
-    };
+    // Während des Laufs führt Verlassen (Esc, Vollbild, Tabwechsel) zur
+    // Ergebnistafel ohne Wertung; auf der Tafel schließt Esc wie der Knopf.
+    let verlasse = () => zeigeErgebnis(false);
     document.addEventListener("fullscreenchange", beiVollbildwechsel);
     document.addEventListener("visibilitychange", beiSichtwechsel);
     registriereAbbruch(() => verlasse?.());
@@ -90,7 +87,7 @@ export function erzeugeUebung4({ speicher }) {
       if (beendet) return;
       if (index >= ids.length) {
         if (performance.now() < testende) runde();
-        else zeigeErgebnis();
+        else zeigeErgebnis(true);
         return;
       }
       const id = ids[index];
@@ -142,15 +139,24 @@ export function erzeugeUebung4({ speicher }) {
       });
     };
 
-    const zeigeErgebnis = () => {
-      if (beendet) return;
+    // Ergebnistafel für beide Wege: vollendeter Lauf (gewertet) und Abbruch
+    // (ohne Wertung). Zahlen zeigen jeweils den bis dahin erreichten Stand.
+    let ergebnisOffen = false;
+    const zeigeErgebnis = (gewertet) => {
+      if (beendet || ergebnisOffen) return;
+      ergebnisOffen = true;
+      clearInterval(restuhr);
+      for (const t of zeitgeber) clearTimeout(t);
+      document.removeEventListener("fullscreenchange", beiVollbildwechsel);
+      document.removeEventListener("visibilitychange", beiSichtwechsel);
+
       const faktor = schwierigkeitsfaktor(zeit, fragen);
       const quote = gestellt ? Math.round((richtig / gestellt) * 100) : 0;
       const wert = kennzahlAus(richtig, gestellt, faktor);
       const schliesse = async () => {
         raeumeAuf();
         if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
-        beiEnde({
+        beiEnde(gewertet ? {
           kennzahl: wert,
           daten: {
             art: "instrumente-merken",
@@ -162,19 +168,20 @@ export function erzeugeUebung4({ speicher }) {
             quote,
             faktor: Number(faktor.toFixed(3)),
           },
-        });
+        } : null);
       };
       verlasse = schliesse;
-      clearInterval(restuhr);
       restfeld.textContent = "";
+      const abbruchzeile = gewertet ? "" : `<span class="abgebrochen">ABGEBROCHEN · DER LAUF ZÄHLT NICHT ZUR STATISTIK</span>`;
       mitte.innerHTML = `
-        <div class="frage">TEST BEENDET</div>
+        <div class="frage">${gewertet ? "TEST BEENDET" : "TEST ABGEBROCHEN"}</div>
         <div class="ergebnisgross">${wert} PUNKTE</div>
         <div class="ergebniszeilen">
           <span>${richtig} von ${gestellt} richtig · ${quote} % Trefferquote</span>
           <span>Einstellung: ${zeit} s Anzeige · ${fragen} ${fragen === 1 ? "Frage" : "Fragen"} je Runde · ${dauer} min · Faktor ${faktor.toFixed(2)}</span>
+          ${abbruchzeile}
         </div>
-        <button class="punkt" id="u4-fertig">FERTIG</button>`;
+        <button class="punkt" id="u4-fertig">ZURÜCK ZUR MISSIONSÜBERSICHT</button>`;
       mitte.querySelector("#u4-fertig").addEventListener("click", schliesse);
     };
 
