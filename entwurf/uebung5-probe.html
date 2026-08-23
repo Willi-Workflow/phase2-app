@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Übung 5 · Probe</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../stil.css?v=41">
+</head>
+<body>
+<script type="module">
+  // Probeaufbau ohne App-Rahmen: schließt die Hangartür und startet den Lauf
+  // sofort, damit der Ablauf headless prüfbar ist. Mit ?abbruch=<ms> wird nach
+  // dieser Zeit abgebrochen, mit ?wissen=1 öffnet statt des Laufs der
+  // Karteikartenstapel.
+  import { erzeugeUebung5 } from "../js/uebung5-lauf.js";
+  import { erzeugeHangartuer } from "../js/hangartuer.js";
+  const uebung = erzeugeUebung5();
+  if (new URLSearchParams(location.search).get("wissen")) {
+    const feld = document.createElement("div");
+    document.body.append(feld);
+    uebung.zeichneFeld(feld);
+    feld.querySelector("#u5-wissen").click();
+  } else {
+    const tuer = erzeugeHangartuer();
+    let brichAb = null;
+    await tuer.schliesse();
+    uebung.starte({
+      tuer,
+      registriereAbbruch: (fn) => { brichAb = fn; },
+      beiEnde: (ergebnis) => { document.body.insertAdjacentText("beforeend", `ENDE: ${JSON.stringify(ergebnis)}`); },
+    });
+    const abbruchNach = Number(new URLSearchParams(location.search).get("abbruch"));
+    if (abbruchNach > 0) setTimeout(() => brichAb?.(), abbruchNach);
+  }
+</script>
+</body>
+</html>
