@@ -6,6 +6,7 @@ import { erzeugeControls } from "./controls.js";
 import { rollenStand } from "./geraetestand.js";
 import { PROFILFARBEN, reihe, skala, punkte, pfad, laufnummern } from "./diagramm.js";
 import { erzeugeUebung4 } from "./uebung4-lauf.js";
+import { erzeugeHangartuer } from "./hangartuer.js";
 
 const speicher = erzeugeSpeicher({ konfig: KONFIG });
 const nr = Number(new URLSearchParams(location.search).get("bereich"));
@@ -185,7 +186,11 @@ function starteLauf() {
   if (laufAktiv) return;
   if (uebung4) {
     laufAktiv = true;
-    uebung4.starte({
+    // Die Hangartür fährt über der Missionsseite zu, dahinter baut sich der
+    // Test auf, dann öffnet die Übung die Tür selbst.
+    const tuer = erzeugeHangartuer();
+    tuer.schliesse().then(() => uebung4.starte({
+      tuer,
       registriereAbbruch: (fn) => { brichLaufAb = fn; },
       beiEnde: async (ergebnis) => {
         laufAktiv = false;
@@ -203,9 +208,9 @@ function starteLauf() {
             alert("Der Lauf konnte nicht gesichert werden und geht verloren. Bitte Verbindung und Einrichtung prüfen.");
           }
         }
-        zeichneAuswertung();
+        await zeichneAuswertung();
       },
-    });
+    }));
     return;
   }
   laufAktiv = true;

@@ -37,8 +37,10 @@ export function erzeugeUebung4({ speicher }) {
     };
   }
 
-  function starte({ beiEnde, registriereAbbruch }) {
+  function starte({ tuer, beiEnde, registriereAbbruch }) {
     const { zeit, fragen, dauer } = einstellung;
+    // Der Aufrufer hat die Hangartür bereits geschlossen: der Testbildschirm
+    // baut sich verdeckt auf, die Tür öffnet in die laufende Mission.
     const schleier = document.createElement("div");
     schleier.className = "laufschleier uebung4";
     schleier.innerHTML = `<div class="testkopf"></div><div class="testmitte"></div>`;
@@ -47,17 +49,13 @@ export function erzeugeUebung4({ speicher }) {
 
     const mitte = schleier.querySelector(".testmitte");
     const restfeld = schleier.querySelector(".testkopf");
-    const testende = performance.now() + dauer * 60_000;
+    let testende = Infinity;
+    let restuhr = null;
     let beendet = false;
     let gestellt = 0;
     let richtig = 0;
     const zeitgeber = new Set();
     const spaeter = (fn, ms) => { const t = setTimeout(() => { zeitgeber.delete(t); fn(); }, ms); zeitgeber.add(t); return t; };
-
-    const restuhr = setInterval(() => {
-      const rest = Math.max(0, testende - performance.now());
-      restfeld.textContent = `${Math.floor(rest / 60_000)}:${String(Math.floor((rest % 60_000) / 1000)).padStart(2, "0")}`;
-    }, 250);
 
     const raeumeAuf = () => {
       beendet = true;
@@ -140,23 +138,51 @@ export function erzeugeUebung4({ speicher }) {
     };
 
     // Ergebnistafel für beide Wege: vollendeter Lauf (gewertet) und Abbruch
-    // (ohne Wertung). Zahlen zeigen jeweils den bis dahin erreichten Stand.
+    // (ohne Wertung). Die Tür fährt zu, wird verwischt, die Tafel legt sich
+    // davor; der Rücksprung räumt die Tafel weg und öffnet die Tür wieder.
     let ergebnisOffen = false;
-    const zeigeErgebnis = (gewertet) => {
+    const zeigeErgebnis = async (gewertet) => {
       if (beendet || ergebnisOffen) return;
       ergebnisOffen = true;
       clearInterval(restuhr);
       for (const t of zeitgeber) clearTimeout(t);
       document.removeEventListener("fullscreenchange", beiVollbildwechsel);
       document.removeEventListener("visibilitychange", beiSichtwechsel);
+      restfeld.textContent = "";
+
+      await tuer.schliesse();
+      tuer.verwische(true);
 
       const faktor = schwierigkeitsfaktor(zeit, fragen);
       const quote = gestellt ? Math.round((richtig / gestellt) * 100) : 0;
       const wert = kennzahlAus(richtig, gestellt, faktor);
+      const abbruchzeile = gewertet ? "" : `<span class="abgebrochen">ABGEBROCHEN · DER LAUF ZÄHLT NICHT ZUR STATISTIK</span>`;
+      const tafel = document.createElement("div");
+      tafel.className = "ergebnisschicht";
+      tafel.innerHTML = `
+        <div class="frage">${gewertet ? "TEST BEENDET" : "TEST ABGEBROCHEN"}</div>
+        <div class="ergebnisgross">${quote} %</div>
+        <div class="ergebniszeilen">
+          <span class="trefferzeile">${richtig} von ${gestellt} Aufgaben richtig</span>
+        </div>
+        <button class="punkt" id="u4-fertig">ZURÜCK ZUR MISSION</button>
+        <div class="ergebnisfuss">
+          <span>Einstellung: ${zeit} s Anzeige · ${fragen} ${fragen === 1 ? "Frage" : "Fragen"} je Runde · ${dauer} min · Faktor ${faktor.toFixed(2)}</span>
+          ${abbruchzeile}
+        </div>`;
+      document.body.append(tafel);
+      requestAnimationFrame(() => tafel.classList.add("da"));
+
+      let geschlossen = false;
       const schliesse = async () => {
+        if (geschlossen) return;
+        geschlossen = true;
+        tafel.classList.remove("da");
+        setTimeout(() => tafel.remove(), 260);
+        tuer.verwische(false);
         raeumeAuf();
         if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
-        beiEnde(gewertet ? {
+        await beiEnde(gewertet ? {
           kennzahl: wert,
           daten: {
             art: "instrumente-merken",
@@ -169,25 +195,23 @@ export function erzeugeUebung4({ speicher }) {
             faktor: Number(faktor.toFixed(3)),
           },
         } : null);
+        await tuer.oeffne();
       };
       verlasse = schliesse;
-      restfeld.textContent = "";
-      const abbruchzeile = gewertet ? "" : `<span class="abgebrochen">ABGEBROCHEN · DER LAUF ZÄHLT NICHT ZUR STATISTIK</span>`;
-      mitte.innerHTML = `
-        <div class="frage">${gewertet ? "TEST BEENDET" : "TEST ABGEBROCHEN"}</div>
-        <div class="ergebnisgross">${quote} %</div>
-        <div class="ergebniszeilen">
-          <span class="trefferzeile">${richtig} von ${gestellt} Aufgaben richtig</span>
-        </div>
-        <button class="punkt" id="u4-fertig">ZURÜCK ZUR MISSION</button>
-        <div class="ergebnisfuss">
-          <span>Einstellung: ${zeit} s Anzeige · ${fragen} ${fragen === 1 ? "Frage" : "Fragen"} je Runde · ${dauer} min · Faktor ${faktor.toFixed(2)}</span>
-          ${abbruchzeile}
-        </div>`;
-      mitte.querySelector("#u4-fertig").addEventListener("click", schliesse);
+      tafel.querySelector("#u4-fertig").addEventListener("click", schliesse);
     };
 
-    runde();
+    // Die Tür öffnet in die fertig aufgebaute Mission, erst dann läuft die Zeit.
+    (async () => {
+      await tuer.oeffne();
+      if (beendet || ergebnisOffen) return;
+      testende = performance.now() + dauer * 60_000;
+      restuhr = setInterval(() => {
+        const rest = Math.max(0, testende - performance.now());
+        restfeld.textContent = `${Math.floor(rest / 60_000)}:${String(Math.floor((rest % 60_000) / 1000)).padStart(2, "0")}`;
+      }, 250);
+      runde();
+    })();
   }
 
   return { ladeEinstellung, zeichneEinstellungen, starte };
