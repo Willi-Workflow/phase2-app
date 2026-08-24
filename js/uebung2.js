@@ -2,7 +2,6 @@
 // ICA 90 II. Bewegung als Ratensteuerung mit träger Zufallsdrift, Deckungs-
 // und Trefferprüfung, Kennzahl. Reine Logik ohne DOM, Zufall und Zeitschritt
 // sind einspeisbar, damit alles mit node --test prüfbar bleibt.
-import { mische } from "./zufall.js";
 
 export const TESTDAUERN = [5, 10, 30]; // Minuten
 export const ELEMENTE = ["stick", "ruder", "schub"];
@@ -134,4 +133,16 @@ export function takt(z, eingaben, dtMs, rnd = Math.random) {
     }
   }
   return ereignisse;
+}
+
+// Kennzahl des Laufs: Treffer je Minute, gemeinsame Treffer zählen doppelt.
+// So bleiben Läufe verschiedener Testdauern vergleichbar.
+export function punkte(z, dauerMin) {
+  if (!dauerMin) return 0;
+  const einzel = z.treffer.stick + z.treffer.ruder + z.treffer.schub;
+  return Math.round((einzel + 2 * z.kombitreffer) / dauerMin);
+}
+
+export function pruefeAuswahl(auswahl) {
+  return auswahl.length > 0 && auswahl.every((e) => ELEMENTE.includes(e));
 }

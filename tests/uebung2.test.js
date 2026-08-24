@@ -4,6 +4,7 @@ import {
   TESTDAUERN, ELEMENTE, HALTEZEIT_MS, NADEL_MIN, NADEL_MAX,
   ZIELKREIS_R, STRICH_TOLERANZ, NADEL_TOLERANZ, SOLLWERTE,
   erzeugeLaufzustand, takt, zufallsFadenkreuz, zufallsStrich,
+  inDeckung, punkte, pruefeAuswahl, neuerSoll,
 } from "../js/uebung2.js";
 
 function saatZufall(saat) {
@@ -106,4 +107,79 @@ test("Neusetzung: liefert auch bei entartetem Zufall eine gültige Lage", () => 
   assert.deepEqual(p, { x: 0.15, y: 0.15 });
   const s = zufallsStrich(fest);
   assert.deepEqual(s, { x: 0.2 });
+});
+
+function halteInDeckung(z, element, rnd) {
+  // Setzt das Element in Deckung und hält es rechnerisch eine Sekunde:
+  // Deckung vor jedem Takt erneuern, weil die Drift dagegen arbeitet.
+  let ereignisse = [];
+  for (let i = 0; i < 20 && ereignisse.length === 0; i++) {
+    if (element === "stick") { z.fadenkreuz.x = 0.5; z.fadenkreuz.y = 0.5; }
+    if (element === "ruder") z.strich.x = 0.5;
+    if (element === "schub") z.nadel = z.soll;
+    ereignisse = takt(z, { stickX: 0, stickY: 0, ruder: 0, schub: 0 }, 50, rnd);
+  }
+  return ereignisse;
+}
+
+test("takt: eine Sekunde Deckung gibt einen Treffer und setzt neu", () => {
+  const rnd = saatZufall(23);
+  const z = erzeugeLaufzustand(["stick"], rnd);
+  const ereignisse = halteInDeckung(z, "stick", rnd);
+  assert.deepEqual(ereignisse, [{ element: "stick", kombi: false }]);
+  assert.equal(z.treffer.stick, 1);
+  assert.equal(z.kombitreffer, 0);
+  assert.ok(Math.hypot(z.fadenkreuz.x - 0.5, z.fadenkreuz.y - 0.5) >= 0.25);
+});
+
+test("takt: unterbrochene Deckung setzt die Haltezeit zurück", () => {
+  const rnd = saatZufall(29);
+  const z = erzeugeLaufzustand(["ruder"], rnd);
+  z.strich.x = 0.5;
+  takt(z, { stickX: 0, stickY: 0, ruder: 0, schub: 0 }, 600, rnd);
+  z.strich.x = 0.9; // Deckung verlassen
+  takt(z, { stickX: 0, stickY: 0, ruder: 0, schub: 0 }, 50, rnd);
+  assert.equal(z.halte.ruder, 0);
+  assert.equal(z.treffer.ruder, 0);
+});
+
+test("takt: Kombitreffer nur, wenn die übrigen gewählten Elemente in Deckung stehen", () => {
+  const rnd = saatZufall(31);
+  const z = erzeugeLaufzustand(["stick", "schub"], rnd);
+  z.nadel = z.soll; // Schub in Deckung
+  z.halte.schub = 0;
+  let ereignisse = [];
+  for (let i = 0; i < 20 && ereignisse.length === 0; i++) {
+    z.fadenkreuz.x = 0.5; z.fadenkreuz.y = 0.5;
+    z.nadel = z.soll;
+    ereignisse = takt(z, { stickX: 0, stickY: 0, ruder: 0, schub: 0 }, 50, rnd);
+  }
+  const stickEreignis = ereignisse.find((e) => e.element === "stick");
+  assert.ok(stickEreignis);
+  assert.equal(stickEreignis.kombi, true);
+  assert.ok(z.kombitreffer >= 1);
+});
+
+test("neuerSoll: nie der alte Wert, immer aus dem Raster", () => {
+  const rnd = saatZufall(37);
+  for (let i = 0; i < 100; i++) {
+    const soll = neuerSoll(75, 75, rnd);
+    assert.notEqual(soll, 75);
+    assert.ok(SOLLWERTE.includes(soll));
+    assert.ok(Math.abs(soll - 75) >= 15);
+  }
+});
+
+test("punkte: Treffer je Minute, Kombitreffer doppelt", () => {
+  const z = { treffer: { stick: 10, ruder: 6, schub: 4 }, kombitreffer: 5 };
+  assert.equal(punkte(z, 5), 6);   // (20 + 10) / 5
+  assert.equal(punkte(z, 10), 3);  // (20 + 10) / 10
+  assert.equal(punkte(z, 0), 0);
+});
+
+test("pruefeAuswahl: mindestens ein gültiges Element", () => {
+  assert.ok(pruefeAuswahl(["stick"]));
+  assert.ok(pruefeAuswahl(["stick", "ruder", "schub"]));
+  assert.ok(!pruefeAuswahl([]));
+  assert.ok(!pruefeAuswahl(["quatsch"]));
 });
