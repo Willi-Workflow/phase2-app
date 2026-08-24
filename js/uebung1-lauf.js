@@ -50,13 +50,18 @@ export function erzeugeUebung1({ speicher, controls }) {
         <select class="wahlliste" data-name="dauer">${TESTDAUERN.map((w) =>
           `<option value="${w}" ${w === einstellung.dauer ? "selected" : ""}>${w} min</option>`).join("")}</select></div>
       <div class="wahlzeile"><span class="wahltitel">BUCHSTABEN</span>
-        <button type="button" class="wahlknopf ${einstellung.sla ? "an" : ""}" data-element="sla"
-          aria-pressed="${einstellung.sla}">SLA-AUFGABE</button>
-        <button type="button" class="wahlknopf" data-element="ueben">NUR ÜBEN</button></div>
-      <div class="wahlzeile"><span class="wahltitel">TEMPO</span>
-        <select class="wahlliste" data-name="tempo">${TEMPOS.map((w) =>
-          `<option value="${w}" ${w === einstellung.tempo ? "selected" : ""}>${(w / 1000).toLocaleString("de-DE", { minimumFractionDigits: 1 })} s</option>`).join("")}</select></div>
-      <p class="wahlhinweis" id="u1-schusshinweis" hidden></p>`;
+        <button type="button" class="wahlknopf" data-element="klappe" aria-expanded="false">AUSKLAPPEN</button></div>
+      <div class="klappfeld" id="u1-buchstabenfeld" hidden>
+        <div class="wahlzeile"><span class="wahltitel">SLA-AUFGABE</span>
+          <button type="button" class="wahlknopf ${einstellung.sla ? "an" : ""}" data-element="sla"
+            aria-pressed="${einstellung.sla}">${einstellung.sla ? "EIN" : "AUS"}</button></div>
+        <div class="wahlzeile"><span class="wahltitel">TEMPO</span>
+          <select class="wahlliste" data-name="tempo">${TEMPOS.map((w) =>
+            `<option value="${w}" ${w === einstellung.tempo ? "selected" : ""}>${(w / 1000).toLocaleString("de-DE", { minimumFractionDigits: 1 })} s</option>`).join("")}</select></div>
+        <div class="wahlzeile"><span class="wahltitel">ÜBUNG</span>
+          <button type="button" class="wahlknopf" data-element="ueben">NUR ÜBEN</button></div>
+        <p class="wahlhinweis" id="u1-schusshinweis" hidden></p>
+      </div>`;
 
     const schusshinweis = feld.querySelector("#u1-schusshinweis");
     const zeigeSchussstand = () => {
@@ -71,6 +76,13 @@ export function erzeugeUebung1({ speicher, controls }) {
     feld.onclick = (e) => {
       const knopf = e.target.closest(".wahlknopf");
       if (!knopf) return;
+      if (knopf.dataset.element === "klappe") {
+        const kasten = feld.querySelector("#u1-buchstabenfeld");
+        kasten.hidden = !kasten.hidden;
+        knopf.textContent = kasten.hidden ? "AUSKLAPPEN" : "EINKLAPPEN";
+        knopf.setAttribute("aria-expanded", String(!kasten.hidden));
+        return;
+      }
       if (knopf.dataset.element === "ueben") {
         // Reine Hörübung über den normalen Startweg, damit Tür, Vollbild
         // und Abbruch wie bei jedem Lauf funktionieren.
@@ -81,6 +93,7 @@ export function erzeugeUebung1({ speicher, controls }) {
       einstellung.sla = !einstellung.sla;
       knopf.classList.toggle("an", einstellung.sla);
       knopf.setAttribute("aria-pressed", String(einstellung.sla));
+      knopf.textContent = einstellung.sla ? "EIN" : "AUS";
       speicher.setzeEinstellung("uebung1-einstellung", einstellung);
       // Beim ersten Einschalten mit Gerät die Schusstaste gleich anlernen.
       if (einstellung.sla && !controls.schusstasteVon() && controls.geraete().length) {
