@@ -43,11 +43,13 @@ Vor dem Start auf der Missionsseite, gespeichert über die Einstellungen wie bei
 
 - Dauer wählbar: 3, 5 oder 10 Minuten, Vorgabe 5.
 - Haken "Buchstabenaufgabe (SLA)", Vorgabe aus.
+- Buchstabentempo wählbar: 2,5, 2, 1,5 oder 1 Sekunde Abstand, Vorgabe 2 (Original); gilt für die SLA-Aufgabe im Flug und für die Hörübung (Willis Erweiterung vom 24.08.2026).
+- Knopf "NUR ÜBEN": startet die Buchstabenaufgabe als reine Hörübung ohne Flug (dunkler Schirm, Kopfzeile mit Restzeit, Ergebnistafel mit erkannt, verpasst und Fehlalarm). Die Übung zählt nie zur Statistik.
 
 ## Buchstabenaufgabe (SLA)
 
 - Die Logik erzeugt die Buchstabenreihe deterministisch: eingeplante S-L-A-Folgen (grob eine je Minute) und Beinahe-Fallen wie S-L-B, dazwischen Zufallsbuchstaben.
-- Gesprochen über die Sprachausgabe des Browsers, ein Buchstabe etwa alle zwei Sekunden.
+- Gesprochen über ElevenLabs-Aufnahmen (Stimme Ralf DE Doku, deutsche Buchstabierweise, je Buchstabe eine Datei unter klaenge/buchstaben); die Sprachausgabe des Browsers ist nur der Ersatz, falls ein Klang nicht spielt. Der Abstand folgt dem gewählten Tempo.
 - Bestätigung binnen zwei Sekunden nach dem A mit der Schusstaste des Joysticks; Ersatz ist die Leertaste.
 - **Schusstaste:** `controls.js` wird um eine Knopf-Zuordnung nach dem Vorbild des Achsen-Fangs erweitert. Beim ersten Einschalten der Buchstabenaufgabe (oder auf der Geräteseite) fordert die App auf, einmal die Schusstaste zu drücken, und merkt sich Gerät und Knopfnummer. Danach zählt nur diese Taste.
 - Ergebnistafel zeigt erkannt, verpasst und Fehlalarme, rein informativ; in die Deckungsquote fließt nichts ein (das Original wertet die Vigilanz ebenfalls nicht).

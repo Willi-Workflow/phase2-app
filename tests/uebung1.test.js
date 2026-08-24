@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  TESTDAUERN, HALTEZEIT_MS, KREIS_R, BILDVERHAELTNIS, MINDESTABSTAND, KEGEL, MAXROLL,
+  TESTDAUERN, HALTEZEIT_MS, KREIS_R, BILDVERHAELTNIS, MINDESTABSTAND, KEGEL, MAXROLL, TEMPOS,
   zufallsZiel, erzeugeLaufzustand, takt, inDeckung,
   deckungsquote, ergebnisWerte,
   BUCHSTABEN_ABSTAND_MS, SLA_FENSTER_MS, erzeugeBuchstabenreihe, erzeugeSlaZaehler,
@@ -184,4 +184,17 @@ test("SLA-Zähler: erkannt, Fehlalarm und verpasst", () => {
   z.druck(9000);                      // kein offenes A: Fehlalarm
   z.sprich(4, 8000); z.sprich(5, 10000); z.sprich(6, 12000); // zweites A ohne Druck
   assert.deepEqual(z.auswertung(), { erkannt: 1, verpasst: 1, fehlalarm: 2 });
+});
+
+test("Tempostufen der Buchstabenreihe", () => {
+  assert.deepEqual(TEMPOS, [2500, 2000, 1500, 1000]);
+});
+
+test("Buchstabenreihe folgt dem gewählten Tempo", () => {
+  const schnell = erzeugeBuchstabenreihe(2, Math.random, 1000);
+  assert.equal(schnell.length, Math.floor(2 * 60_000 / 1000));
+  assert.equal(schnell.filter((e) => e.sla).length, 2);
+  const text = schnell.map((e) => e.b).join("");
+  assert.equal((text.match(/SLA/g) ?? []).length, 2);
+  assert.equal((text.match(/SL[^A]/g) ?? []).length, 2);
 });

@@ -160,10 +160,13 @@ export function ergebnisWerte(z) {
 // Folgen. Je Minute eine echte Folge und eine Falle S-L-x.
 export const BUCHSTABEN_ABSTAND_MS = 2000;
 export const SLA_FENSTER_MS = 2000;
+// Wählbare Tempostufen für den Buchstabenabstand; 2000 ms entspricht dem
+// Original, schnellere Stufen erhöhen die Schwierigkeit.
+export const TEMPOS = [2500, 2000, 1500, 1000];
 const FUELLER = "BCDEFGHKMNPRTUWXZ".split("");
 
-export function erzeugeBuchstabenreihe(dauerMin, rnd = Math.random) {
-  const jeMinute = Math.floor(60_000 / BUCHSTABEN_ABSTAND_MS);
+export function erzeugeBuchstabenreihe(dauerMin, rnd = Math.random, abstandMs = BUCHSTABEN_ABSTAND_MS) {
+  const jeMinute = Math.floor(60_000 / abstandMs);
   const reihe = Array.from({ length: dauerMin * jeMinute }, () =>
     ({ b: FUELLER[Math.floor(rnd() * FUELLER.length)], sla: false }));
   for (let minute = 0; minute < dauerMin; minute++) {

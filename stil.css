@@ -246,6 +246,10 @@ main { position: relative; z-index: 1; }
 .uebung1 .zielkreis.deckung { stroke: #e5312b; }
 .laufschleier.uebung1 .testkopf { position: absolute; top: 3vh; left: 50%; transform: translateX(-50%); z-index: 2; color: var(--gedeckt); letter-spacing: 0.25em; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8); }
 
+/* Mission 1: reine Buchstabenübung, dunkler Hörraum ohne Szene */
+.laufschleier.buchstaben { background: #0d1109; }
+.laufschleier.buchstaben .testkopf { position: absolute; top: 3vh; left: 50%; transform: translateX(-50%); z-index: 2; color: var(--gedeckt); letter-spacing: 0.25em; }
+
 /* Instrumententafel Mission 4 */
 .instrumententafel {
   display: flex;

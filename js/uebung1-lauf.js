@@ -2,11 +2,32 @@
 // 3D-Szene. Die Logik rechnet in uebung1.js, hier laufen Achsenabfrage,
 // three.js-Zeichnung, Buchstabenausgabe und Tafeln.
 import {
-  TESTDAUERN, erzeugeLaufzustand, takt, ergebnisWerte,
-  BUCHSTABEN_ABSTAND_MS, erzeugeBuchstabenreihe, erzeugeSlaZaehler,
+  TESTDAUERN, TEMPOS, erzeugeLaufzustand, takt, ergebnisWerte,
+  erzeugeBuchstabenreihe, erzeugeSlaZaehler,
 } from "./uebung1.js";
 import * as THREE from "./fremd/three.module.js";
 import { GLTFLoader } from "./fremd/GLTFLoader.js";
+
+// Buchstabenklänge: ElevenLabs-Aufnahmen (Stimme Ralf DE Doku) unter
+// klaenge/buchstaben, je Buchstabe eine Datei. Spielt ein Klang nicht,
+// spricht ersatzweise der Browser.
+const klangVon = (b) => new URL(`../klaenge/buchstaben/${b.toLowerCase()}.mp3`, import.meta.url).href;
+function erzeugeSprecher() {
+  const vorrat = new Map();
+  return {
+    sprich(b) {
+      let klang = vorrat.get(b);
+      if (!klang) { klang = new Audio(klangVon(b)); vorrat.set(b, klang); }
+      klang.currentTime = 0;
+      klang.play().catch(() => {
+        const laut = new SpeechSynthesisUtterance(b);
+        laut.lang = "de-DE";
+        speechSynthesis.speak(laut);
+      });
+    },
+    stopp() { for (const klang of vorrat.values()) klang.pause(); },
+  };
+}
 
 export function erzeugeUebung1({ speicher, controls }) {
   const hinweis = "Nachbau der Flugzeugverfolgung der Eignungsfeststellung: Steuere mit Stick "
@@ -15,7 +36,8 @@ export function erzeugeUebung1({ speicher, controls }) {
     + "das Flugzeug an eine neue Stelle. Wahlweise "
     + "läuft die Buchstabenaufgabe: Bei der Folge S-L-A die Schusstaste drücken.";
 
-  let einstellung = { dauer: 5, sla: false };
+  let einstellung = { dauer: 5, sla: false, tempo: 2000 };
+  let uebungsStart = false; // der Übungsknopf startet den nächsten Lauf als reine Buchstabenübung
 
   async function ladeEinstellung() {
     const gespeichert = await speicher.ladeEinstellung("uebung1-einstellung", {});
@@ -29,7 +51,11 @@ export function erzeugeUebung1({ speicher, controls }) {
           `<option value="${w}" ${w === einstellung.dauer ? "selected" : ""}>${w} min</option>`).join("")}</select></div>
       <div class="wahlzeile"><span class="wahltitel">BUCHSTABEN</span>
         <button type="button" class="wahlknopf ${einstellung.sla ? "an" : ""}" data-element="sla"
-          aria-pressed="${einstellung.sla}">SLA-AUFGABE</button></div>
+          aria-pressed="${einstellung.sla}">SLA-AUFGABE</button>
+        <button type="button" class="wahlknopf" data-element="ueben">NUR ÜBEN</button></div>
+      <div class="wahlzeile"><span class="wahltitel">TEMPO</span>
+        <select class="wahlliste" data-name="tempo">${TEMPOS.map((w) =>
+          `<option value="${w}" ${w === einstellung.tempo ? "selected" : ""}>${(w / 1000).toLocaleString("de-DE", { minimumFractionDigits: 1 })} s</option>`).join("")}</select></div>
       <p class="wahlhinweis" id="u1-schusshinweis" hidden></p>`;
 
     const schusshinweis = feld.querySelector("#u1-schusshinweis");
@@ -45,6 +71,13 @@ export function erzeugeUebung1({ speicher, controls }) {
     feld.onclick = (e) => {
       const knopf = e.target.closest(".wahlknopf");
       if (!knopf) return;
+      if (knopf.dataset.element === "ueben") {
+        // Reine Hörübung über den normalen Startweg, damit Tür, Vollbild
+        // und Abbruch wie bei jedem Lauf funktionieren.
+        uebungsStart = true;
+        document.getElementById("start")?.click();
+        return;
+      }
       einstellung.sla = !einstellung.sla;
       knopf.classList.toggle("an", einstellung.sla);
       knopf.setAttribute("aria-pressed", String(einstellung.sla));
@@ -68,10 +101,121 @@ export function erzeugeUebung1({ speicher, controls }) {
     zeigeSchussstand();
   }
 
+  // Reine Hörübung: dieselbe Buchstabenaufgabe ohne Flug, zählt nie zur
+  // Statistik. Tempo und Dauer kommen aus den Einstellungen.
+  function starteBuchstabenUebung({ tuer, beiEnde, registriereAbbruch }) {
+    const { dauer, tempo } = einstellung;
+    const schleier = document.createElement("div");
+    schleier.className = "laufschleier buchstaben";
+    schleier.innerHTML = `<div class="testkopf"></div>
+      <div class="hinweis">Höre die Buchstaben.<br>Bei der Folge S-L-A die Schusstaste drücken.</div>`;
+    document.body.append(schleier);
+    if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+
+    const kopf = schleier.querySelector(".testkopf");
+    const reihe = erzeugeBuchstabenreihe(dauer, Math.random, tempo);
+    const zaehler = erzeugeSlaZaehler(reihe);
+    const sprecher = erzeugeSprecher();
+    let gesprochen = 0;
+    let testMs = 0;
+    let beendet = false;
+    let ergebnisOffen = false;
+    let testende = Infinity;
+    let laeuft = false;
+    let vorher = 0;
+
+    const raeumeAuf = () => {
+      beendet = true;
+      sprecher.stopp();
+      speechSynthesis?.cancel?.();
+      document.removeEventListener("fullscreenchange", beiVollbildwechsel);
+      document.removeEventListener("visibilitychange", beiSichtwechsel);
+      schleier.remove();
+    };
+    const beiVollbildwechsel = () => { if (!document.fullscreenElement) verlasse?.(); };
+    const beiSichtwechsel = () => { if (document.hidden) verlasse?.(); };
+    let verlasse = () => zeigeErgebnis(false);
+    document.addEventListener("fullscreenchange", beiVollbildwechsel);
+    document.addEventListener("visibilitychange", beiSichtwechsel);
+    registriereAbbruch(() => verlasse?.());
+
+    const schleife = (jetzt) => {
+      if (beendet || ergebnisOffen || !laeuft) return;
+      const dtMs = Math.min(100, jetzt - vorher || 16);
+      vorher = jetzt;
+      testMs += dtMs;
+      while (gesprochen < reihe.length && testMs >= gesprochen * tempo) {
+        zaehler.sprich(gesprochen, testMs);
+        sprecher.sprich(reihe[gesprochen].b);
+        gesprochen += 1;
+      }
+      if (controls.schussGedrueckt()) zaehler.druck(testMs);
+      const rest = Math.max(0, testende - performance.now());
+      kopf.textContent = `BUCHSTABEN · REST ${Math.floor(rest / 60_000)}:${String(Math.floor((rest % 60_000) / 1000)).padStart(2, "0")}`;
+      if (performance.now() >= testende) { zeigeErgebnis(true); return; }
+      requestAnimationFrame(schleife);
+    };
+
+    const zeigeErgebnis = async (fertig) => {
+      if (beendet || ergebnisOffen) return;
+      ergebnisOffen = true;
+      sprecher.stopp();
+      speechSynthesis?.cancel?.();
+      document.removeEventListener("fullscreenchange", beiVollbildwechsel);
+      document.removeEventListener("visibilitychange", beiSichtwechsel);
+      kopf.textContent = "";
+      await tuer.schliesse();
+      tuer.verwische(true);
+      const w = zaehler.auswertung();
+      const tafel = document.createElement("div");
+      tafel.className = "ergebnisschicht";
+      tafel.innerHTML = `
+        <div class="frage">${fertig ? "ÜBUNG BEENDET" : "ÜBUNG ABGEBROCHEN"}</div>
+        <div class="ergebnisgross">${w.erkannt} / ${w.erkannt + w.verpasst}</div>
+        <div class="ergebniszeilen">
+          <span>Erkannt: ${w.erkannt}</span>
+          <span>Verpasst: ${w.verpasst}</span>
+          <span>Fehlalarm: ${w.fehlalarm}</span>
+        </div>
+        <button class="punkt" id="u1-uebung-fertig">ZURÜCK ZUR MISSION</button>
+        <div class="ergebnisfuss"><span>${dauer} min · Tempo ${(tempo / 1000).toLocaleString("de-DE", { minimumFractionDigits: 1 })} s · Die Übung zählt nicht zur Statistik</span></div>`;
+      document.body.append(tafel);
+      requestAnimationFrame(() => tafel.classList.add("da"));
+      let geschlossen = false;
+      const schliesse = async () => {
+        if (geschlossen) return;
+        geschlossen = true;
+        tafel.classList.remove("da");
+        setTimeout(() => tafel.remove(), 260);
+        tuer.verwische(false);
+        raeumeAuf();
+        if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
+        await beiEnde(null); // die Übung zählt nie
+        await tuer.oeffne();
+      };
+      verlasse = schliesse;
+      tafel.querySelector("#u1-uebung-fertig").addEventListener("click", schliesse);
+    };
+
+    (async () => {
+      await tuer.oeffne();
+      if (beendet || ergebnisOffen) return;
+      testende = performance.now() + dauer * 60_000;
+      laeuft = true;
+      vorher = performance.now();
+      requestAnimationFrame(schleife);
+    })();
+  }
+
   function starte({ tuer, beiEnde, registriereAbbruch }) {
     // Ein im Feld gestarteter Schussfang darf nicht in den Testlauf weiterlaufen.
     controls.brichSchussFangAb();
-    const { dauer, sla } = einstellung;
+    if (uebungsStart) {
+      uebungsStart = false;
+      starteBuchstabenUebung({ tuer, beiEnde, registriereAbbruch });
+      return;
+    }
+    const { dauer, sla, tempo } = einstellung;
     const schleier = document.createElement("div");
     schleier.className = "laufschleier uebung1";
     schleier.innerHTML = `
@@ -197,8 +341,9 @@ export function erzeugeUebung1({ speicher, controls }) {
     }
 
     const zustand = erzeugeLaufzustand();
-    const reihe = sla ? erzeugeBuchstabenreihe(dauer) : [];
+    const reihe = sla ? erzeugeBuchstabenreihe(dauer, Math.random, tempo) : [];
     const zaehler = sla ? erzeugeSlaZaehler(reihe) : null;
+    const sprecher = sla ? erzeugeSprecher() : null;
     let gesprochen = 0;
     let beendet = false;
     let ergebnisOffen = false;
@@ -211,6 +356,7 @@ export function erzeugeUebung1({ speicher, controls }) {
     const raeumeAuf = () => {
       beendet = true;
       for (const t of zeitgeber) clearTimeout(t);
+      sprecher?.stopp();
       speechSynthesis?.cancel?.();
       document.removeEventListener("fullscreenchange", beiVollbildwechsel);
       document.removeEventListener("visibilitychange", beiSichtwechsel);
@@ -235,13 +381,9 @@ export function erzeugeUebung1({ speicher, controls }) {
     addEventListener("resize", passeGroesseAn);
 
     const sprichBuchstaben = () => {
-      while (sla && gesprochen < reihe.length && zustand.testMs >= gesprochen * BUCHSTABEN_ABSTAND_MS) {
-        const eintrag = reihe[gesprochen];
+      while (sla && gesprochen < reihe.length && zustand.testMs >= gesprochen * tempo) {
         zaehler.sprich(gesprochen, zustand.testMs);
-        const laut = new SpeechSynthesisUtterance(eintrag.b);
-        laut.lang = "de-DE";
-        laut.rate = 1.15;
-        speechSynthesis.speak(laut);
+        sprecher.sprich(reihe[gesprochen].b);
         gesprochen += 1;
       }
     };
@@ -298,6 +440,7 @@ export function erzeugeUebung1({ speicher, controls }) {
       if (beendet || ergebnisOffen) return;
       ergebnisOffen = true;
       for (const t of zeitgeber) clearTimeout(t);
+      sprecher?.stopp();
       speechSynthesis?.cancel?.();
       removeEventListener("resize", passeGroesseAn);
       document.removeEventListener("fullscreenchange", beiVollbildwechsel);
