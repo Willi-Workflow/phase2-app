@@ -1037,12 +1037,14 @@ import * as THREE from "./fremd/three.module.js";
     const zeichne = () => {
       const { kamera, flugzeug, renderer, szene } = drei;
       kamera.rotation.set(zustand.nick, 0, -zustand.roll);
-      // Sichtfeldanteil in Kameraraum: x über die halbe Bildbreite bei der
-      // Flugdistanz, y gestaucht um das Bildverhältnis.
-      const halbeBreite = Math.tan((kamera.fov * Math.PI) / 360) * kamera.aspect * FLUGDISTANZ;
+      // Sichtfeldanteil in Kameraraum aus dem echten Sichtfeld: so landet das
+      // Flugzeug auf jedem Seitenverhältnis auf demselben Bildanteil wie der
+      // SVG-Kreis (Korrektur aus der Task-8-Prüfung, vorher fest 16:9).
+      const halbeHoehe = Math.tan((kamera.fov * Math.PI) / 360) * FLUGDISTANZ;
+      const halbeBreite = halbeHoehe * kamera.aspect;
       flugzeug.position.set(
         (zustand.ziel.x - 0.5) * 2 * halbeBreite,
-        -(zustand.ziel.y - 0.5) * 2 * halbeBreite * (9 / 16),
+        -(zustand.ziel.y - 0.5) * 2 * halbeHoehe,
         -FLUGDISTANZ,
       );
       flugzeug.rotation.z = -zustand.drift.zx.wert * 6; // eigene Kurve neigt die Flächen
@@ -1174,7 +1176,10 @@ Ans Ende des Missions-2-Blocks in `stil.css` anschließen:
   pointer-events: none;
 }
 .uebung1 .zielkreis.deckung { stroke: #e5312b; }
+.laufschleier.uebung1 .testkopf { position: absolute; top: 3vh; left: 50%; transform: translateX(-50%); z-index: 2; }
 ```
+
+Die Kopfzeilen-Regel spiegelt die der Missionen 2 und 4; ohne sie säße die Kopfzeile als einziges Flusskind bildmittig (Korrektur aus der Task-8-Prüfung).
 
 Der Kreisdurchmesser 9 % entspricht `2 * KREIS_R` der Logik; wer einen Wert ändert, zieht den anderen nach.
 
