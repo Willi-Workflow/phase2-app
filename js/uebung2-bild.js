@@ -5,9 +5,9 @@
 import { NADEL_MIN, NADEL_MAX } from "./uebung2.js";
 
 export const BILD = { b: 1600, h: 900 };
-export const RAHMEN = { x: 160, y: 60, b: 1280, h: 700 };
+export const RAHMEN = { x: 160, y: 50, b: 1280, h: 610 };
 export const STRICH_Y = RAHMEN.y + RAHMEN.h * 0.18;
-export const TACHO = { cx: 185, cy: 800, r: 78 };
+export const TACHO = { cx: 230, cy: 780, r: 78 };
 
 export const LINIE = "#dfe9f5";      // weiß mit Röhrenschimmer
 export const ROT = "#e5312b";
