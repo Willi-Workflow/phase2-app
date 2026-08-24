@@ -61,21 +61,10 @@ function tachoSvg() {
   const bogen = `<path id="tachobogen" d="M ${von.x.toFixed(1)} ${von.y.toFixed(1)} A ${TACHO.r} ${TACHO.r} 0 1 1 ${wechsel.x.toFixed(1)} ${wechsel.y.toFixed(1)}" pathLength="${ROT_AB_KT - NADEL_MIN}" fill="none" stroke="${TUERKIS}" stroke-width="13" stroke-dasharray="3.8 1.2"/>`
     + `<path id="rotband" d="M ${wechsel.x.toFixed(1)} ${wechsel.y.toFixed(1)} A ${TACHO.r} ${TACHO.r} 0 0 1 ${bis.x.toFixed(1)} ${bis.y.toFixed(1)}" pathLength="${NADEL_MAX - ROT_AB_KT}" fill="none" stroke="${ROT_BAND}" stroke-width="13" stroke-dasharray="3.8 1.2"/>`;
   // AIRSPEED dicht unter der Rahmenkante, KNOTS auf der Zeile von 160 und 40.
+  // Bewusst ohne Leuchtfilter: Willi will die Zeichnung scharf (24.08.2026).
   const zeileKnots = punktAmTacho(gradFuerKnoten(NADEL_MAX), TACHO.r + 27).y + 4;
-  // Röhrenglut: weiche Leuchtkopie unter der scharfen Zeichnung, wie das
-  // Nachleuchten der Bildröhre in der Video-Nahaufnahme.
   return `
-    <defs>
-      <filter id="roehrenglut" x="-30%" y="-30%" width="160%" height="160%">
-        <feGaussianBlur stdDeviation="3" result="glut"/>
-        <feMerge>
-          <feMergeNode in="glut"/>
-          <feMergeNode in="glut"/>
-          <feMergeNode in="SourceGraphic"/>
-        </feMerge>
-      </filter>
-    </defs>
-    <g font-family="Arial, Helvetica, sans-serif" filter="url(#roehrenglut)">
+    <g font-family="Arial, Helvetica, sans-serif">
       ${bogen}
       ${striche.join("")}
       <text x="${TACHO.cx}" y="${(TACHO.cy - TACHO.r - 16).toFixed(1)}" fill="${LINIE}" font-size="12" text-anchor="middle" letter-spacing="1">AIRSPEED</text>
