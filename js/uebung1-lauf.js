@@ -9,15 +9,21 @@ import * as THREE from "./fremd/three.module.js";
 import { GLTFLoader } from "./fremd/GLTFLoader.js";
 
 // Buchstabenklänge: ElevenLabs-Aufnahmen (Stimme Ralf DE Doku) unter
-// klaenge/buchstaben, je Buchstabe eine Datei. Spielt ein Klang nicht,
-// spricht ersatzweise der Browser.
+// klaenge/buchstaben, je Buchstabe eine Datei. Alle Klänge werden beim
+// Anlegen des Sprechers vorgeladen, damit im Lauf nichts nachlädt und
+// stockt. Spielt ein Klang nicht, spricht ersatzweise der Browser.
 const klangVon = (b) => new URL(`../klaenge/buchstaben/${b.toLowerCase()}.mp3`, import.meta.url).href;
 function erzeugeSprecher() {
   const vorrat = new Map();
+  for (const b of "abcdefghijklmnopqrstuvwxyz") {
+    const klang = new Audio(klangVon(b));
+    klang.preload = "auto";
+    vorrat.set(b.toUpperCase(), klang);
+  }
   return {
     sprich(b) {
-      let klang = vorrat.get(b);
-      if (!klang) { klang = new Audio(klangVon(b)); vorrat.set(b, klang); }
+      const klang = vorrat.get(b.toUpperCase());
+      if (!klang) return;
       klang.currentTime = 0;
       klang.play().catch(() => {
         const laut = new SpeechSynthesisUtterance(b);
