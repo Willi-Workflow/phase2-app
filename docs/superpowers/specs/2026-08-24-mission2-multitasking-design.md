@@ -13,12 +13,12 @@ Unter `entwurf/bilder/`:
 ## Bühne und Optik
 
 - Schwarzer Vollbildgrund, kein Cockpit, keine Zierde: Der Lauf sieht aus wie das Original auf dem Prüfgerät.
-- Ein großer rechteckiger Rahmen aus dünnen, weißen Linien mit leicht bläulichem Röhrenschimmer, mittig auf der Fläche, Breite etwa 80 Prozent, Höhe etwa 68 Prozent des Fensters, damit die Geschwindigkeitsanzeige wie in Abbildung 3-8 frei unter dem Rahmen liegt.
+- Ein großer rechteckiger Rahmen aus dünnen, weißen Linien mit leicht bläulichem Röhrenschimmer, mittig auf der Fläche, Breite etwa 88 Prozent, Höhe etwa 67 Prozent des Fensters (Fassung nach Willis Sichtung vom 24.08.2026: näher am Video, der Rahmen füllt den Schirm fast ganz, die Geschwindigkeitsanzeige liegt frei darunter).
 - Ein Linienkreuz teilt den Rahmen in vier Felder: eine waagerechte Linie über die volle Breite auf halber Höhe, eine senkrechte Linie über die volle Höhe in der Mitte.
 - Im Schnittpunkt der weiße Zielkreis, nur Umriss, Durchmesser etwa 4 Prozent der Rahmenbreite.
 - Das rote Fadenkreuz (Kreisumriss mit über den Kreis hinausstehendem Kreuz, sattes Rot): vom Stick gesteuert, frei im Rahmen beweglich.
 - Der rote Senkrechtstrich (kurzer, dicker Balken) auf fester Höhe im oberen Rahmenviertel, nur waagerecht beweglich: von den Ruderpedalen gesteuert. Ziel ist die weiße senkrechte Linie.
-- Unten links, außerhalb des Rahmens, die Geschwindigkeitsanzeige nach Abbildung 3-8 und Video: rundes Zifferblatt auf schwarzem Grund, Aufschrift AIRSPEED und KNOTS, Skala 40 bis 160 mit Zahlen in Vierzigerschritten und Strichen dazwischen, türkiser Skalenbogen entlang der Marken, weiße Nadel. Der Sollwert wird als roter Zielkeil außen am Skalenring markiert und steht zusätzlich als Zahl rechts neben der Anzeige (etwa "SOLL 75 kt").
+- Unten links, außerhalb des Rahmens, die Geschwindigkeitsanzeige nach Abbildung 3-8 und Video, deutlich größer als in der ersten Fassung: rundes Zifferblatt auf schwarzem Grund, Aufschrift AIRSPEED und KNOTS, Skala 40 bis 160 mit Zahlen in Zwanzigerschritten wie im Original und Strichen dazwischen, türkiser Skalenbogen entlang der Marken, weiße Nadel. Der feste Sollwert ist als roter Zielkeil außen am Skalenring markiert; einen Text daneben gibt es wie im Original nicht, der Sollwert steht im Hinweistext der Missionsseite.
 - Kopfzeile oben mittig in gedeckter, kleiner Schrift: gewählte Kombination und Test-Restzeit (etwa "STICK + RUDER · REST 4:32").
 - Keine weiteren Bildelemente. Rückmeldung bei einem Treffer: Das getroffene Zielelement (Zielkreis, senkrechte Linie beziehungsweise Skalenbogen) blitzt kurz hell auf, dann wird neu gesetzt.
 
@@ -26,13 +26,14 @@ Unter `entwurf/bilder/`:
 
 - Rollen aus der bestehenden Controls-Anlage (`js/controls.js`): Stick quer und Stick längs bewegen das Fadenkreuz, das Seitenruder bewegt den Strich, der Schubregler die Nadel. Die Tastatur-Ersatzsteuerung der Controls-Anlage gilt unverändert.
 - Steuerlogik als Rate: Die Auslenkung der Achse bestimmt die Geschwindigkeit des Elements (Stick und Ruder um die Ruhelage, Schub um die Mittelstellung). So verlangt das Halten echte Arbeit.
-- Drift (Willis Festlegung): Jedes aktive Element wandert zusätzlich langsam mit einer sich träge ändernden Zufallsdrift. Die Drift ist so bemessen, dass ein losgelassenes Element binnen weniger Sekunden aus der Deckung läuft.
+- Drift (Willis Festlegung, am 24.08.2026 verschärft): Jedes aktive Element wandert zusätzlich mit einer sich träge ändernden Zufallsdrift, spürbar kräftig. Ein losgelassenes Element läuft binnen weniger Sekunden aus der Deckung.
 - Elemente bleiben in ihren Grenzen: Fadenkreuz im Rahmen, Strich zwischen den Rahmenkanten, Nadel zwischen 40 und 160 Knoten.
 
 ## Treffer-Logik
 
 - Deckung: Fadenkreuzmitte innerhalb des Zielkreises; Strichmitte höchstens 1 Prozent der Rahmenbreite von der senkrechten Linie entfernt; Nadel innerhalb von 2 Knoten um den Sollwert.
-- Ein Treffer entsteht, wenn die Deckung eine volle Sekunde ohne Unterbrechung gehalten wird. Danach setzt das System das jeweilige Element neu: das Fadenkreuz auf eine zufällige Position im Rahmen, der Strich auf eine zufällige Waagerechtposition, der Sollwert auf einen neuen Wert (45 bis 155 in Fünferschritten, nie der alte Wert). Das Zielbild selbst (Kreis, Linie) bleibt fest.
+- Ein Treffer entsteht, wenn die Deckung eine volle Sekunde ohne Unterbrechung gehalten wird. Danach setzt das System das jeweilige gesteuerte Element neu, wie im Original: das Fadenkreuz auf eine zufällige Position im Rahmen, der Strich auf eine zufällige Waagerechtposition, die Nadel auf einen zufälligen Wert im Fünferraster mit mindestens 20 Knoten Abstand zum Sollwert. Die Ziele selbst (Kreis, Linie, Sollwert) bleiben fest.
+- Der Sollwert der Geschwindigkeit ist fest 95 Knoten (Willis Festlegung vom 24.08.2026).
 - Kombitreffer: Erzielt ein Element einen Treffer, während alle übrigen aktiven Elemente in diesem Moment ebenfalls in Deckung stehen, zählt zusätzlich ein Kombitreffer.
 
 ## Laufaufbau (Willis Festlegung vom 24.08.2026: freie Auswahl der Steuerelemente)
