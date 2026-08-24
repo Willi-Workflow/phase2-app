@@ -19,6 +19,7 @@ export function erzeugeControls(speicher) {
   let schusstaste = null;    // {geraet, knopf}
   let schussRaumAlt = false;
   let schussPadAlt = false;
+  let schussPadFreiSeit = 0;  // seit wann der Geräteknopf sauber frei ist
   let fangKnopf = false;
   const tasten = new Set();
   let schubTastatur = 0.45;
@@ -85,18 +86,31 @@ export function erzeugeControls(speicher) {
     schusstasteVon() { return schusstaste; },
 
     // Flanke der Schusstaste: der zugewiesene Geräteknopf, Ersatz Leertaste,
-    // beide Quellen mit eigener Flanke.
+    // beide Quellen mit eigener Flanke. Der Geräteknopf ist entprellt: Er
+    // zählt nur, wenn er vorher mindestens 120 ms sauber frei war. Analoges
+    // Flattern um die Schwelle erzeugt sonst Phantomdrücke, die Antwort-
+    // fenster verbrauchen, und ein dauerhaft gemeldeter Schalter darf gar
+    // nicht zählen.
     schussGedrueckt() {
+      const jetztMs = performance.now();
       const raumJetzt = tasten.has("Space");
-      let padJetzt = false;
-      if (schusstaste) {
-        const pad = pads().find((p) => p.id === schusstaste.geraet);
-        padJetzt = Boolean(pad?.buttons[schusstaste.knopf]?.pressed);
-      }
-      const flanke = (raumJetzt && !schussRaumAlt) || (padJetzt && !schussPadAlt);
+      const raumFlanke = raumJetzt && !schussRaumAlt;
       schussRaumAlt = raumJetzt;
-      schussPadAlt = padJetzt;
-      return flanke;
+
+      let padRoh = false;
+      if (schusstaste) {
+        const knopf = pads().find((p) => p.id === schusstaste.geraet)?.buttons[schusstaste.knopf];
+        padRoh = Boolean(knopf && (knopf.pressed || knopf.value > 0.6));
+      }
+      let padFlanke = false;
+      if (padRoh) {
+        if (!schussPadAlt && schussPadFreiSeit && jetztMs - schussPadFreiSeit >= 120) padFlanke = true;
+        schussPadAlt = true;
+      } else {
+        if (schussPadAlt || !schussPadFreiSeit) schussPadFreiSeit = jetztMs;
+        schussPadAlt = false;
+      }
+      return raumFlanke || padFlanke;
     },
 
     // Anlernen wie beim Achsen-Fang: der nächste neu gedrückte Knopf eines
@@ -261,7 +275,12 @@ export function erzeugeControls(speicher) {
         }
         for (const feld of geraeteFeld.querySelectorAll(".geraeteachsen")) {
           const pad = pads().find((p) => p.id === feld.dataset.kennung);
-          feld.textContent = pad ? pad.axes.map((a) => a.toFixed(2)).join("  ") : "";
+          if (!pad) { feld.textContent = ""; continue; }
+          // Gedrückte Knopfnummern live anzeigen: So fallen klemmende oder
+          // flatternde Knöpfe (Phantomdrücke der Schusstaste) sofort auf.
+          const gedrueckt = pad.buttons.map((k, i) => (k.pressed ? i : null)).filter((i) => i !== null);
+          feld.textContent = pad.axes.map((a) => a.toFixed(2)).join("  ")
+            + (gedrueckt.length ? ` · Knöpfe: ${gedrueckt.join(", ")}` : "");
         }
         requestAnimationFrame(takt);
       };
