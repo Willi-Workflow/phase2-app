@@ -212,6 +212,20 @@ main { position: relative; z-index: 1; }
 .punkt.klein { width: auto; margin-top: 0; padding: 6px 10px; font-size: 11px; }
 .controlsdialog input[type="range"] { width: 100%; }
 
+/* Mission 2: SMT-Bühne. Schwarzer Grund wie das Original, die SVG füllt das
+   Fenster; Kopfzeile fest oben, Trefferaufblitzen als kurzes Aufhellen. */
+.laufschleier.uebung2 { display: grid; place-items: center; padding: 0; background: #000; }
+.smtbuehne { position: absolute; inset: 0; }
+.smtbuehne svg { width: 100%; height: 100%; display: block; }
+.laufschleier.uebung2 .testkopf { position: absolute; top: 3vh; left: 50%; transform: translateX(-50%); z-index: 2; color: #6f7d8c; letter-spacing: 0.25em; }
+.smtblitz { filter: brightness(2.4) drop-shadow(0 0 6px rgba(223, 233, 245, 0.9)); }
+
+/* Mission 2: Wahlknöpfe der Steuerelemente auf der Missionsseite */
+.wahlknoepfe { display: flex; gap: 8px; }
+.wahlknopf { font-family: inherit; font-size: 11px; letter-spacing: 0.08em; color: var(--gedeckt); background: #161a10; border: 1px solid #39422c; border-radius: 4px; padding: 6px 12px; cursor: pointer; }
+.wahlknopf.an { color: var(--hell); background: #232c18; border-color: #6a7a52; }
+.wahlhinweis { font-size: 11px; letter-spacing: 0.08em; color: #c9ae4a; margin-top: 6px; }
+
 /* Instrumententafel Mission 4 */
 .instrumententafel {
   display: flex;
