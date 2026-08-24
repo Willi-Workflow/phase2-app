@@ -11,7 +11,10 @@ export const TACHO = { cx: 240, cy: 770, r: 95 };
 
 export const LINIE = "#dfe9f5";      // weiß mit Röhrenschimmer
 export const ROT = "#e5312b";
-export const TUERKIS = "#8fe3df";
+export const TUERKIS = "#6ed8d2";
+// Bandende der Skala: das Original ist reines Rot, die Bildröhre strahlt es
+// aber hell-rosa aus; der aufgehellte Ton trifft den Videoscreenshot.
+export const ROT_BAND = "#e8564e";
 
 export const xImBild = (x) => RAHMEN.x + x * RAHMEN.b;
 export const yImBild = (y) => RAHMEN.y + y * RAHMEN.h;
@@ -50,23 +53,37 @@ function tachoSvg() {
     }
   }
   // Skalenband auf dem Markenradius: türkis bis 140, das Ende bis 160 rot.
+  // pathLength misst jeden Bogen in Knoten, das Strichmuster teilt ihn wie im
+  // Original in Fünf-Knoten-Segmente (3.8 Band, 1.2 Lücke).
   const von = punktAmTacho(gradFuerKnoten(NADEL_MIN), TACHO.r);
   const wechsel = punktAmTacho(gradFuerKnoten(ROT_AB_KT), TACHO.r);
   const bis = punktAmTacho(gradFuerKnoten(NADEL_MAX), TACHO.r);
-  const bogen = `<path id="tachobogen" d="M ${von.x.toFixed(1)} ${von.y.toFixed(1)} A ${TACHO.r} ${TACHO.r} 0 1 1 ${wechsel.x.toFixed(1)} ${wechsel.y.toFixed(1)}" fill="none" stroke="${TUERKIS}" stroke-width="13"/>`
-    + `<path id="rotband" d="M ${wechsel.x.toFixed(1)} ${wechsel.y.toFixed(1)} A ${TACHO.r} ${TACHO.r} 0 0 1 ${bis.x.toFixed(1)} ${bis.y.toFixed(1)}" fill="none" stroke="${ROT}" stroke-width="13"/>`;
+  const bogen = `<path id="tachobogen" d="M ${von.x.toFixed(1)} ${von.y.toFixed(1)} A ${TACHO.r} ${TACHO.r} 0 1 1 ${wechsel.x.toFixed(1)} ${wechsel.y.toFixed(1)}" pathLength="${ROT_AB_KT - NADEL_MIN}" fill="none" stroke="${TUERKIS}" stroke-width="13" stroke-dasharray="3.8 1.2"/>`
+    + `<path id="rotband" d="M ${wechsel.x.toFixed(1)} ${wechsel.y.toFixed(1)} A ${TACHO.r} ${TACHO.r} 0 0 1 ${bis.x.toFixed(1)} ${bis.y.toFixed(1)}" pathLength="${NADEL_MAX - ROT_AB_KT}" fill="none" stroke="${ROT_BAND}" stroke-width="13" stroke-dasharray="3.8 1.2"/>`;
   // AIRSPEED dicht unter der Rahmenkante, KNOTS auf der Zeile von 160 und 40.
   const zeileKnots = punktAmTacho(gradFuerKnoten(NADEL_MAX), TACHO.r + 27).y + 4;
+  // Röhrenglut: weiche Leuchtkopie unter der scharfen Zeichnung, wie das
+  // Nachleuchten der Bildröhre in der Video-Nahaufnahme.
   return `
-    <g font-family="Arial, Helvetica, sans-serif">
+    <defs>
+      <filter id="roehrenglut" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="3" result="glut"/>
+        <feMerge>
+          <feMergeNode in="glut"/>
+          <feMergeNode in="glut"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+    <g font-family="Arial, Helvetica, sans-serif" filter="url(#roehrenglut)">
       ${bogen}
       ${striche.join("")}
       <text x="${TACHO.cx}" y="${(TACHO.cy - TACHO.r - 16).toFixed(1)}" fill="${LINIE}" font-size="12" text-anchor="middle" letter-spacing="1">AIRSPEED</text>
       <text x="${TACHO.cx}" y="${zeileKnots.toFixed(1)}" fill="${LINIE}" font-size="9" text-anchor="middle" letter-spacing="2">KNOTS</text>
       <g id="nadel" transform="rotate(180 ${TACHO.cx} ${TACHO.cy})">
-        <line x1="${TACHO.cx}" y1="${TACHO.cy}" x2="${TACHO.cx}" y2="${TACHO.cy - TACHO.r + 12}" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/>
+        <line x1="${TACHO.cx}" y1="${TACHO.cy}" x2="${TACHO.cx}" y2="${TACHO.cy - TACHO.r + 8}" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
       </g>
-      <circle cx="${TACHO.cx}" cy="${TACHO.cy}" r="6" fill="#c8ccd2"/>
+      <circle cx="${TACHO.cx}" cy="${TACHO.cy}" r="4.5" fill="#59626a"/>
     </g>`;
 }
 
