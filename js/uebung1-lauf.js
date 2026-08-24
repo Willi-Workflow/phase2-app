@@ -103,10 +103,34 @@ export function erzeugeUebung1({ speicher, controls }) {
       renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
       renderer.setClearColor(0x000000, 0);
       const szene = new THREE.Scene();
-      // Dunstfarbe deckungsgleich mit dem Himmelsverlauf auf Horizonthöhe
-      // (stil.css), damit Boden und Himmel ohne harte Kante ineinander
-      // übergehen; der frühe Nebelbeginn zieht den Dunstgürtel breit.
+      // Der frühe Nebelbeginn zieht den Dunstgürtel breit; die Dunstfarbe
+      // entspricht dem Kuppelton auf Horizonthöhe.
       szene.fog = new THREE.Fog(0xc3d3e4, 600, 5200);
+
+      // Himmelskuppel statt Seitengrund: Der Verlauf sitzt in der Welt und
+      // wandert mit Nicken und Rollen mit, dadurch trifft der Bodendunst den
+      // Himmel in jeder Fluglage im selben Ton und der Horizont bleibt ein
+      // weicher Gürtel wie im Video, nie eine Linie.
+      const himmelBild = document.createElement("canvas");
+      himmelBild.width = 4;
+      himmelBild.height = 512;
+      const stift = himmelBild.getContext("2d");
+      const verlauf = stift.createLinearGradient(0, 0, 0, 512);
+      verlauf.addColorStop(0, "#3d6cb4");
+      verlauf.addColorStop(0.4, "#93b2d8");
+      verlauf.addColorStop(0.5, "#c3d3e4");
+      verlauf.addColorStop(1, "#c3d3e4");
+      stift.fillStyle = verlauf;
+      stift.fillRect(0, 0, 4, 512);
+      const himmelTextur = new THREE.CanvasTexture(himmelBild);
+      // Ohne Farbraum-Kennzeichnung würde die Textur linear gedeutet und
+      // träfe den Nebelton nicht mehr, dann stünde wieder eine Kante im Bild.
+      himmelTextur.colorSpace = THREE.SRGBColorSpace;
+      const kuppel = new THREE.Mesh(
+        new THREE.SphereGeometry(7500, 24, 24),
+        new THREE.MeshBasicMaterial({ map: himmelTextur, side: THREE.BackSide, fog: false }),
+      );
+      szene.add(kuppel);
       const kamera = new THREE.PerspectiveCamera(62, 16 / 9, 1, 9000);
       szene.add(kamera);
       szene.add(new THREE.HemisphereLight(0xffffff, 0x565f4c, 1.05));
