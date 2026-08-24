@@ -128,3 +128,22 @@ export function takt(z, eingaben, dtMs, rnd = Math.random) {
   }
   return ereignisse;
 }
+
+// Führende Kennzahl: Anteil der Laufzeit, in der der Kreis auf dem Flugzeug
+// lag, in ganzen Prozent. Die Zeiten daneben folgen den Messgrößen des
+// Originals (Zeit bis zum ersten Treffer, mittlere Zeit je Treffer).
+export function deckungsquote(z) {
+  if (!z.testMs) return 0;
+  return Math.round((z.deckungMs / z.testMs) * 100);
+}
+
+const zehntel = (ms) => Math.round(ms / 100) / 10;
+
+export function ergebnisWerte(z) {
+  return {
+    treffer: z.treffer,
+    deckungsquote: deckungsquote(z),
+    ersterTrefferS: z.ersterTrefferMs == null ? null : zehntel(z.ersterTrefferMs),
+    mittelS: z.treffer ? zehntel(z.letzterTrefferMs / z.treffer) : null,
+  };
+}

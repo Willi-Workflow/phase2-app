@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   TESTDAUERN, HALTEZEIT_MS, KREIS_R, BILDVERHAELTNIS, MINDESTABSTAND, KEGEL, SPRUNG, MAXROLL,
   zufallsZiel, erzeugeLaufzustand, takt, inDeckung, zufallsKreis,
+  deckungsquote, ergebnisWerte,
 } from "../js/uebung1.js";
 
 const still = { stickX: 0, stickY: 0, ruder: 0 };
@@ -120,4 +121,32 @@ test("zufallsKreis: Schleifenwächter greift bei sturem Zufall", () => {
   const stur = () => 0.5;        // träfe immer die Zielnähe
   const k = zufallsKreis(ziel, stur);
   assert.ok(abstandFuerTest(k, ziel) >= MINDESTABSTAND);
+});
+
+test("Deckungsquote in Prozent", () => {
+  const z = erzeugeLaufzustand(halb);
+  z.testMs = 60_000;
+  z.deckungMs = 21_000;
+  assert.equal(deckungsquote(z), 35);
+  assert.equal(deckungsquote(erzeugeLaufzustand(halb)), 0); // ohne Laufzeit
+});
+
+test("Ergebniswerte: Zeiten in Sekunden mit einer Nachkommastelle", () => {
+  const z = erzeugeLaufzustand(halb);
+  z.testMs = 120_000;
+  z.deckungMs = 30_000;
+  z.treffer = 4;
+  z.ersterTrefferMs = 8_460;
+  z.letzterTrefferMs = 100_000;
+  assert.deepEqual(ergebnisWerte(z), {
+    treffer: 4, deckungsquote: 25, ersterTrefferS: 8.5, mittelS: 25,
+  });
+});
+
+test("Ergebniswerte ohne Treffer bleiben leer", () => {
+  const z = erzeugeLaufzustand(halb);
+  z.testMs = 60_000;
+  const w = ergebnisWerte(z);
+  assert.equal(w.ersterTrefferS, null);
+  assert.equal(w.mittelS, null);
 });
