@@ -13,10 +13,12 @@ export function erzeugeControls(speicher) {
   let zuordnung = {};        // rolle -> {geraet, achse, invert}
   let totzone = 0.06;
   let expo = 0;
-  let knopfAlt = false;
+  let knopfPadAlt = false;
+  let knopfRaumAlt = false;
   let fang = null;           // {rolle, basen, beiTreffer}
   let schusstaste = null;    // {geraet, knopf}
-  let schussAlt = false;
+  let schussRaumAlt = false;
+  let schussPadAlt = false;
   let fangKnopf = false;
   const tasten = new Set();
   let schubTastatur = 0.45;
@@ -68,24 +70,32 @@ export function erzeugeControls(speicher) {
       return tastaturWert(rolle);
     },
 
+    // Flanken je Quelle getrennt: Ein dauerhaft gedrückt gemeldeter
+    // Geräteknopf (etwa ein Schalter oder ein klemmender Knopf) darf frische
+    // Tastendrücke der anderen Quelle nicht verdecken.
     knopfGedrueckt() {
-      const jetzt = pads().some((p) => p.buttons.some((k) => k.pressed)) || tasten.has("Space");
-      const flanke = jetzt && !knopfAlt;
-      knopfAlt = jetzt;
+      const padJetzt = pads().some((p) => p.buttons.some((k) => k.pressed));
+      const raumJetzt = tasten.has("Space");
+      const flanke = (padJetzt && !knopfPadAlt) || (raumJetzt && !knopfRaumAlt);
+      knopfPadAlt = padJetzt;
+      knopfRaumAlt = raumJetzt;
       return flanke;
     },
 
     schusstasteVon() { return schusstaste; },
 
-    // Flanke der Schusstaste: der zugewiesene Geräteknopf, Ersatz Leertaste.
+    // Flanke der Schusstaste: der zugewiesene Geräteknopf, Ersatz Leertaste,
+    // beide Quellen mit eigener Flanke.
     schussGedrueckt() {
-      let jetzt = tasten.has("Space");
+      const raumJetzt = tasten.has("Space");
+      let padJetzt = false;
       if (schusstaste) {
         const pad = pads().find((p) => p.id === schusstaste.geraet);
-        if (pad?.buttons[schusstaste.knopf]?.pressed) jetzt = true;
+        padJetzt = Boolean(pad?.buttons[schusstaste.knopf]?.pressed);
       }
-      const flanke = jetzt && !schussAlt;
-      schussAlt = jetzt;
+      const flanke = (raumJetzt && !schussRaumAlt) || (padJetzt && !schussPadAlt);
+      schussRaumAlt = raumJetzt;
+      schussPadAlt = padJetzt;
       return flanke;
     },
 
