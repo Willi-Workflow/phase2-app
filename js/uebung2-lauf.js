@@ -2,7 +2,7 @@
 // Rahmen, Fadenkreuz, Ruderstrich und Geschwindigkeitsanzeige. Die Logik
 // rechnet in uebung2.js, hier laufen Achsenabfrage, Zeichnung und Tafeln.
 import {
-  TESTDAUERN, ELEMENTE, erzeugeLaufzustand, takt, punkte, pruefeAuswahl,
+  TESTDAUERN, ELEMENTE, erzeugeLaufzustand, takt, punkte, pruefeAuswahl, deckungsquote,
 } from "./uebung2.js";
 import { xImBild, yImBild, TACHO, gradFuerKnoten, buehneSvg } from "./uebung2-bild.js";
 
@@ -151,6 +151,7 @@ export function erzeugeUebung2({ speicher, controls }) {
       tuer.verwische(true);
 
       const wert = punkte(zustand, dauer);
+      const quote = deckungsquote(zustand);
       const zeilen = auswahl.map((e) =>
         `<span>${NAMEN[e]}: ${zustand.treffer[e]} Treffer</span>`).join("");
       const kombizeile = auswahl.length > 1 ? `<span>Kombitreffer: ${zustand.kombitreffer}</span>` : "";
@@ -159,7 +160,7 @@ export function erzeugeUebung2({ speicher, controls }) {
       tafel.className = "ergebnisschicht";
       tafel.innerHTML = `
         <div class="frage">${gewertet ? "TEST BEENDET" : "TEST ABGEBROCHEN"}</div>
-        <div class="ergebnisgross">${wert} PUNKTE</div>
+        <div class="ergebnisgross">${quote} %</div>
         <div class="ergebniszeilen">${zeilen}${kombizeile}</div>
         <button class="punkt" id="u2-fertig">ZURÜCK ZUR MISSION</button>
         <div class="ergebnisfuss">
@@ -189,6 +190,7 @@ export function erzeugeUebung2({ speicher, controls }) {
             trefferSchub: zustand.treffer.schub,
             kombitreffer: zustand.kombitreffer,
             punkte: wert,
+            deckungsquote: quote,
           },
         } : null);
         await tuer.oeffne();

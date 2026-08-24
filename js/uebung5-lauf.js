@@ -236,9 +236,9 @@ export function erzeugeUebung5({ speicher }) {
       tafel.className = "ergebnisschicht";
       tafel.innerHTML = `
         <div class="frage">${gewertet ? "TEST BEENDET" : "TEST ABGEBROCHEN"}</div>
-        <div class="ergebnisgross">${wert} PUNKTE</div>
+        <div class="ergebnisgross">${quote} %</div>
         <div class="ergebniszeilen">
-          <span class="trefferzeile">${richtig} von ${gestellt} Aufgaben richtig · ${quote} %</span>
+          <span class="trefferzeile">${richtig} von ${gestellt} Aufgaben richtig</span>
         </div>
         <button class="punkt" id="u5-fertig">ZURÜCK ZUR MISSION</button>
         <div class="ergebnisfuss">

@@ -89,6 +89,8 @@ export function erzeugeLaufzustand(auswahl, rnd = Math.random) {
     halte: { stick: 0, ruder: 0, schub: 0 },
     treffer: { stick: 0, ruder: 0, schub: 0 },
     kombitreffer: 0,
+    deckungMs: { stick: 0, ruder: 0, schub: 0 },
+    testMs: 0,
   };
 }
 
@@ -118,6 +120,8 @@ export function takt(z, eingaben, dtMs, rnd = Math.random) {
 
   const deckung = {};
   for (const element of aktiv) deckung[element] = inDeckung(z, element);
+  z.testMs += dtMs;
+  for (const element of aktiv) if (deckung[element]) z.deckungMs[element] += dtMs;
   for (const element of aktiv) {
     if (deckung[element]) {
       z.halte[element] += dtMs;
@@ -144,6 +148,15 @@ export function punkte(z, dauerMin) {
   if (!dauerMin) return 0;
   const einzel = z.treffer.stick + z.treffer.ruder + z.treffer.schub;
   return Math.round((einzel + 2 * z.kombitreffer) / dauerMin);
+}
+
+// Deckungsquote: Anteil der Testzeit in Deckung, über die gewählten Elemente
+// gemittelt und in Prozent gerundet. Nah am Original, das die Zeit auf dem
+// Ziel misst; die gespeicherte Kennzahl bleibt die Punktrechnung.
+export function deckungsquote(z) {
+  if (!z.testMs || z.auswahl.length === 0) return 0;
+  const summe = z.auswahl.reduce((s, e) => s + z.deckungMs[e], 0);
+  return Math.round((summe / (z.testMs * z.auswahl.length)) * 100);
 }
 
 export function pruefeAuswahl(auswahl) {

@@ -4,7 +4,7 @@ import {
   TESTDAUERN, ELEMENTE, HALTEZEIT_MS, NADEL_MIN, NADEL_MAX,
   ZIELKREIS_R, STRICH_TOLERANZ, NADEL_TOLERANZ, SOLL_KT, RAHMEN_VERHAELTNIS,
   erzeugeLaufzustand, takt, zufallsFadenkreuz, zufallsStrich,
-  inDeckung, punkte, pruefeAuswahl, zufallsNadel,
+  inDeckung, punkte, pruefeAuswahl, zufallsNadel, deckungsquote,
 } from "../js/uebung2.js";
 
 function saatZufall(saat) {
@@ -190,4 +190,23 @@ test("inDeckung: senkrechter Rand des Zielkreises zählt wie der sichtbare Kreis
   assert.ok(inDeckung(z, "stick"));
   z.fadenkreuz = { x: 0.5 + 0.038, y: 0.5 };
   assert.ok(!inDeckung(z, "stick"));
+});
+
+test("deckungsquote: Anteil der Testzeit in Deckung, gemittelt", () => {
+  const z = { auswahl: ["stick", "ruder"], testMs: 10000, deckungMs: { stick: 5000, ruder: 2500, schub: 0 } };
+  assert.equal(deckungsquote(z), 38);
+  assert.equal(deckungsquote({ auswahl: ["stick"], testMs: 0, deckungMs: { stick: 0, ruder: 0, schub: 0 } }), 0);
+});
+
+test("takt: sammelt Deckungszeit und Testzeit", () => {
+  const rnd = saatZufall(47);
+  const z = erzeugeLaufzustand(["ruder"], rnd);
+  z.strich.x = 0.5;
+  takt(z, RUHE, 300, rnd);
+  assert.equal(z.testMs, 300);
+  assert.equal(z.deckungMs.ruder, 300);
+  z.strich.x = 0.9;
+  takt(z, RUHE, 100, rnd);
+  assert.equal(z.testMs, 400);
+  assert.equal(z.deckungMs.ruder, 300);
 });

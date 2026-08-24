@@ -52,7 +52,7 @@ Fassung nach Willis Vorgabe vom 23.08.2026: Testdauer statt fester Aufgabenzahl.
 - Kennzahl des Laufs: der Punkteschnitt je gestellter Aufgabe, hochgerechnet auf 0 bis 100. Gerechnet wird Punktesumme geteilt durch (gestellte Aufgaben mal 10), das Ganze mal 100 und gerundet. So bleiben Läufe verschiedener Testdauern untereinander vergleichbar; belohnt wird Richtigkeit und Tempo je Aufgabe, nicht die bloße Menge.
 - `js/missionen.js`: Mission 5 erhält `kennzahlName: "Punkte"` und `maximal: 100`. `wertung` bleibt auf `false` (Probebetrieb), bis Willi die Übung als fertig einstuft.
 - Gespeicherte Laufdaten (`daten`): `art: "flugphysik"`, `dauerMin`, `gestellt`, `richtig`, `quote` (Prozent), `punkte`. Einzelne Aufgaben werden nicht gespeichert.
-- Die Ergebnistafel führt mit den Punkten, darunter Richtige von Gestellt und die Trefferquote; die Fußzeile nennt Testdauer, Antwortzeit je Aufgabe und die Zahl der gestellten Aufgaben.
+- Die Ergebnistafel führt mit der Trefferquote in Prozent (Willis Festlegung vom 24.08.2026: alle Missionen zeigen auf der Tafel Prozent statt Punkte), darunter Richtige von Gestellt; die Fußzeile nennt Testdauer, Antwortzeit je Aufgabe und die Zahl der gestellten Aufgaben. Die gespeicherte Kennzahl bleibt der Punkteschnitt.
 
 ## Wissensbereich als Karteikartenstapel
 

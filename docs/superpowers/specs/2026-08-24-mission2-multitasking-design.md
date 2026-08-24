@@ -48,8 +48,9 @@ Unter `entwurf/bilder/`:
 
 - Punkte des Laufs: (Summe aller Einzeltreffer plus 2 mal Summe der Kombitreffer) geteilt durch die Testdauer in Minuten, gerundet. So bleiben Läufe verschiedener Dauern vergleichbar. Bei nur einem gewählten Element gibt es naturgemäß keine Kombitreffer; die gewählte Kombination steht in den Laufdaten, damit Vergleiche einzuordnen sind.
 - `js/missionen.js`: Mission 2 behält `kennzahlName: "Punkte"`, ohne `maximal` (die Diagrammskala richtet sich nach den Läufen). `wertung` bleibt auf `false` (Probebetrieb), bis Willi die Übung als fertig einstuft.
-- Gespeicherte Laufdaten (`daten`): `art: "multitasking"`, `dauerMin`, `auswahl` (Feld der gewählten Elemente), `trefferStick`, `trefferRuder`, `trefferSchub`, `kombitreffer`, `punkte`.
-- Die Ergebnistafel führt mit den Punkten, darunter die Aufschlüsselung (Treffer je gewähltem Steuerelement und Kombitreffer); die Fußzeile nennt Testdauer und gewählte Kombination.
+- Gespeicherte Laufdaten (`daten`): `art: "multitasking"`, `dauerMin`, `auswahl` (Feld der gewählten Elemente), `trefferStick`, `trefferRuder`, `trefferSchub`, `kombitreffer`, `punkte`, `deckungsquote`.
+- Zusätzlich misst der Lauf die Deckungsquote: den Anteil der Testzeit, in der ein gewähltes Element in Deckung stand, über die gewählten Elemente gemittelt und in Prozent gerundet (nah am Original, das die Zeit auf dem Ziel misst).
+- Die Ergebnistafel führt mit der Deckungsquote in Prozent (Willis Festlegung vom 24.08.2026: alle Missionen zeigen auf der Tafel Prozent statt Punkte), darunter die Aufschlüsselung (Treffer je gewähltem Steuerelement und Kombitreffer); die Fußzeile nennt Testdauer und gewählte Kombination. Die gespeicherte Kennzahl bleibt die Punktrechnung, die Deckungsquote wird in den Laufdaten mitgespeichert.
 
 ## Bausteine
 
