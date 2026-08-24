@@ -112,7 +112,9 @@ export function erzeugeUebung1({ speicher, controls }) {
       }
       if (knopf.dataset.element === "ueben") {
         // Reine Hörübung über den normalen Startweg, damit Tür, Vollbild
-        // und Abbruch wie bei jedem Lauf funktionieren.
+        // und Abbruch wie bei jedem Lauf funktionieren. Der Fokus muss vom
+        // Knopf runter, sonst löst die Leertaste im Lauf erneute Klicks aus.
+        knopf.blur();
         uebungsStart = true;
         document.getElementById("start")?.click();
         return;
@@ -265,8 +267,12 @@ export function erzeugeUebung1({ speicher, controls }) {
   function starte({ tuer, beiEnde, registriereAbbruch }) {
     // Ein im Feld gestarteter Schussfang darf nicht in den Testlauf weiterlaufen.
     controls.brichSchussFangAb();
-    if (uebungsStart) {
-      uebungsStart = false;
+    // Den Übungsmerker immer verbrauchen: Bleibt er versehentlich scharf
+    // (etwa durch einen Leertasten-Klick auf den fokussierten Knopf), darf
+    // er nicht den nächsten Flugstart in die Übung umleiten.
+    const nurUebung = uebungsStart;
+    uebungsStart = false;
+    if (nurUebung) {
       starteBuchstabenUebung({ tuer, beiEnde, registriereAbbruch });
       return;
     }
