@@ -7,7 +7,9 @@
 
 export const TESTDAUERN = [3, 5, 10]; // Minuten
 export const HALTEZEIT_MS = 1000;
-export const KREIS_R = 0.045;          // Anteil der Bildbreite
+// Deckungsradius = gezeichneter Kreis: 8.2 Prozent Bildbreite mal Radius
+// 46/100 aus der SVG-Vorlage; gemessen an der Steuerkonsole im Video.
+export const KREIS_R = 0.038;          // Anteil der Bildbreite
 export const BILDVERHAELTNIS = 9 / 16; // Höhe zu Breite des Sichtfelds
 export const MINDESTABSTAND = 0.18;    // Kreis springt nie näher ans Ziel
 export const KEGEL = { xMin: 0.12, xMax: 0.88, yMin: 0.15, yMax: 0.85 };

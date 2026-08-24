@@ -76,9 +76,9 @@ export function erzeugeUebung1({ speicher, controls }) {
     schleier.innerHTML = `
       <canvas class="himmelbild"></canvas>
       <svg class="zielkreis" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="46" fill="none" stroke-width="4"/>
-        <line x1="50" y1="8" x2="50" y2="92" stroke-width="4"/>
-        <line x1="8" y1="50" x2="92" y2="50" stroke-width="4"/>
+        <circle cx="50" cy="50" r="46" fill="none" stroke-width="2.5"/>
+        <line x1="50" y1="8" x2="50" y2="92" stroke-width="2.5"/>
+        <line x1="8" y1="50" x2="92" y2="50" stroke-width="2.5"/>
       </svg>
       <div class="testkopf"></div>`;
     document.body.append(schleier);
@@ -93,7 +93,9 @@ export function erzeugeUebung1({ speicher, controls }) {
     // Sichtfeldanteil der Logik gestellt; der Himmel ist der Seitengrund
     // hinter der durchsichtigen Leinwand.
     const BODENHOEHE = 420;
-    const FLUGDISTANZ = 260;
+    // Nach Videomessung an der Steuerkonsole: Spannweite rund 11 Prozent der
+    // Bildbreite, das Flugzeug ist größer als der Zielkreis.
+    const FLUGDISTANZ = 95;
     let drei = null;
     try {
       const renderer = new THREE.WebGLRenderer({ canvas: leinwand, antialias: true, alpha: true });
