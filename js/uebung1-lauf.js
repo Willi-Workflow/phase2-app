@@ -34,7 +34,7 @@ export function erzeugeUebung1({ speicher, controls }) {
     + "und Pedalen, bis der Zielkreis auf dem vorausfliegenden Flugzeug liegt, und halte ihn "
     + "eine Sekunde dort. Der Kreis sitzt fest in der Bildmitte; nach jedem Treffer springt "
     + "das Flugzeug an eine neue Stelle. Wahlweise "
-    + "läuft die Buchstabenaufgabe: Bei der Folge S-L-A die Schusstaste drücken.";
+    + "läuft die Letter-Task: Bei der Buchstabenfolge S-L-A die Schusstaste drücken.";
 
   let einstellung = { dauer: 5, sla: false, tempo: 2000 };
   let uebungsStart = false; // der Übungsknopf startet den nächsten Lauf als reine Buchstabenübung
@@ -53,7 +53,7 @@ export function erzeugeUebung1({ speicher, controls }) {
         <button type="button" class="wahlknopf klapppfeil" data-element="klappe" aria-expanded="false"
           aria-label="Buchstabeneinstellungen ausklappen">▾</button></div>
       <div class="klappfeld" id="u1-buchstabenfeld" hidden>
-        <div class="wahlzeile"><span class="wahltitel">SLA-AUFGABE</span>
+        <div class="wahlzeile"><span class="wahltitel">LETTER-TASK</span>
           <button type="button" class="wahlknopf ${einstellung.sla ? "an" : ""}" data-element="sla"
             aria-pressed="${einstellung.sla}">${einstellung.sla ? "EIN" : "AUS"}</button></div>
         <div class="wahlzeile"><span class="wahltitel">TEMPO</span>
@@ -424,7 +424,7 @@ export function erzeugeUebung1({ speicher, controls }) {
       kreisBild.classList.toggle("deckung", zustand.halteMs > 0);
 
       const rest = Math.max(0, testende - performance.now());
-      kopf.textContent = `VERFOLGUNG${sla ? " + SLA" : ""} · REST ${Math.floor(rest / 60_000)}:${String(Math.floor((rest % 60_000) / 1000)).padStart(2, "0")}`;
+      kopf.textContent = `VERFOLGUNG${sla ? " + LETTER-TASK" : ""} · REST ${Math.floor(rest / 60_000)}:${String(Math.floor((rest % 60_000) / 1000)).padStart(2, "0")}`;
     };
 
     const schleife = (jetzt) => {
@@ -470,7 +470,7 @@ export function erzeugeUebung1({ speicher, controls }) {
         `<span>Treffer: ${werte.treffer}</span>`,
         `<span>Zeit bis zum ersten Treffer: ${werte.ersterTrefferS == null ? "–" : `${werte.ersterTrefferS} s`}</span>`,
         `<span>Mittlere Zeit je Treffer: ${werte.mittelS == null ? "–" : `${werte.mittelS} s`}</span>`,
-        slaWerte ? `<span>SLA: ${slaWerte.erkannt} erkannt · ${slaWerte.verpasst} verpasst · ${slaWerte.fehlalarm} Fehlalarm</span>` : "",
+        slaWerte ? `<span>Letter-Task: ${slaWerte.erkannt} erkannt · ${slaWerte.verpasst} verpasst · ${slaWerte.fehlalarm} Fehlalarm</span>` : "",
       ].join("");
       const abbruchzeile = gewertet ? "" : `<span class="abgebrochen">ABGEBROCHEN · DER LAUF ZÄHLT NICHT ZUR STATISTIK</span>`;
       const tafel = document.createElement("div");
@@ -481,7 +481,7 @@ export function erzeugeUebung1({ speicher, controls }) {
         <div class="ergebniszeilen">${zeilen}</div>
         <button class="punkt" id="u1-fertig">ZURÜCK ZUR MISSION</button>
         <div class="ergebnisfuss">
-          <span>${dauer} min Testdauer${sla ? " · SLA-Aufgabe" : ""}</span>
+          <span>${dauer} min Testdauer${sla ? " · Letter-Task" : ""}</span>
           ${abbruchzeile}
         </div>`;
       document.body.append(tafel);
