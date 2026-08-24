@@ -4,6 +4,7 @@ import {
   TESTDAUERN, HALTEZEIT_MS, KREIS_R, BILDVERHAELTNIS, MINDESTABSTAND, KEGEL, SPRUNG, MAXROLL,
   zufallsZiel, erzeugeLaufzustand, takt, inDeckung, zufallsKreis,
   deckungsquote, ergebnisWerte,
+  BUCHSTABEN_ABSTAND_MS, SLA_FENSTER_MS, erzeugeBuchstabenreihe, erzeugeSlaZaehler,
 } from "../js/uebung1.js";
 
 const still = { stickX: 0, stickY: 0, ruder: 0 };
@@ -149,4 +150,36 @@ test("Ergebniswerte ohne Treffer bleiben leer", () => {
   const w = ergebnisWerte(z);
   assert.equal(w.ersterTrefferS, null);
   assert.equal(w.mittelS, null);
+});
+
+test("Buchstabenreihe: Länge, eine Folge und eine Falle je Minute", () => {
+  const reihe = erzeugeBuchstabenreihe(3, Math.random);
+  assert.equal(reihe.length, Math.floor(3 * 60_000 / BUCHSTABEN_ABSTAND_MS));
+  assert.equal(reihe.filter((e) => e.sla).length, 3);
+  const text = reihe.map((e) => e.b).join("");
+  assert.equal((text.match(/SLA/g) ?? []).length, 3);   // keine zufälligen Extra-Folgen
+  assert.equal((text.match(/SL[^A]/g) ?? []).length, 3); // die Fallen
+});
+
+test("Buchstabenreihe ist mit gleichem Zufall gleich", () => {
+  const zaehler = () => { let n = 0; return () => (Math.sin(n++) + 1) / 2; };
+  const a = erzeugeBuchstabenreihe(3, zaehler());
+  const b = erzeugeBuchstabenreihe(3, zaehler());
+  assert.deepEqual(a, b);
+});
+
+test("SLA-Zähler: erkannt, Fehlalarm und verpasst", () => {
+  const reihe = [
+    { b: "S", sla: false }, { b: "L", sla: false }, { b: "A", sla: true },
+    { b: "K", sla: false },
+    { b: "S", sla: false }, { b: "L", sla: false }, { b: "A", sla: true },
+  ];
+  const z = erzeugeSlaZaehler(reihe);
+  z.sprich(0, 0); z.sprich(1, 2000); z.sprich(2, 4000);
+  z.druck(5000);                      // binnen 2 s nach dem A: erkannt
+  z.druck(5500);                      // Fenster verbraucht: Fehlalarm
+  z.sprich(3, 6000);
+  z.druck(9000);                      // kein offenes A: Fehlalarm
+  z.sprich(4, 8000); z.sprich(5, 10000); z.sprich(6, 12000); // zweites A ohne Druck
+  assert.deepEqual(z.auswertung(), { erkannt: 1, verpasst: 1, fehlalarm: 2 });
 });

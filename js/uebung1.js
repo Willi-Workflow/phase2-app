@@ -147,3 +147,48 @@ export function ergebnisWerte(z) {
     mittelS: z.treffer ? zehntel(z.letzterTrefferMs / z.treffer) : null,
   };
 }
+
+// Buchstabenaufgabe aus Testphase 3 des Originals: fortlaufende Reihe,
+// die Folge S-L-A wird mit der Schusstaste bestätigt. Das Alphabet der
+// Fülltakte enthält weder S noch L noch A, darum entstehen nie ungeplanten
+// Folgen. Je Minute eine echte Folge und eine Falle S-L-x.
+export const BUCHSTABEN_ABSTAND_MS = 2000;
+export const SLA_FENSTER_MS = 2000;
+const FUELLER = "BCDEFGHKMNPRTUWXZ".split("");
+
+export function erzeugeBuchstabenreihe(dauerMin, rnd = Math.random) {
+  const jeMinute = Math.floor(60_000 / BUCHSTABEN_ABSTAND_MS);
+  const reihe = Array.from({ length: dauerMin * jeMinute }, () =>
+    ({ b: FUELLER[Math.floor(rnd() * FUELLER.length)], sla: false }));
+  for (let minute = 0; minute < dauerMin; minute++) {
+    const von = minute * jeMinute;
+    // Zwei getrennte Drittel der Minute, damit Folge und Falle nie überlappen.
+    const folgeStart = von + 1 + Math.floor(rnd() * (jeMinute / 3 - 3));
+    const falleStart = von + Math.floor(jeMinute / 2) + Math.floor(rnd() * (jeMinute / 3 - 3));
+    reihe[folgeStart] = { b: "S", sla: false };
+    reihe[folgeStart + 1] = { b: "L", sla: false };
+    reihe[folgeStart + 2] = { b: "A", sla: true };
+    reihe[falleStart] = { b: "S", sla: false };
+    reihe[falleStart + 1] = { b: "L", sla: false };
+    reihe[falleStart + 2] = { b: FUELLER[Math.floor(rnd() * FUELLER.length)], sla: false };
+  }
+  return reihe;
+}
+
+export function erzeugeSlaZaehler(reihe) {
+  const offen = [];
+  let erkannt = 0;
+  let fehlalarm = 0;
+  return {
+    sprich(index, tMs) { if (reihe[index]?.sla) offen.push(tMs); },
+    druck(tMs) {
+      const i = offen.findIndex((t) => tMs >= t && tMs - t <= SLA_FENSTER_MS);
+      if (i >= 0) { offen.splice(i, 1); erkannt += 1; } else { fehlalarm += 1; }
+    },
+    // Auswertung am Testende: verpasst sind alle geplanten Folgen ohne Druck.
+    auswertung() {
+      const geplant = reihe.filter((e) => e.sla).length;
+      return { erkannt, verpasst: geplant - erkannt, fehlalarm };
+    },
+  };
+}
