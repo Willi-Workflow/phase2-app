@@ -12,7 +12,7 @@ import { GLTFLoader } from "./fremd/GLTFLoader.js";
 // klaenge/buchstaben, je Buchstabe eine Datei. Alle Klänge werden beim
 // Anlegen des Sprechers vorgeladen, damit im Lauf nichts nachlädt und
 // stockt. Spielt ein Klang nicht, spricht ersatzweise der Browser.
-const klangVon = (b) => new URL(`../klaenge/buchstaben/${b.toLowerCase()}.mp3`, import.meta.url).href;
+const klangVon = (b) => new URL(`../klaenge/buchstaben/${b.toLowerCase()}.mp3?v=2`, import.meta.url).href;
 function erzeugeSprecher() {
   const vorrat = new Map();
   for (const b of "abcdefghijklmnopqrstuvwxyz") {
