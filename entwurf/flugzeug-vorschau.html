@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Flugzeug · 3D-Vorschau</title>
+<style>body { margin: 0; background: linear-gradient(180deg, #4a7ac0, #d5e2ec); } canvas { display: block; }</style>
+</head>
+<body>
+<script type="module">
+  // Vorschau des erzeugten GLB-Netzes neben dem bisherigen Handmodell.
+  // ?winkel=seite zeigt die Seitenansicht, sonst schräg von hinten.
+  import * as THREE from "../js/fremd/three.module.js";
+  import { GLTFLoader } from "../js/fremd/GLTFLoader.js";
+
+  const winkel = new URLSearchParams(location.search).get("winkel") ?? "hinten";
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setSize(1400, 700);
+  document.body.append(renderer.domElement);
+  const szene = new THREE.Scene();
+  const kamera = new THREE.PerspectiveCamera(50, 2, 1, 2000);
+  szene.add(new THREE.HemisphereLight(0xffffff, 0x55604f, 1.1));
+
+  const rot = new THREE.MeshLambertMaterial({ color: 0xc23a30 });
+
+  // Handmodell (Stand heute) links.
+  const hand = new THREE.Group();
+  const rumpf = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.1, 16, 8), rot);
+  rumpf.rotation.x = Math.PI / 2;
+  const flOben = new THREE.Mesh(new THREE.BoxGeometry(22, 0.7, 4), rot);
+  flOben.position.set(0, 2.6, 1);
+  const flUnten = new THREE.Mesh(new THREE.BoxGeometry(20, 0.7, 4), rot);
+  flUnten.position.set(0, -1.4, 1);
+  const leit = new THREE.Mesh(new THREE.BoxGeometry(7, 0.6, 2.6), rot);
+  leit.position.set(0, 0.6, 7.4);
+  const flosse = new THREE.Mesh(new THREE.BoxGeometry(0.6, 4, 2.6), rot);
+  flosse.position.set(0, 2.2, 7.4);
+  hand.add(rumpf, flOben, flUnten, leit, flosse);
+  hand.position.set(-16, 0, -55);
+  szene.add(hand);
+
+  // GLB rechts, auf Spannweite 22 gebracht.
+  new GLTFLoader().load("../modelle/flugzeug.glb", (gltf) => {
+    const netz = gltf.scene;
+    netz.traverse((k) => {
+      if (k.isMesh && !k.material?.map) k.material = rot;
+    });
+    const kasten = new THREE.Box3().setFromObject(netz);
+    const groesse = new THREE.Vector3();
+    kasten.getSize(groesse);
+    const faktor = 22 / groesse.x;
+    netz.scale.setScalar(faktor);
+    const mitte = new THREE.Vector3();
+    kasten.getCenter(mitte);
+    netz.position.set(16 - mitte.x * faktor, -mitte.y * faktor, -55 - mitte.z * faktor);
+    szene.add(netz);
+    document.title = "Flugzeug · 3D-Vorschau · geladen";
+  }, undefined, (f) => { document.title = "Flugzeug · Ladefehler"; console.error(f); });
+
+  if (winkel === "seite") {
+    kamera.position.set(45, 4, -55);
+    kamera.lookAt(0, 0, -55);
+  } else {
+    kamera.position.set(0, 10, -20);
+    kamera.lookAt(0, 0, -55);
+  }
+  const male = () => { renderer.render(szene, kamera); requestAnimationFrame(male); };
+  male();
+</script>
+</body>
+</html>

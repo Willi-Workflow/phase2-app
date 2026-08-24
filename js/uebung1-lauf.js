@@ -6,6 +6,7 @@ import {
   BUCHSTABEN_ABSTAND_MS, erzeugeBuchstabenreihe, erzeugeSlaZaehler,
 } from "./uebung1.js";
 import * as THREE from "./fremd/three.module.js";
+import { GLTFLoader } from "./fremd/GLTFLoader.js";
 
 export function erzeugeUebung1({ speicher, controls }) {
   const hinweis = "Nachbau der Flugzeugverfolgung der Eignungsfeststellung: Steuere mit Stick "
@@ -123,7 +124,9 @@ export function erzeugeUebung1({ speicher, controls }) {
         bodenStoff.needsUpdate = true;
       }, undefined, () => {}); // ohne Bild bleibt die Grundfarbe stehen
 
-      // Rotes Kunstflugzeug aus Grundkörpern: Rumpf, zwei Tragflächen, Leitwerk.
+      // Rotes Kunstflugzeug: Sofort steht das Grundkörper-Modell, danach
+      // ersetzt es das texturierte 3D-Netz aus modelle/flugzeug.glb (Higgsfield,
+      // Willis Wahl). Scheitert das Laden, bleibt das Grundkörper-Modell stehen.
       const rot = new THREE.MeshLambertMaterial({ color: 0xc23a30 });
       const flugzeug = new THREE.Group();
       const rumpf = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.1, 16, 8), rot);
@@ -138,6 +141,24 @@ export function erzeugeUebung1({ speicher, controls }) {
       seitenflosse.position.set(0, 2.2, 7.4);
       flugzeug.add(rumpf, flaecheOben, flaecheUnten, leitwerk, seitenflosse);
       kamera.add(flugzeug);
+      new GLTFLoader().load(new URL("../modelle/flugzeug.glb", import.meta.url).href, (gltf) => {
+        // Nase des Netzes zeigt in Richtung -x; die Drehung bringt sie nach -z,
+        // also von der Kamera weg. Danach auf Spannweite 22 bringen und mittig
+        // setzen, damit die Kurvenneigung um die Flugzeugmitte dreht.
+        const halter = new THREE.Object3D();
+        halter.rotation.y = -Math.PI / 2;
+        halter.add(gltf.scene);
+        gltf.scene.traverse((k) => { if (k.isMesh && !k.material?.map) k.material = rot; });
+        const kasten = new THREE.Box3().setFromObject(halter);
+        const groesse = new THREE.Vector3();
+        kasten.getSize(groesse);
+        halter.scale.setScalar(22 / groesse.x);
+        const mitte = new THREE.Vector3();
+        new THREE.Box3().setFromObject(halter).getCenter(mitte);
+        halter.position.sub(mitte);
+        flugzeug.clear();
+        flugzeug.add(halter);
+      }, undefined, () => {}); // ohne Netz bleibt das Grundkörper-Modell
       drei = { renderer, szene, kamera, flugzeug };
     } catch {
       drei = null; // ohne WebGL läuft der Test nicht, der Start wird abgebrochen
