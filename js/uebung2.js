@@ -49,18 +49,20 @@ function taktDrift(d, dtMs, rnd) {
 // Neusetzung nach einem Treffer beziehungsweise Startlage: immer deutlich
 // außerhalb der Deckung, damit jede Aufgabe echte Arbeit verlangt.
 export function zufallsFadenkreuz(rnd) {
-  for (;;) {
+  for (let versuch = 0; versuch < 100; versuch++) {
     const x = 0.08 + rnd() * 0.84;
     const y = 0.08 + rnd() * 0.84;
     if (Math.hypot(x - 0.5, y - 0.5) >= 0.25) return { x, y };
   }
+  return { x: 0.15, y: 0.15 };
 }
 
 export function zufallsStrich(rnd) {
-  for (;;) {
+  for (let versuch = 0; versuch < 100; versuch++) {
     const x = 0.08 + rnd() * 0.84;
     if (Math.abs(x - 0.5) >= 0.15) return { x };
   }
+  return { x: 0.2 };
 }
 
 export function neuerSoll(alterSoll, nadel, rnd) {
@@ -112,14 +114,16 @@ export function takt(z, eingaben, dtMs, rnd = Math.random) {
     z.nadel = begrenze(z.nadel + (eingaben.schub * RATE_NADEL + taktDrift(z.drift.nadel, dtMs, rnd)) * dt, NADEL_MIN, NADEL_MAX);
   }
 
+  const deckung = {};
+  for (const element of aktiv) deckung[element] = inDeckung(z, element);
   for (const element of aktiv) {
-    if (inDeckung(z, element)) {
+    if (deckung[element]) {
       z.halte[element] += dtMs;
       if (z.halte[element] >= HALTEZEIT_MS) {
         z.treffer[element] += 1;
-        const andereInDeckung = aktiv.filter((e) => e !== element).every((e) => inDeckung(z, e));
-        if (aktiv.length > 1 && andereInDeckung) z.kombitreffer += 1;
-        ereignisse.push({ element, kombi: aktiv.length > 1 && andereInDeckung });
+        const kombi = aktiv.length > 1 && aktiv.filter((e) => e !== element).every((e) => deckung[e]);
+        if (kombi) z.kombitreffer += 1;
+        ereignisse.push({ element, kombi });
         z.halte[element] = 0;
         if (element === "stick") z.fadenkreuz = zufallsFadenkreuz(rnd);
         else if (element === "ruder") z.strich = zufallsStrich(rnd);

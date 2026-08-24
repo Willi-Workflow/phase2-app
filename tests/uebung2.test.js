@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {
   TESTDAUERN, ELEMENTE, HALTEZEIT_MS, NADEL_MIN, NADEL_MAX,
   ZIELKREIS_R, STRICH_TOLERANZ, NADEL_TOLERANZ, SOLLWERTE,
-  erzeugeLaufzustand, takt,
+  erzeugeLaufzustand, takt, zufallsFadenkreuz, zufallsStrich,
 } from "../js/uebung2.js";
 
 function saatZufall(saat) {
@@ -84,4 +84,26 @@ test("takt: nicht gewählte Elemente bleiben unbewegt", () => {
   for (let i = 0; i < 100; i++) takt(z, { ...RUHE, ruder: 1, schub: 1 }, 50, rnd);
   assert.equal(z.strich.x, strichVorher);
   assert.equal(z.nadel, nadelVorher);
+});
+
+test("takt: gleichzeitige Treffer im selben Takt zählen beide als Kombitreffer", () => {
+  const rnd = saatZufall(41);
+  const z = erzeugeLaufzustand(["stick", "ruder"], rnd);
+  let ereignisse = [];
+  for (let i = 0; i < 30 && ereignisse.length === 0; i++) {
+    z.fadenkreuz.x = 0.5; z.fadenkreuz.y = 0.5;
+    z.strich.x = 0.5;
+    ereignisse = takt(z, { stickX: 0, stickY: 0, ruder: 0, schub: 0 }, 50, rnd);
+  }
+  assert.equal(ereignisse.length, 2);
+  assert.ok(ereignisse.every((e) => e.kombi === true));
+  assert.equal(z.kombitreffer, 2);
+});
+
+test("Neusetzung: liefert auch bei entartetem Zufall eine gültige Lage", () => {
+  const fest = () => 0.5;
+  const p = zufallsFadenkreuz(fest);
+  assert.deepEqual(p, { x: 0.15, y: 0.15 });
+  const s = zufallsStrich(fest);
+  assert.deepEqual(s, { x: 0.2 });
 });
