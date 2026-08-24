@@ -40,7 +40,7 @@ export function erzeugeUebung2({ speicher, controls }) {
       document.getElementById("start").disabled = !gueltig;
       feld.querySelector("#u2-wahlhinweis").hidden = gueltig;
     };
-    feld.addEventListener("click", (e) => {
+    feld.onclick = (e) => {
       const knopf = e.target.closest(".wahlknopf");
       if (!knopf) return;
       const element = knopf.dataset.element;
@@ -49,7 +49,7 @@ export function erzeugeUebung2({ speicher, controls }) {
       knopf.setAttribute("aria-pressed", String(einstellung[element]));
       speicher.setzeEinstellung("uebung2-einstellung", einstellung);
       zeigeSperre();
-    });
+    };
     feld.onchange = (e) => {
       const liste = e.target.closest(".wahlliste");
       if (!liste) return;
