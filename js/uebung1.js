@@ -11,7 +11,6 @@ export const KREIS_R = 0.045;          // Anteil der Bildbreite
 export const BILDVERHAELTNIS = 9 / 16; // Höhe zu Breite des Sichtfelds
 export const MINDESTABSTAND = 0.18;    // Kreis springt nie näher ans Ziel
 export const KEGEL = { xMin: 0.12, xMax: 0.88, yMin: 0.15, yMax: 0.85 };
-export const SPRUNG = { xMin: 0.15, xMax: 0.85, yMin: 0.2, yMax: 0.8 };
 export const MAXROLL = 1.0;            // rad, etwa 57 Grad
 
 // Raten bei Vollausschlag (je Sekunde) und Driftstärken.
@@ -60,22 +59,9 @@ export function zufallsZiel(rnd) {
   }
   return { x: 0.25, y: 0.3 };
 }
-
-// Neusetzung des Kreises nach einem Treffer: im Sprungbereich und deutlich
-// weg vom Ziel, damit jede Aufgabe echte Arbeit verlangt. Der Schleifen-
-// wächter verhindert Endlosläufe bei sturem Zufall.
-export function zufallsKreis(ziel, rnd) {
-  for (let versuch = 0; versuch < 100; versuch++) {
-    const k = {
-      x: SPRUNG.xMin + rnd() * (SPRUNG.xMax - SPRUNG.xMin),
-      y: SPRUNG.yMin + rnd() * (SPRUNG.yMax - SPRUNG.yMin),
-    };
-    if (abstand(k, ziel) >= MINDESTABSTAND) return k;
-  }
-  return abstand({ x: SPRUNG.xMin, y: SPRUNG.yMin }, ziel) >= MINDESTABSTAND
-    ? { x: SPRUNG.xMin, y: SPRUNG.yMin }
-    : { x: SPRUNG.xMax, y: SPRUNG.yMax };
-}
+// Die Funktion dient auch der Neusetzung nach einem Treffer: Der Mindest-
+// abstand zur Mitte liegt über dem Kreisradius, das Flugzeug landet also
+// immer außerhalb der Deckung und muss neu eingefangen werden.
 
 export function inDeckung(z) {
   return abstand(z.ziel, z.kreis) <= KREIS_R;
@@ -84,7 +70,7 @@ export function inDeckung(z) {
 export function erzeugeLaufzustand(rnd = Math.random) {
   return {
     ziel: zufallsZiel(rnd),
-    kreis: { x: 0.5, y: 0.5 },
+    kreis: { x: 0.5, y: 0.5 }, // fest in der Bildmitte, wie das Visier im Original
     roll: 0,
     nick: 0,
     drift: { zx: neueDrift(DRIFT_ZIEL, rnd), zy: neueDrift(DRIFT_ZIEL, rnd) },
@@ -120,7 +106,7 @@ export function takt(z, eingaben, dtMs, rnd = Math.random) {
       if (z.ersterTrefferMs == null) z.ersterTrefferMs = z.testMs;
       z.letzterTrefferMs = z.testMs;
       z.halteMs = 0;
-      z.kreis = zufallsKreis(z.ziel, rnd);
+      z.ziel = zufallsZiel(rnd);
       ereignisse.push({ treffer: true });
     }
   } else {

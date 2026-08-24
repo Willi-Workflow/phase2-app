@@ -13,7 +13,7 @@ Unter `entwurf/bilder/`:
 
 ## Aufgabe
 
-Mit Centerstick und Ruderpedalen den Zielkreis in Deckung mit dem vorausfliegenden Flugzeug bringen und eine Sekunde halten. Bei Deckung wechselt der Kreis von Türkisgrün auf Rot. Nach einem Treffer blitzt der Kreis kurz auf und springt an eine andere Stelle des Sichtfelds, dann wird neu angelegt. Wahlweise läuft zusätzlich die Buchstabenaufgabe (SLA) aus Testphase 3 des Originals.
+Mit Centerstick und Ruderpedalen den Zielkreis in Deckung mit dem vorausfliegenden Flugzeug bringen und eine Sekunde halten. Bei Deckung wechselt der Kreis von Türkisgrün auf Rot. Der Zielkreis sitzt fest in der Bildmitte (Willis Festlegung vom 24.08.2026 nach der ersten Sichtung); nach einem Treffer blitzt er kurz auf und das Flugzeug springt an eine andere Stelle des Sichtfelds, dann wird neu angelegt. Wahlweise läuft zusätzlich die Buchstabenaufgabe (SLA) aus Testphase 3 des Originals.
 
 ## Aufbau
 
@@ -35,7 +35,7 @@ Eingehängt wird die Übung über die Zuordnung `UEBUNGEN` in `js/mission.js` (E
 
 - **Eigenflug:** Stick quer rollt, Stick längs nickt, die Pedale gieren; Ratensteuerung mit sanfter Dämpfung, das eigene Flugzeug fliegt stetig vorwärts. Der Horizont kippt beim Rollen.
 - **Zielflugzeug:** fliegt voraus in ähnlicher Höhe und zieht sanfte zufällige Kurven (begrenzter Zufallslauf). Es bleibt in einem Kegel vor dem eigenen Flugzeug und kann nicht entkommen.
-- **Zielkreis:** sitzt an einer festen Ablage relativ zur Blickrichtung, anfangs mittig. Deckung besteht, wenn das Flugzeug im sichtbaren Kreis liegt (Winkelabstand unter der Kreisgröße; die Deckungszone ist der sichtbare Kreis, dieselbe Regel wie bei Mission 2). Bei Deckung Farbwechsel auf Rot; nach einer Sekunde ununterbrochenen Haltens der Treffer: kurzes Aufblitzen, dann springt die Ablage an eine neue zufällige Stelle innerhalb des Sichtfelds (mit Schleifenwächter bei der Zufallswahl).
+- **Zielkreis:** sitzt fest in der Bildmitte, wie das Visier im Original. Deckung besteht, wenn das Flugzeug im sichtbaren Kreis liegt (Winkelabstand unter der Kreisgröße; die Deckungszone ist der sichtbare Kreis, dieselbe Regel wie bei Mission 2). Bei Deckung Farbwechsel auf Rot; nach einer Sekunde ununterbrochenen Haltens der Treffer: kurzes Aufblitzen, dann springt das Zielflugzeug an eine neue zufällige Stelle im Kegel, deutlich außerhalb der Deckung (mit Schleifenwächter bei der Zufallswahl).
 
 ## Einstellungen
 

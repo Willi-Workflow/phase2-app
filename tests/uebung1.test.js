@@ -1,8 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  TESTDAUERN, HALTEZEIT_MS, KREIS_R, BILDVERHAELTNIS, MINDESTABSTAND, KEGEL, SPRUNG, MAXROLL,
-  zufallsZiel, erzeugeLaufzustand, takt, inDeckung, zufallsKreis,
+  TESTDAUERN, HALTEZEIT_MS, KREIS_R, BILDVERHAELTNIS, MINDESTABSTAND, KEGEL, MAXROLL,
+  zufallsZiel, erzeugeLaufzustand, takt, inDeckung,
   deckungsquote, ergebnisWerte,
   BUCHSTABEN_ABSTAND_MS, SLA_FENSTER_MS, erzeugeBuchstabenreihe, erzeugeSlaZaehler,
 } from "../js/uebung1.js";
@@ -82,7 +82,7 @@ test("inDeckung misst den Winkelabstand mit Bildverhältnis", () => {
   assert.equal(inDeckung(z), true);
 });
 
-test("Eine Sekunde Deckung gibt den Treffer, der Kreis springt", () => {
+test("Eine Sekunde Deckung gibt den Treffer, das Flugzeug springt", () => {
   const z = erzeugeLaufzustand(halb);
   z.ziel = { x: 0.5, y: 0.5 };   // direkt unter dem Kreis
   let ereignisse = [];
@@ -91,9 +91,12 @@ test("Eine Sekunde Deckung gibt den Treffer, der Kreis springt", () => {
   assert.deepEqual(ereignisse, [{ treffer: true }]);
   assert.equal(z.ersterTrefferMs, 1000);
   assert.equal(z.letzterTrefferMs, 1000);
-  assert.ok(abstandFuerTest(z.kreis, z.ziel) >= MINDESTABSTAND);
-  assert.ok(z.kreis.x >= SPRUNG.xMin && z.kreis.x <= SPRUNG.xMax);
-  assert.ok(z.kreis.y >= SPRUNG.yMin && z.kreis.y <= SPRUNG.yMax);
+  // Der Kreis bleibt fest in der Bildmitte, das Flugzeug wird neu gesetzt:
+  // im Kegel und deutlich außerhalb der Deckung.
+  assert.deepEqual(z.kreis, { x: 0.5, y: 0.5 });
+  assert.ok(abstandFuerTest(z.ziel, z.kreis) >= MINDESTABSTAND);
+  assert.ok(z.ziel.x >= KEGEL.xMin && z.ziel.x <= KEGEL.xMax);
+  assert.ok(z.ziel.y >= KEGEL.yMin && z.ziel.y <= KEGEL.yMax);
 });
 
 test("Verlorene Deckung setzt die Haltezeit zurück", () => {
@@ -117,11 +120,10 @@ test("Deckungszeit summiert sich", () => {
   assert.equal(z.deckungMs, 400);
 });
 
-test("zufallsKreis: Schleifenwächter greift bei sturem Zufall", () => {
-  const ziel = { x: 0.5, y: 0.5 };
-  const stur = () => 0.5;        // träfe immer die Zielnähe
-  const k = zufallsKreis(ziel, stur);
-  assert.ok(abstandFuerTest(k, ziel) >= MINDESTABSTAND);
+test("zufallsZiel: Schleifenwächter greift bei sturem Zufall", () => {
+  const stur = () => 0.5;        // träfe immer die Bildmitte
+  const zNeu = zufallsZiel(stur);
+  assert.ok(abstandFuerTest(zNeu, { x: 0.5, y: 0.5 }) >= MINDESTABSTAND);
 });
 
 test("Deckungsquote in Prozent", () => {

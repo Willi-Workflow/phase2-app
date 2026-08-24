@@ -10,7 +10,8 @@ import * as THREE from "./fremd/three.module.js";
 export function erzeugeUebung1({ speicher, controls }) {
   const hinweis = "Nachbau der Flugzeugverfolgung der Eignungsfeststellung: Steuere mit Stick "
     + "und Pedalen, bis der Zielkreis auf dem vorausfliegenden Flugzeug liegt, und halte ihn "
-    + "eine Sekunde dort. Nach jedem Treffer springt der Kreis an eine neue Stelle. Wahlweise "
+    + "eine Sekunde dort. Der Kreis sitzt fest in der Bildmitte; nach jedem Treffer springt "
+    + "das Flugzeug an eine neue Stelle. Wahlweise "
     + "läuft die Buchstabenaufgabe: Bei der Folge S-L-A die Schusstaste drücken.";
 
   let einstellung = { dauer: 5, sla: false };
@@ -213,8 +214,7 @@ export function erzeugeUebung1({ speicher, controls }) {
       flugzeug.rotation.z = -zustand.drift.zx.wert * 6; // eigene Kurve neigt die Flächen
       renderer.render(szene, kamera);
 
-      kreisBild.style.left = `${zustand.kreis.x * 100}%`;
-      kreisBild.style.top = `${zustand.kreis.y * 100}%`;
+      // Der Kreis steht fest in der Bildmitte (stil.css), hier wechselt nur die Farbe.
       kreisBild.classList.toggle("deckung", zustand.halteMs > 0);
 
       const rest = Math.max(0, testende - performance.now());

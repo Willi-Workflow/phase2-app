@@ -234,6 +234,8 @@ main { position: relative; z-index: 1; }
 .uebung1 .himmelbild { position: absolute; inset: 0; width: 100%; height: 100%; }
 .uebung1 .zielkreis {
   position: absolute;
+  left: 50%;
+  top: 50%;
   width: 9%;
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
