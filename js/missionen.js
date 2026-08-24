@@ -4,7 +4,7 @@
 // maximal: feste Obergrenze der Kennzahl; Diagramm und Balken nutzen sie als
 // Skalenende, ohne maximal richtet sich die Skala nach den Läufen.
 export const MISSIONEN = [
-  { nr: 1, name: "Flugzeugverfolgung", kennzahlName: "Treffer %", wertung: false, maximal: 100 },
+  { nr: 1, name: "Flugzeugverfolgung", kennzahlName: "Deckung %", wertung: false, maximal: 100 },
   { nr: 2, name: "Multitasking Controls", kennzahlName: "Punkte", wertung: false },
   { nr: 3, name: "60s Instrumentenflug", kennzahlName: "Punkte", wertung: false },
   { nr: 4, name: "Instrumente merken", kennzahlName: "Punkte", wertung: false, maximal: 100 },
