@@ -7,7 +7,8 @@ test("Maße: Rahmen liegt mittig im 1600er-Bild", () => {
   assert.equal(BILD.b, 1600);
   assert.equal(BILD.h, 900);
   assert.equal(RAHMEN.x * 2 + RAHMEN.b, 1600);
-  assert.ok(RAHMEN.b / 1600 > 0.75 && RAHMEN.b / 1600 < 0.85);
+  // Fassung nach Willis Sichtung vom 24.08.2026: Rahmen füllt den Schirm fast ganz (Videomaße).
+  assert.ok(RAHMEN.b / 1600 > 0.85 && RAHMEN.b / 1600 < 0.9);
 });
 
 test("Rahmenhöhe ist an das Deckungsverhältnis gekoppelt", () => {
@@ -29,9 +30,10 @@ test("gradFuerKnoten: Skala von 60 nach 300 Grad über unten", () => {
 
 test("buehneSvg: enthält alle Kennungen der gewählten Elemente", () => {
   const voll = buehneSvg(["stick", "ruder", "schub"]);
-  for (const id of ["fadenkreuz", "ruderstrich", "nadel", "sollkeil", "solltext", "zielkreis", "tachobogen"]) {
+  for (const id of ["fadenkreuz", "ruderstrich", "nadel", "sollkeil", "zielkreis", "tachobogen"]) {
     assert.ok(voll.includes(`id="${id}"`), id);
   }
+  assert.ok(!voll.includes('id="solltext"'));
 });
 
 test("buehneSvg: nicht gewählte Elemente fehlen samt Zielbild", () => {

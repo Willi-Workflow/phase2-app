@@ -11,7 +11,7 @@ const NAMEN = { stick: "STICK", ruder: "RUDER", schub: "SCHUB" };
 export function erzeugeUebung2({ speicher, controls }) {
   const hinweis = "Nachbau des Multitasking-Tests der Eignungsfeststellung: Bringe das rote "
     + "Fadenkreuz mit dem Stick in den Zielkreis, den roten Strich mit dem Ruder auf die "
-    + "Mittellinie und die Nadel mit dem Schub auf den Sollwert. Eine Sekunde Deckung gibt "
+    + "Mittellinie und die Nadel mit dem Schub auf 95 Knoten. Eine Sekunde Deckung gibt "
     + "einen Treffer. Wähle unten, welche Controls geprüft werden.";
 
   let einstellung = { dauer: 5, stick: true, ruder: true, schub: true };
@@ -74,7 +74,6 @@ export function erzeugeUebung2({ speicher, controls }) {
     const ruderstrich = svg.querySelector("#ruderstrich");
     const nadel = svg.querySelector("#nadel");
     const sollkeil = svg.querySelector("#sollkeil");
-    const solltext = svg.querySelector("#solltext");
     const zielkreis = svg.querySelector("#zielkreis");
     const mittellinie = svg.querySelector("#mittellinie");
     const tachobogen = svg.querySelector("#tachobogen");
@@ -115,7 +114,6 @@ export function erzeugeUebung2({ speicher, controls }) {
         `translate(${xImBild(zustand.strich.x).toFixed(1)} 0)`);
       if (nadel) nadel.setAttribute("transform", `rotate(${gradFuerKnoten(zustand.nadel).toFixed(2)} ${TACHO.cx} ${TACHO.cy})`);
       if (sollkeil) sollkeil.setAttribute("transform", `rotate(${gradFuerKnoten(zustand.soll).toFixed(2)} ${TACHO.cx} ${TACHO.cy})`);
-      if (solltext) solltext.textContent = `SOLL ${zustand.soll} kt`;
       const rest = Math.max(0, testende - performance.now());
       kopf.textContent = `${auswahl.map((e) => NAMEN[e]).join(" + ")} · REST ${Math.floor(rest / 60_000)}:${String(Math.floor((rest % 60_000) / 1000)).padStart(2, "0")}`;
     };

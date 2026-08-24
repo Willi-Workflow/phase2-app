@@ -2,9 +2,9 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   TESTDAUERN, ELEMENTE, HALTEZEIT_MS, NADEL_MIN, NADEL_MAX,
-  ZIELKREIS_R, STRICH_TOLERANZ, NADEL_TOLERANZ, SOLLWERTE, RAHMEN_VERHAELTNIS,
+  ZIELKREIS_R, STRICH_TOLERANZ, NADEL_TOLERANZ, SOLL_KT, RAHMEN_VERHAELTNIS,
   erzeugeLaufzustand, takt, zufallsFadenkreuz, zufallsStrich,
-  inDeckung, punkte, pruefeAuswahl, neuerSoll,
+  inDeckung, punkte, pruefeAuswahl, zufallsNadel,
 } from "../js/uebung2.js";
 
 function saatZufall(saat) {
@@ -24,9 +24,7 @@ test("Rahmenwerte des Nachbaus", () => {
   assert.equal(HALTEZEIT_MS, 1000);
   assert.equal(NADEL_MIN, 40);
   assert.equal(NADEL_MAX, 160);
-  assert.equal(SOLLWERTE[0], 45);
-  assert.equal(SOLLWERTE[SOLLWERTE.length - 1], 155);
-  assert.ok(SOLLWERTE.every((w) => w % 5 === 0));
+  assert.equal(SOLL_KT, 95);
 });
 
 test("erzeugeLaufzustand: Startlage gültig und außerhalb der Deckung", () => {
@@ -37,8 +35,9 @@ test("erzeugeLaufzustand: Startlage gültig und außerhalb der Deckung", () => {
     assert.ok(z.fadenkreuz.y >= 0 && z.fadenkreuz.y <= 1);
     assert.ok(Math.hypot(z.fadenkreuz.x - 0.5, z.fadenkreuz.y - 0.5) > ZIELKREIS_R * 3);
     assert.ok(Math.abs(z.strich.x - 0.5) > STRICH_TOLERANZ * 3);
-    assert.ok(SOLLWERTE.includes(z.soll));
-    assert.ok(Math.abs(z.nadel - z.soll) > NADEL_TOLERANZ * 2);
+    assert.equal(z.soll, 95);
+    assert.ok(Math.abs(z.nadel - 95) >= 20);
+    assert.ok(z.nadel >= NADEL_MIN && z.nadel <= NADEL_MAX && z.nadel % 5 === 0);
   }
 });
 
@@ -160,13 +159,13 @@ test("takt: Kombitreffer nur, wenn die übrigen gewählten Elemente in Deckung s
   assert.ok(z.kombitreffer >= 1);
 });
 
-test("neuerSoll: nie der alte Wert, immer aus dem Raster", () => {
+test("zufallsNadel: Fünferraster, in den Grenzen, mindestens 20 Knoten vom Sollwert", () => {
   const rnd = saatZufall(37);
   for (let i = 0; i < 100; i++) {
-    const soll = neuerSoll(75, 75, rnd);
-    assert.notEqual(soll, 75);
-    assert.ok(SOLLWERTE.includes(soll));
-    assert.ok(Math.abs(soll - 75) >= 15);
+    const kt = zufallsNadel(rnd);
+    assert.ok(kt >= NADEL_MIN && kt <= NADEL_MAX);
+    assert.equal(kt % 5, 0);
+    assert.ok(Math.abs(kt - SOLL_KT) >= 20);
   }
 });
 

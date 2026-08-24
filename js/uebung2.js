@@ -10,17 +10,17 @@ export const NADEL_MIN = 40;
 export const NADEL_MAX = 160;
 export const ZIELKREIS_R = 0.02;     // Anteil der Rahmenbreite
 export const STRICH_TOLERANZ = 0.01; // Anteil der Rahmenbreite
-export const RAHMEN_VERHAELTNIS = 0.4765625; // Höhe zu Breite des Rahmens; das Bildmodul leitet seine Maße daraus ab
+export const RAHMEN_VERHAELTNIS = 3 / 7; // Höhe zu Breite des Rahmens; das Bildmodul leitet seine Maße daraus ab
 export const NADEL_TOLERANZ = 2;     // Knoten
-export const SOLLWERTE = Array.from({ length: 23 }, (_, i) => 45 + i * 5);
+export const SOLL_KT = 95; // fester Sollwert der Geschwindigkeit, Willis Festlegung
 
 // Raten bei Vollausschlag (je Sekunde) und Driftstärken.
 const RATE_STICK = 0.45;
 const RATE_RUDER = 0.5;
 const RATE_NADEL = 30;
-const DRIFT_STICK = 0.05;
-const DRIFT_RUDER = 0.05;
-const DRIFT_NADEL = 3.5;
+const DRIFT_STICK = 0.075;
+const DRIFT_RUDER = 0.075;
+const DRIFT_NADEL = 5;
 const DRIFTWECHSEL_MIN_MS = 1500;
 const DRIFTWECHSEL_MAX_MS = 3000;
 
@@ -65,19 +65,21 @@ export function zufallsStrich(rnd) {
   return { x: 0.2 };
 }
 
-export function neuerSoll(alterSoll, nadel, rnd) {
-  const passende = SOLLWERTE.filter((w) => w !== alterSoll && Math.abs(w - nadel) >= 15);
-  return zufallAus(passende.length ? passende : SOLLWERTE.filter((w) => w !== alterSoll), rnd);
+export function zufallsNadel(rnd) {
+  for (let versuch = 0; versuch < 100; versuch++) {
+    const kt = NADEL_MIN + 5 * Math.floor(rnd() * ((NADEL_MAX - NADEL_MIN) / 5 + 1));
+    if (kt >= NADEL_MIN && kt <= NADEL_MAX && Math.abs(kt - SOLL_KT) >= 20) return kt;
+  }
+  return NADEL_MIN;
 }
 
 export function erzeugeLaufzustand(auswahl, rnd = Math.random) {
-  const nadel = 100;
   return {
     auswahl: [...auswahl],
     fadenkreuz: zufallsFadenkreuz(rnd),
     strich: zufallsStrich(rnd),
-    nadel,
-    soll: neuerSoll(null, nadel, rnd),
+    nadel: zufallsNadel(rnd),
+    soll: SOLL_KT,
     drift: {
       fx: neueDrift(DRIFT_STICK, rnd),
       fy: neueDrift(DRIFT_STICK, rnd),
@@ -127,7 +129,7 @@ export function takt(z, eingaben, dtMs, rnd = Math.random) {
         z.halte[element] = 0;
         if (element === "stick") z.fadenkreuz = zufallsFadenkreuz(rnd);
         else if (element === "ruder") z.strich = zufallsStrich(rnd);
-        else z.soll = neuerSoll(z.soll, z.nadel, rnd);
+        else z.nadel = zufallsNadel(rnd);
       }
     } else {
       z.halte[element] = 0;

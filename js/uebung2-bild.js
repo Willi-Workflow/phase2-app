@@ -2,12 +2,12 @@
 // im festen 1600 mal 900 Raster; die Laufzeit schreibt nur Verschiebungen und
 // Drehungen der gekennzeichneten Gruppen fort. Farben und Aufbau folgen den
 // Referenzbildern unter entwurf/bilder/smt-referenz-*.jpg.
-import { NADEL_MIN, NADEL_MAX, RAHMEN_VERHAELTNIS } from "./uebung2.js";
+import { NADEL_MIN, NADEL_MAX, RAHMEN_VERHAELTNIS, SOLL_KT } from "./uebung2.js";
 
 export const BILD = { b: 1600, h: 900 };
-export const RAHMEN = { x: 160, y: 50, b: 1280, h: 1280 * RAHMEN_VERHAELTNIS };
+export const RAHMEN = { x: 100, y: 45, b: 1400, h: 1400 * RAHMEN_VERHAELTNIS };
 export const STRICH_Y = RAHMEN.y + RAHMEN.h * 0.18;
-export const TACHO = { cx: 230, cy: 780, r: 78 };
+export const TACHO = { cx: 240, cy: 770, r: 95 };
 
 export const LINIE = "#dfe9f5";      // weiß mit Röhrenschimmer
 export const ROT = "#e5312b";
@@ -35,13 +35,13 @@ function tachoSvg() {
   const striche = [];
   for (let kt = NADEL_MIN; kt <= NADEL_MAX; kt += 10) {
     const grad = gradFuerKnoten(kt);
-    const lang = kt % 40 === 0;
+    const lang = kt % 20 === 0;
     const a = punktAmTacho(grad, TACHO.r - (lang ? 16 : 10));
     const b = punktAmTacho(grad, TACHO.r - 4);
     striche.push(`<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="${LINIE}" stroke-width="${lang ? 2.4 : 1.4}"/>`);
     if (lang) {
-      const t = punktAmTacho(grad, TACHO.r - 30);
-      striche.push(`<text x="${t.x.toFixed(1)}" y="${(t.y + 4).toFixed(1)}" fill="${LINIE}" font-size="13" text-anchor="middle">${kt}</text>`);
+      const t = punktAmTacho(grad, TACHO.r - 24);
+      striche.push(`<text x="${t.x.toFixed(1)}" y="${(t.y + 4).toFixed(1)}" fill="${LINIE}" font-size="12" text-anchor="middle">${kt}</text>`);
     }
   }
   // Türkiser Bogen entlang der Skala, wie im Referenzbild.
@@ -59,10 +59,9 @@ function tachoSvg() {
         <line x1="${TACHO.cx}" y1="${TACHO.cy}" x2="${TACHO.cx}" y2="${TACHO.cy - TACHO.r + 12}" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/>
       </g>
       <circle cx="${TACHO.cx}" cy="${TACHO.cy}" r="6" fill="#c8ccd2"/>
-      <g id="sollkeil" transform="rotate(180 ${TACHO.cx} ${TACHO.cy})">
+      <g id="sollkeil" transform="rotate(${gradFuerKnoten(SOLL_KT).toFixed(2)} ${TACHO.cx} ${TACHO.cy})">
         <path d="M ${TACHO.cx} ${TACHO.cy - TACHO.r - 12} l -7 -12 l 14 0 z" fill="${ROT}"/>
       </g>
-      <text id="solltext" x="${TACHO.cx + TACHO.r + 26}" y="${TACHO.cy + 8}" fill="${ROT}" font-size="15" text-anchor="start" letter-spacing="1">SOLL 75 kt</text>
     </g>`;
 }
 
@@ -88,7 +87,7 @@ export function buehneSvg(auswahl) {
     </g>` : "";
 
   const strich = mitRuder
-    ? `<line id="ruderstrich" x1="0" y1="${STRICH_Y - 34}" x2="0" y2="${STRICH_Y + 34}" stroke="${ROT}" stroke-width="7"/>`
+    ? `<line id="ruderstrich" x1="0" y1="${STRICH_Y - 28}" x2="0" y2="${STRICH_Y + 28}" stroke="${ROT}" stroke-width="9"/>`
     : "";
 
   return `<svg viewBox="0 0 ${BILD.b} ${BILD.h}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
