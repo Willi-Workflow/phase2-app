@@ -2,7 +2,7 @@
 // im festen 1600 mal 900 Raster; die Laufzeit schreibt nur Verschiebungen und
 // Drehungen der gekennzeichneten Gruppen fort. Farben und Aufbau folgen den
 // Referenzbildern unter entwurf/bilder/smt-referenz-*.jpg.
-import { NADEL_MIN, NADEL_MAX, RAHMEN_VERHAELTNIS, SOLL_KT } from "./uebung2.js";
+import { NADEL_MIN, NADEL_MAX, RAHMEN_VERHAELTNIS } from "./uebung2.js";
 
 export const BILD = { b: 1600, h: 900 };
 export const RAHMEN = { x: 100, y: 45, b: 1400, h: 1400 * RAHMEN_VERHAELTNIS };
@@ -31,37 +31,42 @@ const punktAmTacho = (grad, r) => {
   return { x: TACHO.cx + Math.sin(w) * r, y: TACHO.cy - Math.cos(w) * r };
 };
 
+// Zifferblatt nach der Video-Nahaufnahme smt-referenz-tacho.jpg (Video 4:40):
+// kräftiges Skalenband, Striche und Zahlen außen, AIRSPEED und KNOTS in der
+// Skalenlücke oben, rotes Bandende ab 140, kein Gehäusering.
+const ROT_AB_KT = 140;
+
 function tachoSvg() {
   const striche = [];
   for (let kt = NADEL_MIN; kt <= NADEL_MAX; kt += 10) {
     const grad = gradFuerKnoten(kt);
     const lang = kt % 20 === 0;
-    const a = punktAmTacho(grad, TACHO.r - (lang ? 16 : 10));
-    const b = punktAmTacho(grad, TACHO.r - 4);
-    striche.push(`<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="${LINIE}" stroke-width="${lang ? 2.4 : 1.4}"/>`);
+    const a = punktAmTacho(grad, TACHO.r - 6);
+    const b = punktAmTacho(grad, TACHO.r + (lang ? 14 : 8));
+    striche.push(`<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="${LINIE}" stroke-width="${lang ? 2.6 : 1.6}"/>`);
     if (lang) {
-      const t = punktAmTacho(grad, TACHO.r - 24);
-      striche.push(`<text x="${t.x.toFixed(1)}" y="${(t.y + 4).toFixed(1)}" fill="${LINIE}" font-size="12" text-anchor="middle">${kt}</text>`);
+      const t = punktAmTacho(grad, TACHO.r + 27);
+      striche.push(`<text x="${t.x.toFixed(1)}" y="${(t.y + 4).toFixed(1)}" fill="${LINIE}" font-size="13" text-anchor="middle">${kt}</text>`);
     }
   }
-  // Türkiser Bogen entlang der Skala, wie im Referenzbild.
+  // Skalenband auf dem Markenradius: türkis bis 140, das Ende bis 160 rot.
   const von = punktAmTacho(gradFuerKnoten(NADEL_MIN), TACHO.r);
+  const wechsel = punktAmTacho(gradFuerKnoten(ROT_AB_KT), TACHO.r);
   const bis = punktAmTacho(gradFuerKnoten(NADEL_MAX), TACHO.r);
-  const bogen = `<path id="tachobogen" d="M ${von.x.toFixed(1)} ${von.y.toFixed(1)} A ${TACHO.r} ${TACHO.r} 0 1 1 ${bis.x.toFixed(1)} ${bis.y.toFixed(1)}" fill="none" stroke="${TUERKIS}" stroke-width="4" opacity="0.85"/>`;
+  const bogen = `<path id="tachobogen" d="M ${von.x.toFixed(1)} ${von.y.toFixed(1)} A ${TACHO.r} ${TACHO.r} 0 1 1 ${wechsel.x.toFixed(1)} ${wechsel.y.toFixed(1)}" fill="none" stroke="${TUERKIS}" stroke-width="13"/>`
+    + `<path id="rotband" d="M ${wechsel.x.toFixed(1)} ${wechsel.y.toFixed(1)} A ${TACHO.r} ${TACHO.r} 0 0 1 ${bis.x.toFixed(1)} ${bis.y.toFixed(1)}" fill="none" stroke="${ROT}" stroke-width="13"/>`;
+  // AIRSPEED dicht unter der Rahmenkante, KNOTS auf der Zeile von 160 und 40.
+  const zeileKnots = punktAmTacho(gradFuerKnoten(NADEL_MAX), TACHO.r + 27).y + 4;
   return `
     <g font-family="Arial, Helvetica, sans-serif">
-      <circle cx="${TACHO.cx}" cy="${TACHO.cy}" r="${TACHO.r + 14}" fill="#050607" stroke="#20262c" stroke-width="1.5"/>
       ${bogen}
       ${striche.join("")}
-      <text x="${TACHO.cx}" y="${TACHO.cy - 26}" fill="${LINIE}" font-size="12" text-anchor="middle" letter-spacing="1">AIRSPEED</text>
-      <text x="${TACHO.cx}" y="${TACHO.cy - 13}" fill="${LINIE}" font-size="9" text-anchor="middle" letter-spacing="2">KNOTS</text>
+      <text x="${TACHO.cx}" y="${(TACHO.cy - TACHO.r - 16).toFixed(1)}" fill="${LINIE}" font-size="12" text-anchor="middle" letter-spacing="1">AIRSPEED</text>
+      <text x="${TACHO.cx}" y="${zeileKnots.toFixed(1)}" fill="${LINIE}" font-size="9" text-anchor="middle" letter-spacing="2">KNOTS</text>
       <g id="nadel" transform="rotate(180 ${TACHO.cx} ${TACHO.cy})">
         <line x1="${TACHO.cx}" y1="${TACHO.cy}" x2="${TACHO.cx}" y2="${TACHO.cy - TACHO.r + 12}" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/>
       </g>
       <circle cx="${TACHO.cx}" cy="${TACHO.cy}" r="6" fill="#c8ccd2"/>
-      <g id="sollkeil" transform="rotate(${gradFuerKnoten(SOLL_KT).toFixed(2)} ${TACHO.cx} ${TACHO.cy})">
-        <path d="M ${TACHO.cx} ${TACHO.cy - TACHO.r - 12} l -7 -12 l 14 0 z" fill="${ROT}"/>
-      </g>
     </g>`;
 }
 

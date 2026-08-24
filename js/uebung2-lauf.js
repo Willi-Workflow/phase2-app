@@ -73,7 +73,6 @@ export function erzeugeUebung2({ speicher, controls }) {
     const fadenkreuz = svg.querySelector("#fadenkreuz");
     const ruderstrich = svg.querySelector("#ruderstrich");
     const nadel = svg.querySelector("#nadel");
-    const sollkeil = svg.querySelector("#sollkeil");
     const zielkreis = svg.querySelector("#zielkreis");
     const mittellinie = svg.querySelector("#mittellinie");
     const tachobogen = svg.querySelector("#tachobogen");
@@ -113,7 +112,6 @@ export function erzeugeUebung2({ speicher, controls }) {
       if (ruderstrich) ruderstrich.setAttribute("transform",
         `translate(${xImBild(zustand.strich.x).toFixed(1)} 0)`);
       if (nadel) nadel.setAttribute("transform", `rotate(${gradFuerKnoten(zustand.nadel).toFixed(2)} ${TACHO.cx} ${TACHO.cy})`);
-      if (sollkeil) sollkeil.setAttribute("transform", `rotate(${gradFuerKnoten(zustand.soll).toFixed(2)} ${TACHO.cx} ${TACHO.cy})`);
       const rest = Math.max(0, testende - performance.now());
       kopf.textContent = `${auswahl.map((e) => NAMEN[e]).join(" + ")} · REST ${Math.floor(rest / 60_000)}:${String(Math.floor((rest % 60_000) / 1000)).padStart(2, "0")}`;
     };

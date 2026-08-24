@@ -30,10 +30,12 @@ test("gradFuerKnoten: Skala von 60 nach 300 Grad über unten", () => {
 
 test("buehneSvg: enthält alle Kennungen der gewählten Elemente", () => {
   const voll = buehneSvg(["stick", "ruder", "schub"]);
-  for (const id of ["fadenkreuz", "ruderstrich", "nadel", "sollkeil", "zielkreis", "tachobogen"]) {
+  for (const id of ["fadenkreuz", "ruderstrich", "nadel", "zielkreis", "tachobogen", "rotband"]) {
     assert.ok(voll.includes(`id="${id}"`), id);
   }
   assert.ok(!voll.includes('id="solltext"'));
+  // Fassung nach der Video-Nahaufnahme: kein Sollwert-Marker auf der Skala.
+  assert.ok(!voll.includes('id="sollkeil"'));
 });
 
 test("buehneSvg: nicht gewählte Elemente fehlen samt Zielbild", () => {
