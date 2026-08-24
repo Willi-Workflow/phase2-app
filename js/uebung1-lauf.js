@@ -94,16 +94,19 @@ export function erzeugeUebung1({ speicher, controls }) {
     // Sichtfeldanteil der Logik gestellt; der Himmel ist der Seitengrund
     // hinter der durchsichtigen Leinwand.
     const BODENHOEHE = 420;
-    // Nach Videomessung an der Steuerkonsole: Spannweite rund 11 Prozent der
-    // Bildbreite, das Flugzeug ist größer als der Zielkreis.
-    const FLUGDISTANZ = 95;
+    // Nach Willis Sichtung des Videos: Das Flugzeug wirkt dort deutlich
+    // kleiner, etwas unter der Kreisgröße (Spannweite rund 6 Prozent Breite).
+    const FLUGDISTANZ = 175;
     let drei = null;
     try {
       const renderer = new THREE.WebGLRenderer({ canvas: leinwand, antialias: true, alpha: true });
       renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
       renderer.setClearColor(0x000000, 0);
       const szene = new THREE.Scene();
-      szene.fog = new THREE.Fog(0xcfd9e2, 1200, 6500);
+      // Dunstfarbe deckungsgleich mit dem Himmelsverlauf auf Horizonthöhe
+      // (stil.css), damit Boden und Himmel ohne harte Kante ineinander
+      // übergehen; der frühe Nebelbeginn zieht den Dunstgürtel breit.
+      szene.fog = new THREE.Fog(0xc3d3e4, 600, 5200);
       const kamera = new THREE.PerspectiveCamera(62, 16 / 9, 1, 9000);
       szene.add(kamera);
       szene.add(new THREE.HemisphereLight(0xffffff, 0x565f4c, 1.05));

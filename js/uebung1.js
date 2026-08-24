@@ -16,15 +16,18 @@ export const MINDESTABSTAND = 0.18;    // Kreis springt nie näher ans Ziel
 export const KEGEL = { xMin: 0.12, xMax: 0.88, yMin: 0.15, yMax: 0.85 };
 export const MAXROLL = 1.0;            // rad, etwa 57 Grad
 
-// Raten bei Vollausschlag (je Sekunde) und Driftstärken. Nach Sichtung des
-// Vorführlaufs im Video (12:40 bis 13:10): Der Horizont kippt mit rund
-// 30 Grad je Sekunde, volle Auslage hält etwa 50 Grad Schräglage
-// (ROLLRATE/RUECKSTELL), die Welt zieht in Schräglage stetig seitlich weg,
-// alles wirkt getragen statt zappelig.
+// Raten bei Vollausschlag (je Sekunde) und Driftstärken. Steuerdynamik nach
+// Simulator-Art, abgeglichen mit dem Vorführlauf im Video (12:40 bis 13:10):
+// Die Raten laufen träge an (Anlaufzeit), die Fluglage bleibt stehen statt
+// zurückzufedern, nur eine schwache Eigenstabilität richtet langsam auf.
+// Der Horizont kippt mit rund 30 Grad je Sekunde, die Schräglage hält.
+// Die Feinfühligkeit um die Mittellage (Totzone, Expo) kommt aus der
+// Empfindlichkeitskurve in controls/kurve, einstellbar im Controls-Dialog.
 const RATE_NICK = 0.28;
 const RATE_GIER = 0.32;
 const ROLLRATE = 0.55;
-const RUECKSTELL = 0.6;
+const ANLAUF_MS = 300;    // Trägheit, bis eine Steuerrate voll anliegt
+const STABIL = 0.12;      // schwache Eigenstabilität je Sekunde
 const NICK_SICHT = 0.5;   // rad Blickneigung je Einheit Nickbewegung
 const MAXNICK = 0.3;      // rad
 const KOPPLUNG = 0.3;     // Kurvenzug bei vollem Rollen, Einheiten je Sekunde
@@ -80,6 +83,9 @@ export function erzeugeLaufzustand(rnd = Math.random) {
     kreis: { x: 0.5, y: 0.5 }, // fest in der Bildmitte, wie das Visier im Original
     roll: 0,
     nick: 0,
+    rollRate: 0,
+    nickRate: 0,
+    gierRate: 0,
     drift: { zx: neueDrift(DRIFT_ZIEL, rnd), zy: neueDrift(DRIFT_ZIEL, rnd) },
     halteMs: 0,
     treffer: 0,
@@ -95,10 +101,17 @@ export function erzeugeLaufzustand(rnd = Math.random) {
 export function takt(z, eingaben, dtMs, rnd = Math.random) {
   const dt = dtMs / 1000;
 
-  z.roll = begrenze(z.roll + (eingaben.stickX * ROLLRATE - z.roll * RUECKSTELL) * dt, -MAXROLL, MAXROLL);
-  const nickBewegung = eingaben.stickY * RATE_NICK * dt;
-  z.nick = begrenze(z.nick + nickBewegung * NICK_SICHT - z.nick * RUECKSTELL * dt, -MAXNICK, MAXNICK);
-  const gierBewegung = (eingaben.ruder * RATE_GIER + Math.sin(z.roll) * KOPPLUNG) * dt;
+  // Simulator-Anlauf: Die Sollrate aus dem Stick liegt erst nach der
+  // Anlaufzeit voll an, die Lage bleibt danach stehen (kein Zurückfedern).
+  const glatt = Math.min(1, dtMs / ANLAUF_MS);
+  z.rollRate += (eingaben.stickX * ROLLRATE - z.rollRate) * glatt;
+  z.nickRate += (eingaben.stickY * RATE_NICK - z.nickRate) * glatt;
+  z.gierRate += (eingaben.ruder * RATE_GIER - z.gierRate) * glatt;
+
+  z.roll = begrenze(z.roll + (z.rollRate - z.roll * STABIL) * dt, -MAXROLL, MAXROLL);
+  const nickBewegung = z.nickRate * dt;
+  z.nick = begrenze(z.nick + nickBewegung * NICK_SICHT - z.nick * STABIL * dt, -MAXNICK, MAXNICK);
+  const gierBewegung = (z.gierRate + Math.sin(z.roll) * KOPPLUNG) * dt;
 
   z.ziel.x = begrenze(z.ziel.x - gierBewegung + taktDrift(z.drift.zx, dtMs, rnd) * dt, KEGEL.xMin, KEGEL.xMax);
   z.ziel.y = begrenze(z.ziel.y + nickBewegung + taktDrift(z.drift.zy, dtMs, rnd) * dt, KEGEL.yMin, KEGEL.yMax);
