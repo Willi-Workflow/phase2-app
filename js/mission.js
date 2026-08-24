@@ -5,6 +5,7 @@ import { bestwert, durchschnitt, vergleich } from "./auswertung.js";
 import { erzeugeControls } from "./controls.js";
 import { rollenStand } from "./geraetestand.js";
 import { PROFILFARBEN, reihe, skala, punkte, pfad, laufnummern } from "./diagramm.js";
+import { erzeugeUebung2 } from "./uebung2-lauf.js";
 import { erzeugeUebung4 } from "./uebung4-lauf.js";
 import { erzeugeUebung5 } from "./uebung5-lauf.js";
 import { erzeugeHangartuer } from "./hangartuer.js";
@@ -16,8 +17,8 @@ const mission = MISSIONEN.find((m) => m.nr === nr);
 let laufAktiv = false;
 const controls = erzeugeControls(speicher);
 // Bereiche mit echter Übung; alle übrigen laufen über den Probelauf.
-const UEBUNGEN = { 4: erzeugeUebung4, 5: erzeugeUebung5 };
-const uebung = mission && UEBUNGEN[mission.nr] ? UEBUNGEN[mission.nr]({ speicher }) : null;
+const UEBUNGEN = { 2: erzeugeUebung2, 4: erzeugeUebung4, 5: erzeugeUebung5 };
+const uebung = mission && UEBUNGEN[mission.nr] ? UEBUNGEN[mission.nr]({ speicher, controls }) : null;
 
 let alleLaeufe = [];
 
