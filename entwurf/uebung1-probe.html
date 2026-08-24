@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Übung 1 · Probe</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../stil.css?v=55">
+</head>
+<body>
+<script type="module">
+  // Probeaufbau ohne App-Rahmen: gestellte Achsen (Sinusfahrt), damit sich
+  // Blick, Ziel und Kreis sichtbar bewegen. ?dauer=<min> wählt die Dauer,
+  // ?sla=1 schaltet die Buchstabenaufgabe zu, ?abbruch=<ms> bricht ab.
+  import { erzeugeUebung1 } from "../js/uebung1-lauf.js";
+  import { erzeugeHangartuer } from "../js/hangartuer.js";
+  const params = new URLSearchParams(location.search);
+  const dauer = Number(params.get("dauer")) || 3;
+  const sla = params.get("sla") === "1";
+  const speicher = {
+    ladeEinstellung: async () => ({ dauer, sla }),
+    setzeEinstellung: async () => {},
+  };
+  const start = performance.now();
+  const controls = {
+    wert(rolle) {
+      const t = (performance.now() - start) / 1000;
+      const kurven = {
+        stickX: Math.sin(t * 0.6) * 0.5,
+        stickY: Math.cos(t * 0.5) * 0.4,
+        ruder: Math.sin(t * 0.9) * 0.4,
+      };
+      return kurven[rolle] ?? 0;
+    },
+    schussGedrueckt: () => false,
+    schusstasteVon: () => null,
+    starteSchussFang: () => {},
+    brichSchussFangAb: () => {},
+    geraete: () => [],
+  };
+  const uebung = erzeugeUebung1({ speicher, controls });
+  await uebung.ladeEinstellung();
+  const tuer = erzeugeHangartuer();
+  let brichAb = null;
+  await tuer.schliesse();
+  uebung.starte({
+    tuer,
+    registriereAbbruch: (fn) => { brichAb = fn; },
+    beiEnde: (ergebnis) => { document.body.insertAdjacentText("beforeend", `ENDE: ${JSON.stringify(ergebnis)}`); },
+  });
+  const abbruchNach = Number(params.get("abbruch"));
+  if (abbruchNach > 0) setTimeout(() => brichAb?.(), abbruchNach);
+</script>
+</body>
+</html>
