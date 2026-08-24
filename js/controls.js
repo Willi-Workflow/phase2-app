@@ -15,6 +15,9 @@ export function erzeugeControls(speicher) {
   let expo = 0;
   let knopfAlt = false;
   let fang = null;           // {rolle, basen, beiTreffer}
+  let schusstaste = null;    // {geraet, knopf}
+  let schussAlt = false;
+  let fangKnopf = false;
   const tasten = new Set();
   let schubTastatur = 0.45;
 
@@ -46,6 +49,7 @@ export function erzeugeControls(speicher) {
       zuordnung = await speicher.ladeEinstellung("zuordnung", {});
       totzone = await speicher.ladeEinstellung("totzone", 0.06);
       expo = await speicher.ladeEinstellung("expo", 0);
+      schusstaste = await speicher.ladeEinstellung("schusstaste", null);
     },
 
     geraete() {
@@ -70,6 +74,46 @@ export function erzeugeControls(speicher) {
       knopfAlt = jetzt;
       return flanke;
     },
+
+    schusstasteVon() { return schusstaste; },
+
+    // Flanke der Schusstaste: der zugewiesene Geräteknopf, Ersatz Leertaste.
+    schussGedrueckt() {
+      let jetzt = tasten.has("Space");
+      if (schusstaste) {
+        const pad = pads().find((p) => p.id === schusstaste.geraet);
+        if (pad?.buttons[schusstaste.knopf]?.pressed) jetzt = true;
+      }
+      const flanke = jetzt && !schussAlt;
+      schussAlt = jetzt;
+      return flanke;
+    },
+
+    // Anlernen wie beim Achsen-Fang: der nächste neu gedrückte Knopf eines
+    // Geräts wird die Schusstaste und landet in den Einstellungen.
+    starteSchussFang(beiTreffer) {
+      const basis = pads().map((p) => ({ geraet: p.id, knoepfe: p.buttons.map((k) => k.pressed) }));
+      fangKnopf = true;
+      const pruefe = () => {
+        if (!fangKnopf) return;
+        for (const p of pads()) {
+          const alt = basis.find((b) => b.geraet === p.id);
+          for (let k = 0; k < p.buttons.length; k++) {
+            if (p.buttons[k].pressed && !alt?.knoepfe[k]) {
+              schusstaste = { geraet: p.id, knopf: k };
+              speicher.setzeEinstellung("schusstaste", schusstaste);
+              fangKnopf = false;
+              beiTreffer(schusstaste);
+              return;
+            }
+          }
+        }
+        requestAnimationFrame(pruefe);
+      };
+      requestAnimationFrame(pruefe);
+    },
+
+    brichSchussFangAb() { fangKnopf = false; },
 
     starteFang(rolle, beiTreffer) {
       fang = { rolle, basen: alsFeld(), beiTreffer };
@@ -131,11 +175,16 @@ export function erzeugeControls(speicher) {
         <div class="geraeteliste" id="geraeteliste"></div>
         <p class="zustand">Gerät anschließen und eine Taste daran drücken, dann erscheint es hier.</p>
         ${rollenZeilen}
+        <div class="rollenzeile">
+          <span class="rollentitel">Schusstaste</span>
+          <span class="rollenstand" id="stand-schuss"></span>
+          <button class="punkt klein" data-tat="schuss">Zuweisen</button>
+        </div>
         <label class="zustand">Totzone <input type="range" id="totzone" min="0" max="0.2" step="0.01"></label>
         <label class="zustand">Expo <input type="range" id="expo" min="0" max="1" step="0.05"></label>
         <button class="punkt" data-tat="schliessen">Fertig</button>
       `;
-      const schliesse = () => { this.brichFangAb(); schleier.remove(); dialog.remove(); halteAn = true; };
+      const schliesse = () => { this.brichFangAb(); this.brichSchussFangAb(); schleier.remove(); dialog.remove(); halteAn = true; };
       schleier.addEventListener("click", schliesse);
 
       const zeigeStand = () => {
@@ -144,6 +193,9 @@ export function erzeugeControls(speicher) {
           dialog.querySelector(`#stand-${rolle}`).textContent =
             z ? `${z.geraet.slice(0, 18)}… Achse ${z.achse}${z.invert ? " umgekehrt" : ""}` : "nicht zugewiesen";
         }
+        const s = this.schusstasteVon();
+        dialog.querySelector("#stand-schuss").textContent =
+          s ? `${s.geraet.slice(0, 18)}… Knopf ${s.knopf}` : "nicht zugewiesen · Leertaste";
       };
 
       dialog.addEventListener("click", (e) => {
@@ -155,6 +207,11 @@ export function erzeugeControls(speicher) {
           for (const k of dialog.querySelectorAll('[data-tat="zuweisen"]')) k.textContent = "Zuweisen";
           e.target.textContent = "Bewegen…";
           this.starteFang(e.target.dataset.rolle, () => { e.target.textContent = "Zuweisen"; zeigeStand(); });
+        }
+        if (tat === "schuss") {
+          this.brichSchussFangAb();
+          e.target.textContent = "Drücken…";
+          this.starteSchussFang(() => { e.target.textContent = "Zuweisen"; zeigeStand(); });
         }
       });
 
