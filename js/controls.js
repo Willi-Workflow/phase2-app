@@ -204,12 +204,17 @@ export function erzeugeControls(speicher) {
         if (tat === "umkehren") this.kehreUm(e.target.dataset.rolle).then(zeigeStand);
         if (tat === "zuweisen") {
           this.brichFangAb();
+          this.brichSchussFangAb();
           for (const k of dialog.querySelectorAll('[data-tat="zuweisen"]')) k.textContent = "Zuweisen";
+          const schussKnopf = dialog.querySelector('[data-tat="schuss"]');
+          if (schussKnopf) schussKnopf.textContent = "Zuweisen";
           e.target.textContent = "Bewegen…";
           this.starteFang(e.target.dataset.rolle, () => { e.target.textContent = "Zuweisen"; zeigeStand(); });
         }
         if (tat === "schuss") {
           this.brichSchussFangAb();
+          this.brichFangAb();
+          for (const k of dialog.querySelectorAll('[data-tat="zuweisen"]')) k.textContent = "Zuweisen";
           e.target.textContent = "Drücken…";
           this.starteSchussFang(() => { e.target.textContent = "Zuweisen"; zeigeStand(); });
         }

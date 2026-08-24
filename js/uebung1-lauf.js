@@ -67,6 +67,8 @@ export function erzeugeUebung1({ speicher, controls }) {
   }
 
   function starte({ tuer, beiEnde, registriereAbbruch }) {
+    // Ein im Feld gestarteter Schussfang darf nicht in den Testlauf weiterlaufen.
+    controls.brichSchussFangAb();
     const { dauer, sla } = einstellung;
     const schleier = document.createElement("div");
     schleier.className = "laufschleier uebung1";
