@@ -162,6 +162,12 @@ export function ergebnisWerte(z) {
 // 6 bis 20 Buchstaben, höchstens zwei Fallen nacheinander (Willis
 // Festlegung vom 25.08.2026 gegen minutenlanges Zuhören ohne Ereignis).
 export const BUCHSTABEN_ABSTAND_MS = 2000;
+// Das Antwortfenster zählt ab Ansagebeginn: erst die Anhörzeit (die Ansage
+// eines Buchstabens dauert knapp eine Sekunde), dann die Reaktionszeit.
+// Ohne die Anhörzeit blieben nach dem fertig gehörten A nur rund 1,1 s,
+// und ein korrekt erkannter, aber bedacht gedrückter Treffer fiele als
+// Fehldruck aus dem Fenster (Willis Befund vom 25.08.2026).
+export const SLA_ANHOEREN_MS = 900;
 export const SLA_FENSTER_MS = 2000;
 export const EREIGNIS_LUECKE_MIN = 6;
 export const EREIGNIS_LUECKE_MAX = 20;
@@ -199,7 +205,7 @@ export function erzeugeSlaZaehler(reihe) {
     // Rückgabe true bei erkannter Folge, false bei Fehlalarm, damit die
     // Anzeige unmittelbar rückmelden kann.
     druck(tMs) {
-      const i = offen.findIndex((t) => tMs >= t && tMs - t <= SLA_FENSTER_MS);
+      const i = offen.findIndex((t) => tMs >= t && tMs - t <= SLA_ANHOEREN_MS + SLA_FENSTER_MS);
       if (i >= 0) { offen.splice(i, 1); erkannt += 1; return true; }
       fehlalarm += 1;
       return false;
@@ -210,7 +216,7 @@ export function erzeugeSlaZaehler(reihe) {
     ablauf(tMs) {
       let neu = 0;
       for (let i = offen.length - 1; i >= 0; i--) {
-        if (tMs - offen[i] > SLA_FENSTER_MS) { offen.splice(i, 1); neu += 1; }
+        if (tMs - offen[i] > SLA_ANHOEREN_MS + SLA_FENSTER_MS) { offen.splice(i, 1); neu += 1; }
       }
       return neu;
     },

@@ -199,7 +199,7 @@ test("SLA-Zähler: erkannt, Fehlalarm und verpasst", () => {
   ];
   const z = erzeugeSlaZaehler(reihe);
   z.sprich(0, 0); z.sprich(1, 2000); z.sprich(2, 4000);
-  z.druck(5000);                      // binnen 2 s nach dem A: erkannt
+  z.druck(5000);                      // im Antwortfenster nach dem A: erkannt
   z.druck(5500);                      // Fenster verbraucht: Fehlalarm
   z.sprich(3, 6000);
   z.druck(9000);                      // kein offenes A: Fehlalarm
@@ -229,8 +229,18 @@ test("SLA-Zähler meldet Treffer, Fehlalarm und Fensterablauf als Ereignis", () 
   assert.equal(z.druck(5000), true);   // im Fenster: erkannt
   assert.equal(z.druck(5500), false);  // Fenster verbraucht: Fehlalarm
   z.sprich(5, 10000);
-  assert.equal(z.ablauf(11000), 0);    // Fenster läuft noch
-  assert.equal(z.ablauf(12100), 1);    // jetzt ungenutzt abgelaufen
-  assert.equal(z.ablauf(13000), 0);    // wird nur einmal gemeldet
+  assert.equal(z.ablauf(12800), 0);    // Anhörzeit plus Reaktionszeit läuft noch
+  assert.equal(z.ablauf(13000), 1);    // jetzt ungenutzt abgelaufen
+  assert.equal(z.ablauf(14000), 0);    // wird nur einmal gemeldet
   assert.deepEqual(z.auswertung(), { erkannt: 1, verpasst: 1, fehlalarm: 1 });
+});
+
+test("Antwortfenster umfasst die Anhörzeit der Ansage", () => {
+  const reihe = [{ b: "S", sla: false }, { b: "L", sla: false }, { b: "A", sla: true }];
+  const z = erzeugeSlaZaehler(reihe);
+  z.sprich(2, 4000);
+  assert.equal(z.druck(6400), true);   // 2,4 s nach Ansagebeginn: menschliches Timing, vorher fälschlich rot
+  const z2 = erzeugeSlaZaehler(reihe);
+  z2.sprich(2, 4000);
+  assert.equal(z2.druck(7000), false); // deutlich zu spät bleibt ein Fehldruck
 });
