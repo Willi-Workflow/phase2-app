@@ -198,3 +198,19 @@ test("Buchstabenreihe folgt dem gewählten Tempo", () => {
   assert.equal((text.match(/SLA/g) ?? []).length, 2);
   assert.equal((text.match(/SL[^A]/g) ?? []).length, 2);
 });
+
+test("SLA-Zähler meldet Treffer, Fehlalarm und Fensterablauf als Ereignis", () => {
+  const reihe = [
+    { b: "S", sla: false }, { b: "L", sla: false }, { b: "A", sla: true },
+    { b: "S", sla: false }, { b: "L", sla: false }, { b: "A", sla: true },
+  ];
+  const z = erzeugeSlaZaehler(reihe);
+  z.sprich(2, 4000);
+  assert.equal(z.druck(5000), true);   // im Fenster: erkannt
+  assert.equal(z.druck(5500), false);  // Fenster verbraucht: Fehlalarm
+  z.sprich(5, 10000);
+  assert.equal(z.ablauf(11000), 0);    // Fenster läuft noch
+  assert.equal(z.ablauf(12100), 1);    // jetzt ungenutzt abgelaufen
+  assert.equal(z.ablauf(13000), 0);    // wird nur einmal gemeldet
+  assert.deepEqual(z.auswertung(), { erkannt: 1, verpasst: 1, fehlalarm: 1 });
+});

@@ -252,6 +252,10 @@ main { position: relative; z-index: 1; }
 
 /* Mission 1: reine Buchstabenübung, dunkler Hörraum ohne Szene */
 .laufschleier.buchstaben { background: #0d1109; }
+.blitzschicht { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.12s; z-index: 3; }
+.blitzschicht.da { opacity: 1; }
+.blitzschicht.gruen { box-shadow: inset 0 0 0 7px #35e065, inset 0 0 70px rgba(53, 224, 101, 0.45); }
+.blitzschicht.rot { background: rgba(229, 49, 43, 0.38); }
 .laufschleier.buchstaben .testkopf { position: absolute; top: 3vh; left: 50%; transform: translateX(-50%); z-index: 2; color: var(--gedeckt); letter-spacing: 0.25em; }
 
 /* Instrumententafel Mission 4 */

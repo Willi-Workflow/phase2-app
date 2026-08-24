@@ -44,7 +44,7 @@ Vor dem Start auf der Missionsseite, gespeichert über die Einstellungen wie bei
 - Dauer wählbar: 3, 5 oder 10 Minuten, Vorgabe 5.
 - Die Buchstabeneinstellungen liegen in einem ausklappbaren Block, geöffnet über einen kleinen Pfeil (zu ▾, offen ▴) (zu Beginn zugeklappt, Willis Ordnungswunsch vom 24.08.2026): Schalter "LETTER-TASK" mit der Aufschrift EIN beziehungsweise AUS (Vorgabe aus), Tempo und der Übungsknopf. Anzeigename der Aufgabe ist überall "Letter-Task" (Willis Festlegung vom 24.08.2026, erlaubter Projektbegriff wie "Controls"); die internen Bezeichner bleiben bei sla.
 - Buchstabentempo wählbar: 2,5, 2, 1,5 oder 1 Sekunde Abstand, Vorgabe 2 (Original); gilt für die SLA-Aufgabe im Flug und für die Hörübung (Willis Erweiterung vom 24.08.2026).
-- Knopf "NUR ÜBEN": startet die Buchstabenaufgabe als reine Hörübung ohne Flug (dunkler Schirm, Kopfzeile mit Restzeit, Ergebnistafel mit erkannt, verpasst und Fehlalarm). Die Übung zählt nie zur Statistik.
+- Knopf "NUR ÜBEN": startet die Buchstabenaufgabe als reine Hörübung ohne Flug (dunkler Schirm, Kopfzeile mit Restzeit, Ergebnistafel mit erkannt, verpasst und Fehlalarm). Die Übung zählt nie zur Statistik. Rückmeldung in der Übung (Willis Erweiterung vom 25.08.2026): Bei erkanntem Druck erklingt ein kurzer Bestätigungston und der Schirm bekommt eine grüne Umrandung; läuft das Antwortfenster einer Folge ungenutzt ab (bei Normaltempo kurz vor dem nächsten Buchstaben), blitzt der Schirm kurz rot. Der Flug bleibt wie das Original ohne diese Blitze.
 
 ## Buchstabenaufgabe (SLA)
 

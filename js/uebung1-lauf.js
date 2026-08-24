@@ -35,6 +35,26 @@ function erzeugeSprecher() {
   };
 }
 
+// Kurzer Bestätigungston für einen erkannten S-L-A-Druck in der Hörübung,
+// direkt aus dem Klangerzeuger des Browsers, ohne eigene Datei.
+function trefferton() {
+  try {
+    const ktx = new (window.AudioContext || window.webkitAudioContext)();
+    const ton = ktx.createOscillator();
+    const laut = ktx.createGain();
+    ton.type = "sine";
+    ton.frequency.setValueAtTime(880, ktx.currentTime);
+    ton.frequency.exponentialRampToValueAtTime(1320, ktx.currentTime + 0.08);
+    laut.gain.setValueAtTime(0.001, ktx.currentTime);
+    laut.gain.exponentialRampToValueAtTime(0.25, ktx.currentTime + 0.02);
+    laut.gain.exponentialRampToValueAtTime(0.001, ktx.currentTime + 0.18);
+    ton.connect(laut).connect(ktx.destination);
+    ton.start();
+    ton.stop(ktx.currentTime + 0.2);
+    ton.onended = () => ktx.close();
+  } catch { /* ohne Tonausgabe bleibt die grüne Umrandung */ }
+}
+
 export function erzeugeUebung1({ speicher, controls }) {
   const hinweis = "Nachbau der Flugzeugverfolgung der Eignungsfeststellung: Steuere mit Stick "
     + "und Pedalen, bis der Zielkreis auf dem vorausfliegenden Flugzeug liegt, und halte ihn "
@@ -127,12 +147,13 @@ export function erzeugeUebung1({ speicher, controls }) {
     const { dauer, tempo } = einstellung;
     const schleier = document.createElement("div");
     schleier.className = "laufschleier buchstaben";
-    schleier.innerHTML = `<div class="testkopf"></div>
+    schleier.innerHTML = `<div class="blitzschicht"></div><div class="testkopf"></div>
       <div class="hinweis">Höre die Buchstaben.<br>Bei der Folge S-L-A die Schusstaste drücken.</div>`;
     document.body.append(schleier);
     if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
 
     const kopf = schleier.querySelector(".testkopf");
+    const blitzschicht = schleier.querySelector(".blitzschicht");
     const reihe = erzeugeBuchstabenreihe(dauer, Math.random, tempo);
     const zaehler = erzeugeSlaZaehler(reihe);
     const sprecher = erzeugeSprecher();
@@ -143,9 +164,19 @@ export function erzeugeUebung1({ speicher, controls }) {
     let testende = Infinity;
     let laeuft = false;
     let vorher = 0;
+    let blitzUhr = null;
+
+    // Grün umrandet bei erkanntem Druck, roter Bildschirmblitz beim
+    // ungenutzt abgelaufenen Antwortfenster.
+    const blitze = (art) => {
+      clearTimeout(blitzUhr);
+      blitzschicht.className = `blitzschicht ${art} da`;
+      blitzUhr = setTimeout(() => { blitzschicht.className = "blitzschicht"; }, art === "gruen" ? 400 : 280);
+    };
 
     const raeumeAuf = () => {
       beendet = true;
+      clearTimeout(blitzUhr);
       sprecher.stopp();
       speechSynthesis?.cancel?.();
       document.removeEventListener("fullscreenchange", beiVollbildwechsel);
@@ -169,7 +200,11 @@ export function erzeugeUebung1({ speicher, controls }) {
         sprecher.sprich(reihe[gesprochen].b);
         gesprochen += 1;
       }
-      if (controls.schussGedrueckt()) zaehler.druck(testMs);
+      if (controls.schussGedrueckt() && zaehler.druck(testMs)) {
+        trefferton();
+        blitze("gruen");
+      }
+      if (zaehler.ablauf(testMs) > 0) blitze("rot");
       const rest = Math.max(0, testende - performance.now());
       kopf.textContent = `BUCHSTABEN · REST ${Math.floor(rest / 60_000)}:${String(Math.floor((rest % 60_000) / 1000)).padStart(2, "0")}`;
       if (performance.now() >= testende) { zeigeErgebnis(true); return; }

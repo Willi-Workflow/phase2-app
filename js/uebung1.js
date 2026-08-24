@@ -190,9 +190,23 @@ export function erzeugeSlaZaehler(reihe) {
   let fehlalarm = 0;
   return {
     sprich(index, tMs) { if (reihe[index]?.sla) offen.push(tMs); },
+    // Rückgabe true bei erkannter Folge, false bei Fehlalarm, damit die
+    // Anzeige unmittelbar rückmelden kann.
     druck(tMs) {
       const i = offen.findIndex((t) => tMs >= t && tMs - t <= SLA_FENSTER_MS);
-      if (i >= 0) { offen.splice(i, 1); erkannt += 1; } else { fehlalarm += 1; }
+      if (i >= 0) { offen.splice(i, 1); erkannt += 1; return true; }
+      fehlalarm += 1;
+      return false;
+    },
+    // Meldet, wie viele Antwortfenster seit dem letzten Aufruf ungenutzt
+    // abgelaufen sind (für die rote Rückmeldung der Übung). Abgelaufene
+    // Fenster können ohnehin keinen Druck mehr annehmen.
+    ablauf(tMs) {
+      let neu = 0;
+      for (let i = offen.length - 1; i >= 0; i--) {
+        if (tMs - offen[i] > SLA_FENSTER_MS) { offen.splice(i, 1); neu += 1; }
+      }
+      return neu;
     },
     // Auswertung am Testende: verpasst sind alle geplanten Folgen ohne Druck.
     auswertung() {
