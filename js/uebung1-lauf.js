@@ -196,12 +196,15 @@ export function erzeugeUebung1({ speicher, controls }) {
     const zeichne = () => {
       const { kamera, flugzeug, renderer, szene } = drei;
       kamera.rotation.set(zustand.nick, 0, -zustand.roll);
-      // Sichtfeldanteil in Kameraraum: x über die halbe Bildbreite bei der
-      // Flugdistanz, y gestaucht um das Bildverhältnis.
-      const halbeBreite = Math.tan((kamera.fov * Math.PI) / 360) * kamera.aspect * FLUGDISTANZ;
+      // Sichtfeldanteil in Kameraraum: Höhe aus dem senkrechten Blickwinkel
+      // bei der Flugdistanz, Breite daraus mal dem echten Bildverhältnis.
+      // So landet das Flugzeug bei jedem Seitenverhältnis genau dort, wo
+      // der SVG-Kreis den Bildanteil zeigt, ohne fest verdrahtetes 16:9.
+      const halbeHoehe = Math.tan((kamera.fov * Math.PI) / 360) * FLUGDISTANZ;
+      const halbeBreite = halbeHoehe * kamera.aspect;
       flugzeug.position.set(
         (zustand.ziel.x - 0.5) * 2 * halbeBreite,
-        -(zustand.ziel.y - 0.5) * 2 * halbeBreite * (9 / 16),
+        -(zustand.ziel.y - 0.5) * 2 * halbeHoehe,
         -FLUGDISTANZ,
       );
       flugzeug.rotation.z = -zustand.drift.zx.wert * 6; // eigene Kurve neigt die Flächen

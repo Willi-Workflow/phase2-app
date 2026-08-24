@@ -241,6 +241,7 @@ main { position: relative; z-index: 1; }
   pointer-events: none;
 }
 .uebung1 .zielkreis.deckung { stroke: #e5312b; }
+.laufschleier.uebung1 .testkopf { position: absolute; top: 3vh; left: 50%; transform: translateX(-50%); z-index: 2; color: #6f7d8c; letter-spacing: 0.25em; }
 
 /* Instrumententafel Mission 4 */
 .instrumententafel {
