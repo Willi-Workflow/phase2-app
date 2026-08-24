@@ -7,23 +7,28 @@
 
 export const TESTDAUERN = [3, 5, 10]; // Minuten
 export const HALTEZEIT_MS = 1000;
-// Deckungsradius = gezeichneter Kreis: 8.2 Prozent Bildbreite mal Radius
-// 46/100 aus der SVG-Vorlage; gemessen an der Steuerkonsole im Video.
-export const KREIS_R = 0.038;          // Anteil der Bildbreite
+// Deckungsradius = gezeichneter Kreis: 7 Prozent Bildbreite mal Radius
+// 46/100 aus der SVG-Vorlage; nach Videomessung, auf Willis Wunsch noch
+// etwas kleiner als das Original.
+export const KREIS_R = 0.032;          // Anteil der Bildbreite
 export const BILDVERHAELTNIS = 9 / 16; // Höhe zu Breite des Sichtfelds
 export const MINDESTABSTAND = 0.18;    // Kreis springt nie näher ans Ziel
 export const KEGEL = { xMin: 0.12, xMax: 0.88, yMin: 0.15, yMax: 0.85 };
 export const MAXROLL = 1.0;            // rad, etwa 57 Grad
 
-// Raten bei Vollausschlag (je Sekunde) und Driftstärken.
-const RATE_NICK = 0.35;
-const RATE_GIER = 0.4;
-const ROLLRATE = 1.6;
+// Raten bei Vollausschlag (je Sekunde) und Driftstärken. Nach Sichtung des
+// Vorführlaufs im Video (12:40 bis 13:10): Der Horizont kippt mit rund
+// 30 Grad je Sekunde, volle Auslage hält etwa 50 Grad Schräglage
+// (ROLLRATE/RUECKSTELL), die Welt zieht in Schräglage stetig seitlich weg,
+// alles wirkt getragen statt zappelig.
+const RATE_NICK = 0.28;
+const RATE_GIER = 0.32;
+const ROLLRATE = 0.55;
 const RUECKSTELL = 0.6;
 const NICK_SICHT = 0.5;   // rad Blickneigung je Einheit Nickbewegung
 const MAXNICK = 0.3;      // rad
-const KOPPLUNG = 0.25;    // Kurvenzug bei vollem Rollen, Einheiten je Sekunde
-const DRIFT_ZIEL = 0.06;
+const KOPPLUNG = 0.3;     // Kurvenzug bei vollem Rollen, Einheiten je Sekunde
+const DRIFT_ZIEL = 0.05;
 const DRIFTWECHSEL_MIN_MS = 1500;
 const DRIFTWECHSEL_MAX_MS = 3000;
 
