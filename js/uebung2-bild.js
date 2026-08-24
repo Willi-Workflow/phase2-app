@@ -62,7 +62,7 @@ function tachoSvg() {
       <g id="sollkeil" transform="rotate(180 ${TACHO.cx} ${TACHO.cy})">
         <path d="M ${TACHO.cx} ${TACHO.cy - TACHO.r - 12} l -7 -12 l 14 0 z" fill="${ROT}"/>
       </g>
-      <text id="solltext" x="${TACHO.cx}" y="${TACHO.cy + TACHO.r + 34}" fill="${ROT}" font-size="15" text-anchor="middle" letter-spacing="1">SOLL 75 kt</text>
+      <text id="solltext" x="${TACHO.cx + TACHO.r + 26}" y="${TACHO.cy + 8}" fill="${ROT}" font-size="15" text-anchor="start" letter-spacing="1">SOLL 75 kt</text>
     </g>`;
 }
 
