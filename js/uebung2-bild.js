@@ -87,7 +87,7 @@ export function buehneSvg(auswahl) {
     </g>` : "";
 
   const strich = mitRuder
-    ? `<line id="ruderstrich" x1="0" y1="${STRICH_Y - 28}" x2="0" y2="${STRICH_Y + 28}" stroke="${ROT}" stroke-width="9"/>`
+    ? `<line id="ruderstrich" x1="0" y1="${STRICH_Y - 28}" x2="0" y2="${STRICH_Y + 28}" stroke="${ROT}" stroke-width="6"/>`
     : "";
 
   return `<svg viewBox="0 0 ${BILD.b} ${BILD.h}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
