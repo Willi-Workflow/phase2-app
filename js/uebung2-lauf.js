@@ -134,7 +134,7 @@ export function erzeugeUebung2({ speicher, controls }) {
       for (const e of ereignisse) {
         if (e.element === "stick") blitz(zielkreis);
         else if (e.element === "ruder") blitz(mittellinie);
-        else { blitz(tachobogen); }
+        else blitz(tachobogen);
       }
       zeichne();
       if (performance.now() >= testende) { zeigeErgebnis(true); return; }

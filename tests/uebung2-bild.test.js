@@ -1,12 +1,17 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { BILD, RAHMEN, TACHO, xImBild, yImBild, gradFuerKnoten, buehneSvg } from "../js/uebung2-bild.js";
+import { RAHMEN_VERHAELTNIS } from "../js/uebung2.js";
 
 test("Maße: Rahmen liegt mittig im 1600er-Bild", () => {
   assert.equal(BILD.b, 1600);
   assert.equal(BILD.h, 900);
   assert.equal(RAHMEN.x * 2 + RAHMEN.b, 1600);
   assert.ok(RAHMEN.b / 1600 > 0.75 && RAHMEN.b / 1600 < 0.85);
+});
+
+test("Rahmenhöhe ist an das Deckungsverhältnis gekoppelt", () => {
+  assert.equal(RAHMEN.h, RAHMEN.b * RAHMEN_VERHAELTNIS);
 });
 
 test("Einheitsraum wird auf den Rahmen abgebildet", () => {

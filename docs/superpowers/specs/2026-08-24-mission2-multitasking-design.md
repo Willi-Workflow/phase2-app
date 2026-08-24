@@ -18,7 +18,7 @@ Unter `entwurf/bilder/`:
 - Im Schnittpunkt der weiße Zielkreis, nur Umriss, Durchmesser etwa 4 Prozent der Rahmenbreite.
 - Das rote Fadenkreuz (Kreisumriss mit über den Kreis hinausstehendem Kreuz, sattes Rot): vom Stick gesteuert, frei im Rahmen beweglich.
 - Der rote Senkrechtstrich (kurzer, dicker Balken) auf fester Höhe im oberen Rahmenviertel, nur waagerecht beweglich: von den Ruderpedalen gesteuert. Ziel ist die weiße senkrechte Linie.
-- Unten links, außerhalb des Rahmens, die Geschwindigkeitsanzeige nach Abbildung 3-8 und Video: rundes Zifferblatt auf schwarzem Grund, Aufschrift AIRSPEED und KNOTS, Skala 40 bis 160 mit Zahlen in Vierzigerschritten und Strichen dazwischen, türkiser Skalenbogen entlang der Marken, weiße Nadel. Der Sollwert wird als roter Zielkeil außen am Skalenring markiert und steht zusätzlich als Zahl unter der Anzeige (etwa "SOLL 75 kt").
+- Unten links, außerhalb des Rahmens, die Geschwindigkeitsanzeige nach Abbildung 3-8 und Video: rundes Zifferblatt auf schwarzem Grund, Aufschrift AIRSPEED und KNOTS, Skala 40 bis 160 mit Zahlen in Vierzigerschritten und Strichen dazwischen, türkiser Skalenbogen entlang der Marken, weiße Nadel. Der Sollwert wird als roter Zielkeil außen am Skalenring markiert und steht zusätzlich als Zahl rechts neben der Anzeige (etwa "SOLL 75 kt").
 - Kopfzeile oben mittig in gedeckter, kleiner Schrift: gewählte Kombination und Test-Restzeit (etwa "STICK + RUDER · REST 4:32").
 - Keine weiteren Bildelemente. Rückmeldung bei einem Treffer: Das getroffene Zielelement (Zielkreis, senkrechte Linie beziehungsweise Skalenbogen) blitzt kurz hell auf, dann wird neu gesetzt.
 

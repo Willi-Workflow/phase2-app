@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   TESTDAUERN, ELEMENTE, HALTEZEIT_MS, NADEL_MIN, NADEL_MAX,
-  ZIELKREIS_R, STRICH_TOLERANZ, NADEL_TOLERANZ, SOLLWERTE,
+  ZIELKREIS_R, STRICH_TOLERANZ, NADEL_TOLERANZ, SOLLWERTE, RAHMEN_VERHAELTNIS,
   erzeugeLaufzustand, takt, zufallsFadenkreuz, zufallsStrich,
   inDeckung, punkte, pruefeAuswahl, neuerSoll,
 } from "../js/uebung2.js";
@@ -182,4 +182,13 @@ test("pruefeAuswahl: mindestens ein gültiges Element", () => {
   assert.ok(pruefeAuswahl(["stick", "ruder", "schub"]));
   assert.ok(!pruefeAuswahl([]));
   assert.ok(!pruefeAuswahl(["quatsch"]));
+});
+
+test("inDeckung: senkrechter Rand des Zielkreises zählt wie der sichtbare Kreis", () => {
+  const rnd = saatZufall(43);
+  const z = erzeugeLaufzustand(["stick"], rnd);
+  z.fadenkreuz = { x: 0.5, y: 0.5 + 0.038 };
+  assert.ok(inDeckung(z, "stick"));
+  z.fadenkreuz = { x: 0.5 + 0.038, y: 0.5 };
+  assert.ok(!inDeckung(z, "stick"));
 });

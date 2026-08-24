@@ -10,6 +10,7 @@ export const NADEL_MIN = 40;
 export const NADEL_MAX = 160;
 export const ZIELKREIS_R = 0.02;     // Anteil der Rahmenbreite
 export const STRICH_TOLERANZ = 0.01; // Anteil der Rahmenbreite
+export const RAHMEN_VERHAELTNIS = 0.4765625; // Höhe zu Breite des Rahmens; das Bildmodul leitet seine Maße daraus ab
 export const NADEL_TOLERANZ = 2;     // Knoten
 export const SOLLWERTE = Array.from({ length: 23 }, (_, i) => 45 + i * 5);
 
@@ -90,7 +91,7 @@ export function erzeugeLaufzustand(auswahl, rnd = Math.random) {
 }
 
 export function inDeckung(z, element) {
-  if (element === "stick") return Math.hypot(z.fadenkreuz.x - 0.5, z.fadenkreuz.y - 0.5) <= ZIELKREIS_R;
+  if (element === "stick") return Math.hypot(z.fadenkreuz.x - 0.5, (z.fadenkreuz.y - 0.5) * RAHMEN_VERHAELTNIS) <= ZIELKREIS_R;
   if (element === "ruder") return Math.abs(z.strich.x - 0.5) <= STRICH_TOLERANZ;
   return Math.abs(z.nadel - z.soll) <= NADEL_TOLERANZ;
 }

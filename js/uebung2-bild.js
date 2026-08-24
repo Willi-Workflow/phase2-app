@@ -2,10 +2,10 @@
 // im festen 1600 mal 900 Raster; die Laufzeit schreibt nur Verschiebungen und
 // Drehungen der gekennzeichneten Gruppen fort. Farben und Aufbau folgen den
 // Referenzbildern unter entwurf/bilder/smt-referenz-*.jpg.
-import { NADEL_MIN, NADEL_MAX } from "./uebung2.js";
+import { NADEL_MIN, NADEL_MAX, RAHMEN_VERHAELTNIS } from "./uebung2.js";
 
 export const BILD = { b: 1600, h: 900 };
-export const RAHMEN = { x: 160, y: 50, b: 1280, h: 610 };
+export const RAHMEN = { x: 160, y: 50, b: 1280, h: 1280 * RAHMEN_VERHAELTNIS };
 export const STRICH_Y = RAHMEN.y + RAHMEN.h * 0.18;
 export const TACHO = { cx: 230, cy: 780, r: 78 };
 
