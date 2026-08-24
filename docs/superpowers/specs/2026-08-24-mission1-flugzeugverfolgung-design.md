@@ -27,7 +27,7 @@ Eingehängt wird die Übung über die Zuordnung `UEBUNGEN` in `js/mission.js` (E
 
 ## Szene
 
-- Heller Himmelsverlauf, große Bodenebene mit einem nahtlos kachelbaren Luftbild einer Stadt als Textur (Erzeugung über Higgsfield, Prompt geht vorher zur Freigabe an Willi), Dunst zum Horizont über Nebel in der Szene. Der Nebel kaschiert zugleich die Kachelwiederholung.
+- Heller Himmelsverlauf, große Bodenebene mit einem nahtlos kachelbaren Luftbild als Textur, Dunst zum Horizont über Nebel in der Szene. Der Nebel kaschiert zugleich die Kachelwiederholung. Inhalt nach Willis Festlegung vom 24.08.2026: überwiegend Landschaft (Wiesen, Felder, Hecken, kleine Wälder), nur vereinzelt eine Ortschaft; erzeugt über Higgsfield nach Prompt-Freigabe, Willis Wahl ist Fassung 5 (bilder/stadt.jpg, Entwurfsfassungen unter entwurf/bilder/stadt-*.jpg).
 - Das Zielflugzeug ist ein kleines rotes Kunstflugzeug als einfaches 3D-Modell aus Grundkörpern (Rumpf, Doppeldeckerflächen, Leitwerk), damit es sich in Kurven echt neigt.
 - Der Zielkreis mit senkrecht-waagerechtem Plus-Kreuz liegt als SVG-Ebene über dem 3D-Bild: konstant groß, gestochene Linien, türkisgrün und in Deckung rot. Kein weiterer Text und keine weiteren Anzeigen auf der Bühne, nur die Kopfzeile wie bei Mission 2.
 
