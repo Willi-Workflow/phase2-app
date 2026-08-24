@@ -19,7 +19,7 @@ Unter `entwurf/bilder/`:
 - Das rote Fadenkreuz (Kreisumriss mit über den Kreis hinausstehendem Kreuz, sattes Rot): vom Stick gesteuert, frei im Rahmen beweglich.
 - Der rote Senkrechtstrich (kurzer, dicker Balken) auf fester Höhe im oberen Rahmenviertel, nur waagerecht beweglich: von den Ruderpedalen gesteuert. Ziel ist die weiße senkrechte Linie.
 - Unten links, außerhalb des Rahmens, die Geschwindigkeitsanzeige nach Abbildung 3-8 und Video: rundes Zifferblatt auf schwarzem Grund, Aufschrift AIRSPEED und KNOTS, Skala 40 bis 160 mit Zahlen in Vierzigerschritten und Strichen dazwischen, türkiser Skalenbogen entlang der Marken, weiße Nadel. Der Sollwert wird als roter Zielkeil außen am Skalenring markiert und steht zusätzlich als Zahl unter der Anzeige (etwa "SOLL 75 kt").
-- Kopfzeile oben mittig in gedeckter, kleiner Schrift: aktives Modul und Test-Restzeit (etwa "STICK + RUDER · REST 4:32").
+- Kopfzeile oben mittig in gedeckter, kleiner Schrift: gewählte Kombination und Test-Restzeit (etwa "STICK + RUDER · REST 4:32").
 - Keine weiteren Bildelemente. Rückmeldung bei einem Treffer: Das getroffene Zielelement (Zielkreis, senkrechte Linie beziehungsweise Skalenbogen) blitzt kurz hell auf, dann wird neu gesetzt.
 
 ## Steuerung und Bewegung
@@ -35,27 +35,27 @@ Unter `entwurf/bilder/`:
 - Ein Treffer entsteht, wenn die Deckung eine volle Sekunde ohne Unterbrechung gehalten wird. Danach setzt das System das jeweilige Element neu: das Fadenkreuz auf eine zufällige Position im Rahmen, der Strich auf eine zufällige Waagerechtposition, der Sollwert auf einen neuen Wert (45 bis 155 in Fünferschritten, nie der alte Wert). Das Zielbild selbst (Kreis, Linie) bleibt fest.
 - Kombitreffer: Erzielt ein Element einen Treffer, während alle übrigen aktiven Elemente in diesem Moment ebenfalls in Deckung stehen, zählt zusätzlich ein Kombitreffer.
 
-## Laufaufbau (Willis Festlegung: wie das Original)
+## Laufaufbau (Willis Festlegung vom 24.08.2026: freie Auswahl der Steuerelemente)
 
-- Testdauer einstellbar: 5, 10 oder 30 Minuten (Vorgabe 5), gespeichert je Profil als `uebung2-einstellung`.
-- Das erste Drittel der Testdauer besteht aus drei gleich langen Paarmodulen in fester Reihenfolge: Stick+Ruder, Stick+Schub, Ruder+Schub. Die restlichen zwei Drittel laufen mit allen drei Steuerelementen.
-- In Paarmodulen sind nur die beteiligten Elemente sichtbar und wertbar; die unbeteiligten (samt zugehörigem Zielbild beziehungsweise Anzeige) sind ausgeblendet.
-- Ein Modulwechsel unterbricht laufende Haltezeiten und setzt alle aktiven Elemente neu; die Kopfzeile zeigt das neue Modul.
-- Vollbild mit Hangartür-Übergang, Abbruch über Esc, Vollbildverlassen oder Tabwechsel führt zur Ergebnistafel ohne Wertung, gleiche Semantik wie Mission 4 und 5. Eine laufende Haltezeit wird vom Testende nicht mehr abgeschnitten: Mit Ablauf der Testdauer endet der Lauf sofort, offene Haltezeiten verfallen.
+- Auf der Missionsseite sind die drei Steuerelemente einzeln anwählbar (Stick, Ruder, Schub), jede Kombination ist erlaubt, auch ein einzelnes Element. Die Auswahl gilt unverändert für den gesamten Lauf, es gibt keinen Wechsel zwischendurch.
+- Ist kein Element angewählt, bleibt der Startknopf gesperrt mit Hinweis.
+- Testdauer einstellbar: 5, 10 oder 30 Minuten (Vorgabe 5). Auswahl und Testdauer werden je Profil als `uebung2-einstellung` gespeichert (Vorgabe: alle drei angewählt).
+- Im Lauf sind nur die gewählten Elemente sichtbar und wertbar; die übrigen (samt zugehörigem Zielbild beziehungsweise Anzeige) sind ausgeblendet. Die Kopfzeile zeigt die gewählte Kombination.
+- Vollbild mit Hangartür-Übergang, Abbruch über Esc, Vollbildverlassen oder Tabwechsel führt zur Ergebnistafel ohne Wertung, gleiche Semantik wie Mission 4 und 5. Mit Ablauf der Testdauer endet der Lauf sofort, offene Haltezeiten verfallen.
 
 ## Wertung (Willis Festlegung: Treffer je Minute)
 
-- Punkte des Laufs: (Summe aller Einzeltreffer plus 2 mal Summe der Kombitreffer) geteilt durch die Testdauer in Minuten, gerundet. So bleiben Läufe verschiedener Dauern vergleichbar.
+- Punkte des Laufs: (Summe aller Einzeltreffer plus 2 mal Summe der Kombitreffer) geteilt durch die Testdauer in Minuten, gerundet. So bleiben Läufe verschiedener Dauern vergleichbar. Bei nur einem gewählten Element gibt es naturgemäß keine Kombitreffer; die gewählte Kombination steht in den Laufdaten, damit Vergleiche einzuordnen sind.
 - `js/missionen.js`: Mission 2 behält `kennzahlName: "Punkte"`, ohne `maximal` (die Diagrammskala richtet sich nach den Läufen). `wertung` bleibt auf `false` (Probebetrieb), bis Willi die Übung als fertig einstuft.
-- Gespeicherte Laufdaten (`daten`): `art: "multitasking"`, `dauerMin`, `trefferStick`, `trefferRuder`, `trefferSchub`, `kombitreffer`, `punkte`.
-- Die Ergebnistafel führt mit den Punkten, darunter die Aufschlüsselung (Treffer je Steuerelement und Kombitreffer); die Fußzeile nennt Testdauer und Modulaufbau.
+- Gespeicherte Laufdaten (`daten`): `art: "multitasking"`, `dauerMin`, `auswahl` (Feld der gewählten Elemente), `trefferStick`, `trefferRuder`, `trefferSchub`, `kombitreffer`, `punkte`.
+- Die Ergebnistafel führt mit den Punkten, darunter die Aufschlüsselung (Treffer je gewähltem Steuerelement und Kombitreffer); die Fußzeile nennt Testdauer und gewählte Kombination.
 
 ## Bausteine
 
 Nach dem Baumuster der Missionen 4 und 5:
 
-- `js/uebung2.js`: reine Logik ohne DOM. Modulplan aus der Testdauer, Raten- und Driftrechnung je Takt (Zeitschritt einspeisbar), Grenzen, Deckungsprüfung, Haltezeit- und Trefferverwaltung, Neusetzung (Zufall einspeisbar), Kennzahl. Tests unter `tests/`.
-- `js/uebung2-lauf.js`: Vollbild-Ablauf mit requestAnimationFrame, SVG-Zeichnung von Rahmen, Kreuz, Zielkreis, Fadenkreuz, Strich und Geschwindigkeitsanzeige, Achsenabfrage über die Controls-Anlage, Einstellung (Testdauer) und Hinweistext, Ergebnistafel, Abbruchwege.
+- `js/uebung2.js`: reine Logik ohne DOM. Raten- und Driftrechnung je Takt (Zeitschritt einspeisbar), Grenzen, Deckungsprüfung, Haltezeit- und Trefferverwaltung, Neusetzung (Zufall einspeisbar), Kombitreffer, Kennzahl. Tests unter `tests/`.
+- `js/uebung2-lauf.js`: Vollbild-Ablauf mit requestAnimationFrame, SVG-Zeichnung von Rahmen, Kreuz, Zielkreis, Fadenkreuz, Strich und Geschwindigkeitsanzeige, Achsenabfrage über die Controls-Anlage, Einstellung (Steuerelement-Auswahl und Testdauer) und Hinweistext, Ergebnistafel, Abbruchwege.
 - `js/mission.js`: Eintrag `2: erzeugeUebung2` in der Zuordnung `UEBUNGEN`.
 - `stil.css`: Klassen für die SMT-Bühne (schwarzer Grund, Linienfarben, Kopfzeile).
 - `mission.html`: Versionsmarke des Einstiegsskripts hochzählen.
@@ -67,7 +67,7 @@ Nach dem Baumuster der Missionen 4 und 5:
 
 ## Prüfung
 
-- Logiktests mit `node --test tests/*.test.js`: Modulplan (Drittelung, Reihenfolge, Restzeit), Raten- und Driftintegration (deterministisch mit eingespeistem Zufall und festem Zeitschritt), Grenzen, Deckungstoleranzen, Haltezeit über Taktgrenzen, Neusetzung (nie alter Sollwert), Kombitreffer-Bedingung, Kennzahlrechnung.
+- Logiktests mit `node --test tests/*.test.js`: Raten- und Driftintegration (deterministisch mit eingespeistem Zufall und festem Zeitschritt), Grenzen, Deckungstoleranzen, Haltezeit über Taktgrenzen, Neusetzung (nie alter Sollwert), Kombitreffer-Bedingung (nur gewählte Elemente zählen), Kennzahlrechnung, Auswahlregeln (mindestens ein Element).
 - Sichtprüfung headless in Chrome gegen die Referenzbilder; ein Probegeschirr `entwurf/uebung2-probe.html` nach dem Muster der Missionen 4 und 5, mit einspeisbaren Achsenwerten für die headless Prüfung.
 - Die Geräteprüfung mit dem echten Thrustmaster bleibt als bekannter offener Punkt bestehen und ist nicht Teil dieses Entwurfs.
 
