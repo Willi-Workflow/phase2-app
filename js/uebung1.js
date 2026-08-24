@@ -61,6 +61,26 @@ export function zufallsZiel(rnd) {
   return { x: 0.25, y: 0.3 };
 }
 
+// Neusetzung des Kreises nach einem Treffer: im Sprungbereich und deutlich
+// weg vom Ziel, damit jede Aufgabe echte Arbeit verlangt. Der Schleifen-
+// wächter verhindert Endlosläufe bei sturem Zufall.
+export function zufallsKreis(ziel, rnd) {
+  for (let versuch = 0; versuch < 100; versuch++) {
+    const k = {
+      x: SPRUNG.xMin + rnd() * (SPRUNG.xMax - SPRUNG.xMin),
+      y: SPRUNG.yMin + rnd() * (SPRUNG.yMax - SPRUNG.yMin),
+    };
+    if (abstand(k, ziel) >= MINDESTABSTAND) return k;
+  }
+  return abstand({ x: SPRUNG.xMin, y: SPRUNG.yMin }, ziel) >= MINDESTABSTAND
+    ? { x: SPRUNG.xMin, y: SPRUNG.yMin }
+    : { x: SPRUNG.xMax, y: SPRUNG.yMax };
+}
+
+export function inDeckung(z) {
+  return abstand(z.ziel, z.kreis) <= KREIS_R;
+}
+
 export function erzeugeLaufzustand(rnd = Math.random) {
   return {
     ziel: zufallsZiel(rnd),
@@ -91,5 +111,20 @@ export function takt(z, eingaben, dtMs, rnd = Math.random) {
   z.ziel.y = begrenze(z.ziel.y + nickBewegung + taktDrift(z.drift.zy, dtMs, rnd) * dt, KEGEL.yMin, KEGEL.yMax);
 
   z.testMs += dtMs;
-  return [];
+  const ereignisse = [];
+  if (inDeckung(z)) {
+    z.deckungMs += dtMs;
+    z.halteMs += dtMs;
+    if (z.halteMs >= HALTEZEIT_MS) {
+      z.treffer += 1;
+      if (z.ersterTrefferMs == null) z.ersterTrefferMs = z.testMs;
+      z.letzterTrefferMs = z.testMs;
+      z.halteMs = 0;
+      z.kreis = zufallsKreis(z.ziel, rnd);
+      ereignisse.push({ treffer: true });
+    }
+  } else {
+    z.halteMs = 0;
+  }
+  return ereignisse;
 }

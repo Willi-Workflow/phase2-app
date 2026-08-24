@@ -2,12 +2,14 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   TESTDAUERN, HALTEZEIT_MS, KREIS_R, BILDVERHAELTNIS, MINDESTABSTAND, KEGEL, SPRUNG, MAXROLL,
-  zufallsZiel, erzeugeLaufzustand, takt,
+  zufallsZiel, erzeugeLaufzustand, takt, inDeckung, zufallsKreis,
 } from "../js/uebung1.js";
 
 const still = { stickX: 0, stickY: 0, ruder: 0 };
 // Fester Zufall: keine Drift (Zielwert 0 entsteht bei rnd()=0.5), planbare Sprünge.
 const halb = () => 0.5;
+
+const abstandFuerTest = (a, b) => Math.hypot(a.x - b.x, (a.y - b.y) * BILDVERHAELTNIS);
 
 test("Konstanten der Verfolgung", () => {
   assert.deepEqual(TESTDAUERN, [3, 5, 10]);
@@ -64,4 +66,58 @@ test("Ziel bleibt auch bei langem Vollausschlag im Kegel", () => {
   assert.ok(z.ziel.x >= KEGEL.xMin && z.ziel.x <= KEGEL.xMax);
   assert.ok(z.ziel.y >= KEGEL.yMin && z.ziel.y <= KEGEL.yMax);
   assert.ok(Math.abs(z.roll) <= MAXROLL);
+});
+
+test("inDeckung misst den Winkelabstand mit Bildverhältnis", () => {
+  const z = erzeugeLaufzustand(halb);
+  z.kreis = { x: 0.5, y: 0.5 };
+  z.ziel = { x: 0.5 + KREIS_R - 0.001, y: 0.5 };
+  assert.equal(inDeckung(z), true);
+  z.ziel = { x: 0.5 + KREIS_R + 0.001, y: 0.5 };
+  assert.equal(inDeckung(z), false);
+  // Senkrecht zählt der Abstand gestaucht: derselbe Versatz in y liegt noch drin.
+  z.ziel = { x: 0.5, y: 0.5 + KREIS_R + 0.001 };
+  assert.equal(inDeckung(z), true);
+});
+
+test("Eine Sekunde Deckung gibt den Treffer, der Kreis springt", () => {
+  const z = erzeugeLaufzustand(halb);
+  z.ziel = { x: 0.5, y: 0.5 };   // direkt unter dem Kreis
+  let ereignisse = [];
+  for (let i = 0; i < 10; i++) ereignisse = ereignisse.concat(takt(z, still, 100, halb));
+  assert.equal(z.treffer, 1);
+  assert.deepEqual(ereignisse, [{ treffer: true }]);
+  assert.equal(z.ersterTrefferMs, 1000);
+  assert.equal(z.letzterTrefferMs, 1000);
+  assert.ok(abstandFuerTest(z.kreis, z.ziel) >= MINDESTABSTAND);
+  assert.ok(z.kreis.x >= SPRUNG.xMin && z.kreis.x <= SPRUNG.xMax);
+  assert.ok(z.kreis.y >= SPRUNG.yMin && z.kreis.y <= SPRUNG.yMax);
+});
+
+test("Verlorene Deckung setzt die Haltezeit zurück", () => {
+  const z = erzeugeLaufzustand(halb);
+  z.ziel = { x: 0.5, y: 0.5 };
+  takt(z, still, 600, halb);
+  z.ziel = { x: 0.9, y: 0.5 };   // Deckung weg
+  takt(z, still, 100, halb);
+  assert.equal(z.halteMs, 0);
+  z.ziel = { x: z.kreis.x, y: z.kreis.y };
+  for (let i = 0; i < 9; i++) takt(z, still, 100, halb);
+  assert.equal(z.treffer, 0);    // 900 ms reichen nicht
+  takt(z, still, 100, halb);
+  assert.equal(z.treffer, 1);
+});
+
+test("Deckungszeit summiert sich", () => {
+  const z = erzeugeLaufzustand(halb);
+  z.ziel = { x: 0.5, y: 0.5 };
+  takt(z, still, 400, halb);
+  assert.equal(z.deckungMs, 400);
+});
+
+test("zufallsKreis: Schleifenwächter greift bei sturem Zufall", () => {
+  const ziel = { x: 0.5, y: 0.5 };
+  const stur = () => 0.5;        // träfe immer die Zielnähe
+  const k = zufallsKreis(ziel, stur);
+  assert.ok(abstandFuerTest(k, ziel) >= MINDESTABSTAND);
 });
