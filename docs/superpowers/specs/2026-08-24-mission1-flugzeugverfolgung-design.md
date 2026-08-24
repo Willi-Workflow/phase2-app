@@ -13,7 +13,7 @@ Unter `entwurf/bilder/`:
 
 ## Aufgabe
 
-Mit Centerstick und Ruderpedalen den Zielkreis in Deckung mit dem vorausfliegenden Flugzeug bringen und eine Sekunde halten. Bei Deckung wechselt der Kreis von Türkisgrün auf Rot. Der Zielkreis sitzt fest in der Bildmitte (Willis Festlegung vom 24.08.2026 nach der ersten Sichtung); nach einem Treffer blitzt er kurz auf und das Flugzeug springt an eine andere Stelle des Sichtfelds, dann wird neu angelegt. Wahlweise läuft zusätzlich die Buchstabenaufgabe (SLA) aus Testphase 3 des Originals.
+Mit Centerstick und Ruderpedalen den Zielkreis in Deckung mit dem vorausfliegenden Flugzeug bringen und eine Sekunde halten. Bei Deckung wechselt der Kreis von Türkisgrün auf Rot. Der Zielkreis sitzt fest in der Bildmitte (Willis Festlegung vom 24.08.2026 nach der ersten Sichtung); nach einem Treffer blitzt er kurz auf und das Flugzeug springt an eine andere Stelle des Sichtfelds, dann wird neu angelegt. Wahlweise läuft zusätzlich die Letter-Task, angelehnt an die Zusatzaufgabe aus Testphase 3 des Originals, aber mit Willis Regel der versetzten Doppelung statt der Buchstabenkombination SLA (Festlegung vom 25.08.2026, Abschnitt Letter-Task).
 
 ## Aufbau
 
@@ -44,13 +44,15 @@ Vor dem Start auf der Missionsseite, gespeichert über die Einstellungen wie bei
 - Dauer wählbar: 3, 5 oder 10 Minuten, Vorgabe 5.
 - Die Buchstabeneinstellungen liegen in einem ausklappbaren Block, geöffnet über einen kleinen Pfeil (zu ▾, offen ▴) (zu Beginn zugeklappt, Willis Ordnungswunsch vom 24.08.2026): Schalter "LETTER-TASK" mit der Aufschrift EIN beziehungsweise AUS (Vorgabe aus), Tempo und der Übungsknopf. Anzeigename der Aufgabe ist überall "Letter-Task" (Willis Festlegung vom 24.08.2026, erlaubter Projektbegriff wie "Controls"); die internen Bezeichner bleiben bei sla.
 - Buchstabentempo wählbar: 2,5, 2, 1,5 oder 1 Sekunde Abstand, Vorgabe 2 (Original); gilt für die SLA-Aufgabe im Flug und für die Hörübung (Willis Erweiterung vom 24.08.2026).
-- Knopf "NUR ÜBEN": startet die Buchstabenaufgabe als reine Hörübung ohne Flug (dunkler Schirm, Kopfzeile mit Restzeit, Ergebnistafel mit erkannt, verpasst und Fehlalarm). Die Übung zählt nie zur Statistik. Rückmeldung (Willis Erweiterung vom 25.08.2026, als eigener Schalter RÜCKMELDUNG im Buchstabenblock, Vorgabe ein): Bei erkanntem Druck erklingt ein kurzer Bestätigungston und der Schirm bekommt eine grüne Umrandung; bei einem Fehldruck und beim ungenutzt abgelaufenen Antwortfenster (bei Normaltempo kurz vor dem nächsten Buchstaben) blitzt der Schirm kurz rot. Der Schalter gilt für die Hörübung und für die Letter-Task im Flug; ausgeschaltet verhält sich der Flug wie das Original ohne Blitze.
+- Knopf "NUR ÜBEN": startet die Buchstabenaufgabe als reine Hörübung ohne Flug (dunkler Schirm, Kopfzeile mit Restzeit, Ergebnistafel mit erkannt, verpasst und Fehlalarm). Die Übung zählt nie zur Statistik. Rückmeldung (Willis Erweiterung vom 25.08.2026, als eigener Schalter RÜCKMELDUNG im Buchstabenblock, Vorgabe ein): Bei erkanntem Druck erklingt ein kurzer Bestätigungston und der Schirm bekommt eine grüne Umrandung; bei einem Fehldruck und beim ungenutzt abgelaufenen Antwortfenster (mit der nächsten Ansage) blitzt der Schirm kurz rot. Der Schalter gilt für die Hörübung und für die Letter-Task im Flug; ausgeschaltet verhält sich der Flug wie das Original ohne Blitze.
 
-## Buchstabenaufgabe (SLA)
+## Letter-Task (versetzte Doppelung)
 
-- Die Logik erzeugt die Buchstabenreihe deterministisch aus dem übergebenen Zufall: Die Ereignisse (echte Folge S-L-A oder Beinahe-Falle S-L-x) kommen zufällig verteilt, aber verlässlich wiederkehrend, mit 6 bis 20 Füllbuchstaben Lücke zwischen den Ereignissen und höchstens zwei Fallen nacheinander (Willis Festlegung vom 25.08.2026: deutlich dichter als eine Folge je Minute, damit nie minutenlang nichts kommt). Dazwischen Zufallsbuchstaben ohne S, L und A.
+Regel nach Willis Festlegung vom 25.08.2026: Gedrückt wird, wenn ein Buchstabe mit genau einem Buchstaben Versatz doppelt kommt (etwa K, F, K), und zwar bevor der nächste Buchstabe angesagt wird. Sie ersetzt bewusst die Buchstabenkombination SLA, die die Dissertation für das ICA 90 II beschreibt; die internen Bezeichner bleiben bei sla.
+
+- Die Logik erzeugt die Buchstabenreihe deterministisch aus dem übergebenen Zufall: Die Ereignisse (echte Doppelung K-x-K oder Beinahe-Falle ohne Versatz K-K beziehungsweise mit zwei dazwischen K-x-y-K) kommen zufällig verteilt, aber verlässlich wiederkehrend, mit 6 bis 20 Füllbuchstaben Lücke zwischen den Ereignissen und höchstens zwei Fallen nacheinander (Willis Festlegung vom 25.08.2026: deutlich dichter als ein Ereignis je Minute, damit nie minutenlang nichts kommt). Die Füllbuchstaben wiederholen nie einen Buchstaben im Drückabstand, ungeplante Ziele entstehen nicht.
 - Gesprochen über ElevenLabs-Aufnahmen (Stimme Ralf DE Doku, deutsche Buchstabierweise, je Buchstabe eine Datei unter klaenge/buchstaben); die Sprachausgabe des Browsers ist nur der Ersatz, falls ein Klang nicht spielt. Der Abstand folgt dem gewählten Tempo.
-- Bestätigung mit der Schusstaste des Joysticks (Ersatz Leertaste) im Antwortfenster: Anhörzeit der Ansage (0,9 s) plus zwei Sekunden Reaktionszeit ab Ansagebeginn (Nachbesserung vom 25.08.2026, vorher fiel bedächtiges, aber korrektes Drücken aus dem Fenster).
+- Bestätigung mit der Schusstaste des Joysticks (Ersatz Leertaste). Das Antwortfenster ist das gewählte Tempo selbst: Es beginnt mit der Ansage der Doppelung und endet mit der nächsten Ansage (Willis Regel; schnellere Tempostufen verkürzen damit auch die Reaktionszeit).
 - **Schusstaste:** `controls.js` wird um eine Knopf-Zuordnung nach dem Vorbild des Achsen-Fangs erweitert. Beim ersten Einschalten der Buchstabenaufgabe (oder auf der Geräteseite) fordert die App auf, einmal die Schusstaste zu drücken, und merkt sich Gerät und Knopfnummer. Danach zählt nur diese Taste.
 - Ergebnistafel zeigt erkannt, verpasst und Fehlalarme, rein informativ; in die Deckungsquote fließt nichts ein (das Original wertet die Vigilanz ebenfalls nicht).
 
@@ -68,7 +70,7 @@ Gleiche Dichte wie bei Mission 2, alles gegen `js/uebung1.js` ohne 3D:
 - Haltezeit und Trefferfolge
 - Kreis springt nur innerhalb des Sichtfelds, Schleifenwächter greift
 - Zielbahn bleibt im Kegel
-- Buchstabenreihe enthält die geplanten Folgen und Fallen, Erkennungsfenster und Fehlalarm-Zählung stimmen
+- Buchstabenreihe enthält die geplanten Doppelungen und Fallen und sonst keine Wiederholung im Drückabstand, Antwortfenster und Fehlalarm-Zählung stimmen
 - Ergebnisrechnung (Deckungsquote, Zeiten, SLA-Zählwerte)
 
 three.js taucht in keinem Test auf.

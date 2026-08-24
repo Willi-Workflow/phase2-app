@@ -4,7 +4,7 @@ import {
   TESTDAUERN, HALTEZEIT_MS, KREIS_R, BILDVERHAELTNIS, MINDESTABSTAND, KEGEL, MAXROLL, TEMPOS,
   zufallsZiel, erzeugeLaufzustand, takt, inDeckung,
   deckungsquote, ergebnisWerte,
-  BUCHSTABEN_ABSTAND_MS, SLA_FENSTER_MS, EREIGNIS_LUECKE_MIN, EREIGNIS_LUECKE_MAX, erzeugeBuchstabenreihe, erzeugeSlaZaehler,
+  BUCHSTABEN_ABSTAND_MS, EREIGNIS_LUECKE_MIN, EREIGNIS_LUECKE_MAX, erzeugeBuchstabenreihe, erzeugeSlaZaehler,
 } from "../js/uebung1.js";
 
 const still = { stickX: 0, stickY: 0, ruder: 0 };
@@ -154,34 +154,36 @@ test("Ergebniswerte ohne Treffer bleiben leer", () => {
   assert.equal(w.mittelS, null);
 });
 
-test("Buchstabenreihe: Ereignisse zufällig, aber verlässlich wiederkehrend", () => {
+test("Buchstabenreihe: Doppelungen zufällig, aber verlässlich wiederkehrend", () => {
   const reihe = erzeugeBuchstabenreihe(5, Math.random);
   assert.equal(reihe.length, Math.floor(5 * 60_000 / BUCHSTABEN_ABSTAND_MS));
   const text = reihe.map((e) => e.b).join("");
-  // Jedes S beginnt ein Ereignis S-L-?; die Anfänge liegen im Abstandsband,
-  // nie drei Fallen nacheinander, jedes gesprochene SLA ist auch markiert.
-  const anfaenge = [];
-  for (let i = 0; i < text.length; i++) if (text[i] === "S") anfaenge.push(i);
-  assert.ok(anfaenge.length >= 6);
-  for (const a of anfaenge) assert.equal(text[a + 1], "L");
-  for (let i = 1; i < anfaenge.length; i++) {
-    const abstand = anfaenge[i] - anfaenge[i - 1];
-    assert.ok(abstand >= 3 + EREIGNIS_LUECKE_MIN && abstand <= 3 + EREIGNIS_LUECKE_MAX);
-  }
-  let fallenNacheinander = 0;
-  let echte = 0;
-  for (const a of anfaenge) {
-    if (text[a + 2] === "A") {
-      echte += 1;
-      fallenNacheinander = 0;
-      assert.equal(reihe[a + 2].sla, true);
-    } else {
-      fallenNacheinander += 1;
-      assert.ok(fallenNacheinander <= 2);
+  // Jede markierte Stelle ist die zweite Hälfte einer versetzten Doppelung
+  // (K, F, K), und jede Wiederholung im Drückabstand ist auch markiert:
+  // ungeplante Ziele gibt es nicht.
+  const ziele = [];
+  for (let i = 0; i < reihe.length; i++) {
+    if (reihe[i].sla) {
+      ziele.push(i);
+      assert.equal(text[i], text[i - 2]);
+      assert.notEqual(text[i], text[i - 1]);
     }
+    if (i >= 2) assert.equal(text[i] === text[i - 2], reihe[i].sla);
+    if (i < 2) assert.equal(reihe[i].sla, false);
   }
-  assert.ok(echte >= 2);
-  assert.equal(reihe.filter((e) => e.sla).length, echte);
+  assert.ok(ziele.length >= 2);
+  // Verlässlich wiederkehrend: zwischen zwei echten Doppelungen liegen
+  // höchstens zwei Fallen samt Lücken (Fallenbreite bis 4, Lücke bis 20).
+  for (let i = 1; i < ziele.length; i++) {
+    assert.ok(ziele[i] - ziele[i - 1] <= 3 * (4 + EREIGNIS_LUECKE_MAX) + 3);
+  }
+  // Beinahe-Fallen (ohne Versatz oder mit zwei dazwischen) kommen vor.
+  let fallen = 0;
+  for (let i = 1; i < text.length; i++) {
+    if (text[i] === text[i - 1]) fallen += 1;
+    if (i >= 3 && text[i] === text[i - 3]) fallen += 1;
+  }
+  assert.ok(fallen >= 1);
 });
 
 test("Buchstabenreihe ist mit gleichem Zufall gleich", () => {
@@ -191,19 +193,19 @@ test("Buchstabenreihe ist mit gleichem Zufall gleich", () => {
   assert.deepEqual(a, b);
 });
 
-test("SLA-Zähler: erkannt, Fehlalarm und verpasst", () => {
+test("Zähler: erkannt, Fehlalarm und verpasst", () => {
   const reihe = [
-    { b: "S", sla: false }, { b: "L", sla: false }, { b: "A", sla: true },
-    { b: "K", sla: false },
-    { b: "S", sla: false }, { b: "L", sla: false }, { b: "A", sla: true },
+    { b: "K", sla: false }, { b: "F", sla: false }, { b: "K", sla: true },
+    { b: "B", sla: false },
+    { b: "N", sla: false }, { b: "U", sla: false }, { b: "N", sla: true },
   ];
-  const z = erzeugeSlaZaehler(reihe);
+  const z = erzeugeSlaZaehler(reihe, 2000);
   z.sprich(0, 0); z.sprich(1, 2000); z.sprich(2, 4000);
-  z.druck(5000);                      // im Antwortfenster nach dem A: erkannt
+  z.druck(5000);                      // vor der nächsten Ansage: erkannt
   z.druck(5500);                      // Fenster verbraucht: Fehlalarm
   z.sprich(3, 6000);
-  z.druck(9000);                      // kein offenes A: Fehlalarm
-  z.sprich(4, 8000); z.sprich(5, 10000); z.sprich(6, 12000); // zweites A ohne Druck
+  z.druck(9000);                      // keine offene Doppelung: Fehlalarm
+  z.sprich(4, 8000); z.sprich(5, 10000); z.sprich(6, 12000); // zweite Doppelung ohne Druck
   assert.deepEqual(z.auswertung(), { erkannt: 1, verpasst: 1, fehlalarm: 2 });
 });
 
@@ -214,33 +216,31 @@ test("Tempostufen der Buchstabenreihe", () => {
 test("Buchstabenreihe folgt dem gewählten Tempo", () => {
   const schnell = erzeugeBuchstabenreihe(2, Math.random, 1000);
   assert.equal(schnell.length, Math.floor(2 * 60_000 / 1000));
-  const text = schnell.map((e) => e.b).join("");
-  assert.ok((text.match(/SL/g) ?? []).length >= 5);  // dichteres Raster, mehr Ereignisse
-  assert.ok((text.match(/SLA/g) ?? []).length >= 1);
+  assert.ok(schnell.filter((e) => e.sla).length >= 1);
 });
 
-test("SLA-Zähler meldet Treffer, Fehlalarm und Fensterablauf als Ereignis", () => {
+test("Zähler meldet Treffer, Fehlalarm und Fensterablauf als Ereignis", () => {
   const reihe = [
-    { b: "S", sla: false }, { b: "L", sla: false }, { b: "A", sla: true },
-    { b: "S", sla: false }, { b: "L", sla: false }, { b: "A", sla: true },
+    { b: "K", sla: false }, { b: "F", sla: false }, { b: "K", sla: true },
+    { b: "N", sla: false }, { b: "U", sla: false }, { b: "N", sla: true },
   ];
-  const z = erzeugeSlaZaehler(reihe);
+  const z = erzeugeSlaZaehler(reihe, 2000);
   z.sprich(2, 4000);
-  assert.equal(z.druck(5000), true);   // im Fenster: erkannt
+  assert.equal(z.druck(5000), true);   // vor der nächsten Ansage: erkannt
   assert.equal(z.druck(5500), false);  // Fenster verbraucht: Fehlalarm
   z.sprich(5, 10000);
-  assert.equal(z.ablauf(12800), 0);    // Anhörzeit plus Reaktionszeit läuft noch
-  assert.equal(z.ablauf(13000), 1);    // jetzt ungenutzt abgelaufen
+  assert.equal(z.ablauf(11900), 0);    // das Fenster läuft bis zur nächsten Ansage
+  assert.equal(z.ablauf(12000), 1);    // mit ihr ungenutzt abgelaufen
   assert.equal(z.ablauf(14000), 0);    // wird nur einmal gemeldet
   assert.deepEqual(z.auswertung(), { erkannt: 1, verpasst: 1, fehlalarm: 1 });
 });
 
-test("Antwortfenster umfasst die Anhörzeit der Ansage", () => {
-  const reihe = [{ b: "S", sla: false }, { b: "L", sla: false }, { b: "A", sla: true }];
-  const z = erzeugeSlaZaehler(reihe);
+test("Antwortfenster endet mit der nächsten Ansage, auch bei schnellem Tempo", () => {
+  const reihe = [{ b: "K", sla: false }, { b: "F", sla: false }, { b: "K", sla: true }];
+  const z = erzeugeSlaZaehler(reihe, 1000);
   z.sprich(2, 4000);
-  assert.equal(z.druck(6400), true);   // 2,4 s nach Ansagebeginn: menschliches Timing, vorher fälschlich rot
-  const z2 = erzeugeSlaZaehler(reihe);
+  assert.equal(z.druck(5000), false);  // die nächste Ansage läuft schon: Fehlalarm
+  const z2 = erzeugeSlaZaehler(reihe, 1000);
   z2.sprich(2, 4000);
-  assert.equal(z2.druck(7000), false); // deutlich zu spät bleibt ein Fehldruck
+  assert.equal(z2.druck(4900), true);  // knapp davor: erkannt
 });

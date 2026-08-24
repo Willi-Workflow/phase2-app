@@ -35,7 +35,7 @@ function erzeugeSprecher() {
   };
 }
 
-// Kurzer Bestätigungston für einen erkannten S-L-A-Druck in der Hörübung,
+// Kurzer Bestätigungston für eine erkannte Doppelung in der Hörübung,
 // direkt aus dem Klangerzeuger des Browsers, ohne eigene Datei.
 function trefferton() {
   try {
@@ -60,7 +60,8 @@ export function erzeugeUebung1({ speicher, controls }) {
     + "und Pedalen, bis der Zielkreis auf dem vorausfliegenden Flugzeug liegt, und halte ihn "
     + "eine Sekunde dort. Der Kreis sitzt fest in der Bildmitte; nach jedem Treffer springt "
     + "das Flugzeug an eine neue Stelle. Wahlweise "
-    + "läuft die Letter-Task: Bei der Buchstabenfolge S-L-A die Schusstaste drücken.";
+    + "läuft die Letter-Task: Kommt ein Buchstabe mit genau einem Buchstaben Versatz "
+    + "doppelt (etwa K, F, K), vor der nächsten Ansage die Schusstaste drücken.";
 
   let einstellung = { dauer: 5, sla: false, tempo: 2000, rueckmeldung: true };
   let uebungsStart = false; // der Übungsknopf startet den nächsten Lauf als reine Buchstabenübung
@@ -157,14 +158,14 @@ export function erzeugeUebung1({ speicher, controls }) {
     const schleier = document.createElement("div");
     schleier.className = "laufschleier buchstaben";
     schleier.innerHTML = `<div class="blitzschicht"></div><div class="testkopf"></div>
-      <div class="hinweis">Höre die Buchstaben.<br>Bei der Folge S-L-A die Schusstaste drücken.</div>`;
+      <div class="hinweis">Höre die Buchstaben. Kommt einer mit genau einem Versatz doppelt<br>(etwa K, F, K), vor der nächsten Ansage die Schusstaste drücken.</div>`;
     document.body.append(schleier);
     if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
 
     const kopf = schleier.querySelector(".testkopf");
     const blitzschicht = schleier.querySelector(".blitzschicht");
     const reihe = erzeugeBuchstabenreihe(dauer, Math.random, tempo);
-    const zaehler = erzeugeSlaZaehler(reihe);
+    const zaehler = erzeugeSlaZaehler(reihe, tempo);
     const sprecher = erzeugeSprecher();
     let gesprochen = 0;
     let testMs = 0;
@@ -421,7 +422,7 @@ export function erzeugeUebung1({ speicher, controls }) {
 
     const zustand = erzeugeLaufzustand();
     const reihe = sla ? erzeugeBuchstabenreihe(dauer, Math.random, tempo) : [];
-    const zaehler = sla ? erzeugeSlaZaehler(reihe) : null;
+    const zaehler = sla ? erzeugeSlaZaehler(reihe, tempo) : null;
     const sprecher = sla ? erzeugeSprecher() : null;
     let gesprochen = 0;
     let beendet = false;

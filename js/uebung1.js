@@ -154,58 +154,75 @@ export function ergebnisWerte(z) {
   };
 }
 
-// Buchstabenaufgabe aus Testphase 3 des Originals: fortlaufende Reihe,
-// die Folge S-L-A wird mit der Schusstaste bestätigt. Das Alphabet der
-// Fülltakte enthält weder S noch L noch A, darum entstehen nie ungeplante
-// Folgen. Die Ereignisse (Folge S-L-A oder Falle S-L-x) kommen zufällig
-// verteilt, aber verlässlich wiederkehrend: Lücke zwischen den Ereignissen
-// 6 bis 20 Buchstaben, höchstens zwei Fallen nacheinander (Willis
-// Festlegung vom 25.08.2026 gegen minutenlanges Zuhören ohne Ereignis).
+// Letter-Task nach Willis Regel vom 25.08.2026 (ersetzt bewusst die
+// S-L-A-Folge aus der Dissertation): Gedrückt wird, wenn ein Buchstabe mit
+// genau einem Buchstaben Versatz doppelt kommt (etwa K, F, K), und zwar
+// bevor der nächste Buchstabe angesagt wird. Die Fülltakte wiederholen nie
+// einen Buchstaben im Drückabstand, ungeplante Ziele entstehen nicht.
+// Die Ereignisse kommen zufällig verteilt, aber verlässlich wiederkehrend:
+// Lücke zwischen den Ereignissen 6 bis 20 Buchstaben, höchstens zwei
+// Fallen nacheinander (Willis Festlegung vom 25.08.2026 gegen
+// minutenlanges Zuhören ohne Ereignis). Fallen sind Beinahe-Doppelungen
+// ohne Versatz (K, K) oder mit zwei dazwischen (K, F, G, K); bei ihnen
+// darf nicht gedrückt werden.
 export const BUCHSTABEN_ABSTAND_MS = 2000;
-// Das Antwortfenster zählt ab Ansagebeginn: erst die Anhörzeit (die Ansage
-// eines Buchstabens dauert knapp eine Sekunde), dann die Reaktionszeit.
-// Ohne die Anhörzeit blieben nach dem fertig gehörten A nur rund 1,1 s,
-// und ein korrekt erkannter, aber bedacht gedrückter Treffer fiele als
-// Fehldruck aus dem Fenster (Willis Befund vom 25.08.2026).
-export const SLA_ANHOEREN_MS = 900;
-export const SLA_FENSTER_MS = 2000;
 export const EREIGNIS_LUECKE_MIN = 6;
 export const EREIGNIS_LUECKE_MAX = 20;
 // Wählbare Tempostufen für den Buchstabenabstand; 2000 ms entspricht dem
-// Original, schnellere Stufen erhöhen die Schwierigkeit.
+// Original, schnellere Stufen erhöhen die Schwierigkeit. Das Tempo ist
+// zugleich das Antwortfenster: mit der nächsten Ansage ist es zu.
 export const TEMPOS = [2500, 2000, 1500, 1000];
 const FUELLER = "BCDEFGHKMNPRTUWXZ".split("");
 
 export function erzeugeBuchstabenreihe(dauerMin, rnd = Math.random, abstandMs = BUCHSTABEN_ABSTAND_MS) {
   const laenge = Math.floor(dauerMin * 60_000 / abstandMs);
-  const reihe = Array.from({ length: laenge }, () =>
-    ({ b: FUELLER[Math.floor(rnd() * FUELLER.length)], sla: false }));
+  const plan = new Array(laenge).fill(null);
+  const ziel = new Array(laenge).fill(false);
   let stelle = 1 + Math.floor(rnd() * 5);
   let fallenNacheinander = 0;
-  while (stelle + 2 < laenge) {
+  while (stelle + 4 <= laenge) {
+    const b = FUELLER[Math.floor(rnd() * FUELLER.length)];
     const falle = fallenNacheinander < 2 && rnd() < 0.5;
-    reihe[stelle] = { b: "S", sla: false };
-    reihe[stelle + 1] = { b: "L", sla: false };
-    reihe[stelle + 2] = falle
-      ? { b: FUELLER[Math.floor(rnd() * FUELLER.length)], sla: false }
-      : { b: "A", sla: true };
-    fallenNacheinander = falle ? fallenNacheinander + 1 : 0;
-    stelle += 3 + EREIGNIS_LUECKE_MIN
+    let breite;
+    if (!falle) {
+      plan[stelle] = b; plan[stelle + 2] = b; ziel[stelle + 2] = true;
+      breite = 3;
+      fallenNacheinander = 0;
+    } else if (rnd() < 0.5) {
+      plan[stelle] = b; plan[stelle + 1] = b;   // Falle ohne Versatz
+      breite = 2;
+      fallenNacheinander += 1;
+    } else {
+      plan[stelle] = b; plan[stelle + 3] = b;   // Falle mit zwei dazwischen
+      breite = 4;
+      fallenNacheinander += 1;
+    }
+    stelle += breite + EREIGNIS_LUECKE_MIN
       + Math.floor(rnd() * (EREIGNIS_LUECKE_MAX - EREIGNIS_LUECKE_MIN + 1));
   }
-  return reihe;
+  // Fülltakte von links nach rechts: nie gleich einem Nachbarn im
+  // Drückabstand (eins oder zwei daneben), sonst entstünden ungeplante
+  // Ziele. FUELLER hat 17 Buchstaben, es bleibt immer eine Wahl.
+  for (let i = 0; i < laenge; i++) {
+    if (plan[i] !== null) continue;
+    const verboten = [plan[i - 2], plan[i - 1], plan[i + 1], plan[i + 2]];
+    const erlaubt = FUELLER.filter((b) => !verboten.includes(b));
+    plan[i] = erlaubt[Math.floor(rnd() * erlaubt.length)];
+  }
+  return plan.map((b, i) => ({ b, sla: ziel[i] }));
 }
 
-export function erzeugeSlaZaehler(reihe) {
+export function erzeugeSlaZaehler(reihe, fensterMs = BUCHSTABEN_ABSTAND_MS) {
   const offen = [];
   let erkannt = 0;
   let fehlalarm = 0;
   return {
     sprich(index, tMs) { if (reihe[index]?.sla) offen.push(tMs); },
-    // Rückgabe true bei erkannter Folge, false bei Fehlalarm, damit die
-    // Anzeige unmittelbar rückmelden kann.
+    // Rückgabe true bei erkannter Doppelung, false bei Fehlalarm, damit die
+    // Anzeige unmittelbar rückmelden kann. Das Fenster reicht von der
+    // Ansage der Doppelung bis zur nächsten Ansage (fensterMs = Tempo).
     druck(tMs) {
-      const i = offen.findIndex((t) => tMs >= t && tMs - t <= SLA_ANHOEREN_MS + SLA_FENSTER_MS);
+      const i = offen.findIndex((t) => tMs >= t && tMs - t < fensterMs);
       if (i >= 0) { offen.splice(i, 1); erkannt += 1; return true; }
       fehlalarm += 1;
       return false;
@@ -216,11 +233,11 @@ export function erzeugeSlaZaehler(reihe) {
     ablauf(tMs) {
       let neu = 0;
       for (let i = offen.length - 1; i >= 0; i--) {
-        if (tMs - offen[i] > SLA_ANHOEREN_MS + SLA_FENSTER_MS) { offen.splice(i, 1); neu += 1; }
+        if (tMs - offen[i] >= fensterMs) { offen.splice(i, 1); neu += 1; }
       }
       return neu;
     },
-    // Auswertung am Testende: verpasst sind alle geplanten Folgen ohne Druck.
+    // Auswertung am Testende: verpasst sind alle geplanten Doppelungen ohne Druck.
     auswertung() {
       const geplant = reihe.filter((e) => e.sla).length;
       return { erkannt, verpasst: geplant - erkannt, fehlalarm };
