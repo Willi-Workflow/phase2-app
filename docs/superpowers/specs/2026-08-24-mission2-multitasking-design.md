@@ -13,7 +13,7 @@ Unter `entwurf/bilder/`:
 ## Bühne und Optik
 
 - Schwarzer Vollbildgrund, kein Cockpit, keine Zierde: Der Lauf sieht aus wie das Original auf dem Prüfgerät.
-- Ein großer rechteckiger Rahmen aus dünnen, weißen Linien mit leicht bläulichem Röhrenschimmer, mittig auf der Fläche, Breite etwa 80 Prozent, Höhe etwa 78 Prozent des Fensters (Verhältnis wie im Referenz-Vollbild).
+- Ein großer rechteckiger Rahmen aus dünnen, weißen Linien mit leicht bläulichem Röhrenschimmer, mittig auf der Fläche, Breite etwa 80 Prozent, Höhe etwa 68 Prozent des Fensters, damit die Geschwindigkeitsanzeige wie in Abbildung 3-8 frei unter dem Rahmen liegt.
 - Ein Linienkreuz teilt den Rahmen in vier Felder: eine waagerechte Linie über die volle Breite auf halber Höhe, eine senkrechte Linie über die volle Höhe in der Mitte.
 - Im Schnittpunkt der weiße Zielkreis, nur Umriss, Durchmesser etwa 4 Prozent der Rahmenbreite.
 - Das rote Fadenkreuz (Kreisumriss mit über den Kreis hinausstehendem Kreuz, sattes Rot): vom Stick gesteuert, frei im Rahmen beweglich.
