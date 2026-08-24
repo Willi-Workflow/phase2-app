@@ -195,6 +195,7 @@ export function erzeugeUebung1({ speicher, controls }) {
 
     const zeichne = () => {
       const { kamera, flugzeug, renderer, szene } = drei;
+      // nick kippt nur den Horizontblick; die Bildposition des Ziels kommt allein aus zustand.ziel.x/y.
       kamera.rotation.set(zustand.nick, 0, -zustand.roll);
       // Sichtfeldanteil in Kameraraum: Höhe aus dem senkrechten Blickwinkel
       // bei der Flugdistanz, Breite daraus mal dem echten Bildverhältnis.

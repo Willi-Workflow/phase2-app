@@ -150,7 +150,7 @@ export function ergebnisWerte(z) {
 
 // Buchstabenaufgabe aus Testphase 3 des Originals: fortlaufende Reihe,
 // die Folge S-L-A wird mit der Schusstaste bestätigt. Das Alphabet der
-// Fülltakte enthält weder S noch L noch A, darum entstehen nie ungeplanten
+// Fülltakte enthält weder S noch L noch A, darum entstehen nie ungeplante
 // Folgen. Je Minute eine echte Folge und eine Falle S-L-x.
 export const BUCHSTABEN_ABSTAND_MS = 2000;
 export const SLA_FENSTER_MS = 2000;
