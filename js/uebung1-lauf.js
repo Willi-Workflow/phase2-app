@@ -62,7 +62,7 @@ export function erzeugeUebung1({ speicher, controls }) {
     + "das Flugzeug an eine neue Stelle. Wahlweise "
     + "läuft die Letter-Task: Bei der Buchstabenfolge S-L-A die Schusstaste drücken.";
 
-  let einstellung = { dauer: 5, sla: false, tempo: 2000 };
+  let einstellung = { dauer: 5, sla: false, tempo: 2000, rueckmeldung: true };
   let uebungsStart = false; // der Übungsknopf startet den nächsten Lauf als reine Buchstabenübung
 
   async function ladeEinstellung() {
@@ -85,6 +85,9 @@ export function erzeugeUebung1({ speicher, controls }) {
         <div class="wahlzeile"><span class="wahltitel">TEMPO</span>
           <select class="wahlliste" data-name="tempo">${TEMPOS.map((w) =>
             `<option value="${w}" ${w === einstellung.tempo ? "selected" : ""}>${(w / 1000).toLocaleString("de-DE", { minimumFractionDigits: 1 })} s</option>`).join("")}</select></div>
+        <div class="wahlzeile"><span class="wahltitel">RÜCKMELDUNG</span>
+          <button type="button" class="wahlknopf ${einstellung.rueckmeldung ? "an" : ""}" data-element="rueckmeldung"
+            aria-pressed="${einstellung.rueckmeldung}">${einstellung.rueckmeldung ? "EIN" : "AUS"}</button></div>
         <div class="wahlzeile"><span class="wahltitel">ÜBUNG</span>
           <button type="button" class="wahlknopf" data-element="ueben">NUR ÜBEN</button></div>
         <p class="wahlhinweis" id="u1-schusshinweis" hidden></p>
@@ -119,11 +122,15 @@ export function erzeugeUebung1({ speicher, controls }) {
         document.getElementById("start")?.click();
         return;
       }
-      einstellung.sla = !einstellung.sla;
-      knopf.classList.toggle("an", einstellung.sla);
-      knopf.setAttribute("aria-pressed", String(einstellung.sla));
-      knopf.textContent = einstellung.sla ? "EIN" : "AUS";
+      // EIN/AUS-Schalter: Letter-Task im Flug und die farbliche Rückmeldung.
+      const schalter = knopf.dataset.element;
+      if (schalter !== "sla" && schalter !== "rueckmeldung") return;
+      einstellung[schalter] = !einstellung[schalter];
+      knopf.classList.toggle("an", einstellung[schalter]);
+      knopf.setAttribute("aria-pressed", String(einstellung[schalter]));
+      knopf.textContent = einstellung[schalter] ? "EIN" : "AUS";
       speicher.setzeEinstellung("uebung1-einstellung", einstellung);
+      if (schalter !== "sla") return;
       // Beim ersten Einschalten mit Gerät die Schusstaste gleich anlernen.
       if (einstellung.sla && !controls.schusstasteVon() && controls.geraete().length) {
         schusshinweis.hidden = false;
@@ -146,7 +153,7 @@ export function erzeugeUebung1({ speicher, controls }) {
   // Reine Hörübung: dieselbe Buchstabenaufgabe ohne Flug, zählt nie zur
   // Statistik. Tempo und Dauer kommen aus den Einstellungen.
   function starteBuchstabenUebung({ tuer, beiEnde, registriereAbbruch }) {
-    const { dauer, tempo } = einstellung;
+    const { dauer, tempo, rueckmeldung } = einstellung;
     const schleier = document.createElement("div");
     schleier.className = "laufschleier buchstaben";
     schleier.innerHTML = `<div class="blitzschicht"></div><div class="testkopf"></div>
@@ -202,11 +209,12 @@ export function erzeugeUebung1({ speicher, controls }) {
         sprecher.sprich(reihe[gesprochen].b);
         gesprochen += 1;
       }
-      if (controls.schussGedrueckt() && zaehler.druck(testMs)) {
-        trefferton();
-        blitze("gruen");
+      if (controls.schussGedrueckt()) {
+        const traf = zaehler.druck(testMs);
+        if (rueckmeldung && traf) { trefferton(); blitze("gruen"); }
+        if (rueckmeldung && !traf) blitze("rot");
       }
-      if (zaehler.ablauf(testMs) > 0) blitze("rot");
+      if (zaehler.ablauf(testMs) > 0 && rueckmeldung) blitze("rot");
       const rest = Math.max(0, testende - performance.now());
       kopf.textContent = `BUCHSTABEN · REST ${Math.floor(rest / 60_000)}:${String(Math.floor((rest % 60_000) / 1000)).padStart(2, "0")}`;
       if (performance.now() >= testende) { zeigeErgebnis(true); return; }
@@ -276,7 +284,7 @@ export function erzeugeUebung1({ speicher, controls }) {
       starteBuchstabenUebung({ tuer, beiEnde, registriereAbbruch });
       return;
     }
-    const { dauer, sla, tempo } = einstellung;
+    const { dauer, sla, tempo, rueckmeldung } = einstellung;
     const schleier = document.createElement("div");
     schleier.className = "laufschleier uebung1";
     schleier.innerHTML = `
@@ -286,6 +294,7 @@ export function erzeugeUebung1({ speicher, controls }) {
         <line x1="50" y1="8" x2="50" y2="92" stroke-width="2.5"/>
         <line x1="8" y1="50" x2="92" y2="50" stroke-width="2.5"/>
       </svg>
+      <div class="blitzschicht"></div>
       <div class="testkopf"></div>`;
     document.body.append(schleier);
     if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
@@ -293,6 +302,15 @@ export function erzeugeUebung1({ speicher, controls }) {
     const kopf = schleier.querySelector(".testkopf");
     const kreisBild = schleier.querySelector(".zielkreis");
     const leinwand = schleier.querySelector(".himmelbild");
+    // Farbliche Rückmeldung der Letter-Task, gleiche Schicht wie in der
+    // Hörübung; nur aktiv, wenn der Schalter RÜCKMELDUNG eingeschaltet ist.
+    const blitzschicht = schleier.querySelector(".blitzschicht");
+    let blitzUhr = null;
+    const flugblitz = (art) => {
+      clearTimeout(blitzUhr);
+      blitzschicht.className = `blitzschicht ${art} da`;
+      blitzUhr = setTimeout(() => { blitzschicht.className = "blitzschicht"; }, art === "gruen" ? 400 : 280);
+    };
 
     // 3D-Szene: Kamera in fester Höhe, Bodenebene mit Stadtbild, Dunst zum
     // Horizont. Das Zielflugzeug hängt an der Kamera und wird je Takt aus dem
@@ -417,6 +435,7 @@ export function erzeugeUebung1({ speicher, controls }) {
     const raeumeAuf = () => {
       beendet = true;
       for (const t of zeitgeber) clearTimeout(t);
+      clearTimeout(blitzUhr);
       sprecher?.stopp();
       speechSynthesis?.cancel?.();
       document.removeEventListener("fullscreenchange", beiVollbildwechsel);
@@ -490,7 +509,12 @@ export function erzeugeUebung1({ speicher, controls }) {
           spaeter(() => kreisBild.classList.remove("smtblitz"), 220);
         }
       }
-      if (sla && controls.schussGedrueckt()) zaehler.druck(zustand.testMs);
+      if (sla && controls.schussGedrueckt()) {
+        const traf = zaehler.druck(zustand.testMs);
+        if (rueckmeldung && traf) { trefferton(); flugblitz("gruen"); }
+        if (rueckmeldung && !traf) flugblitz("rot");
+      }
+      if (sla && rueckmeldung && zaehler.ablauf(zustand.testMs) > 0) flugblitz("rot");
       sprichBuchstaben();
       zeichne();
       if (performance.now() >= testende) { zeigeErgebnis(true); return; }
