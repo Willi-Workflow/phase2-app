@@ -248,6 +248,7 @@ main { position: relative; z-index: 1; }
 
 /* Mission 1: ausklappbarer Buchstabenblock im Einstellungsfeld */
 .klappfeld { margin-left: 14px; padding-left: 12px; border-left: 1px solid rgba(223, 233, 245, 0.18); }
+.wahlknopf.klapppfeil { padding: 2px 12px; font-size: 15px; line-height: 1.2; }
 
 /* Mission 1: reine Buchstabenübung, dunkler Hörraum ohne Szene */
 .laufschleier.buchstaben { background: #0d1109; }

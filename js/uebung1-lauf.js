@@ -50,7 +50,8 @@ export function erzeugeUebung1({ speicher, controls }) {
         <select class="wahlliste" data-name="dauer">${TESTDAUERN.map((w) =>
           `<option value="${w}" ${w === einstellung.dauer ? "selected" : ""}>${w} min</option>`).join("")}</select></div>
       <div class="wahlzeile"><span class="wahltitel">BUCHSTABEN</span>
-        <button type="button" class="wahlknopf" data-element="klappe" aria-expanded="false">AUSKLAPPEN</button></div>
+        <button type="button" class="wahlknopf klapppfeil" data-element="klappe" aria-expanded="false"
+          aria-label="Buchstabeneinstellungen ausklappen">▾</button></div>
       <div class="klappfeld" id="u1-buchstabenfeld" hidden>
         <div class="wahlzeile"><span class="wahltitel">SLA-AUFGABE</span>
           <button type="button" class="wahlknopf ${einstellung.sla ? "an" : ""}" data-element="sla"
@@ -79,7 +80,7 @@ export function erzeugeUebung1({ speicher, controls }) {
       if (knopf.dataset.element === "klappe") {
         const kasten = feld.querySelector("#u1-buchstabenfeld");
         kasten.hidden = !kasten.hidden;
-        knopf.textContent = kasten.hidden ? "AUSKLAPPEN" : "EINKLAPPEN";
+        knopf.textContent = kasten.hidden ? "▾" : "▴";
         knopf.setAttribute("aria-expanded", String(!kasten.hidden));
         return;
       }
