@@ -157,29 +157,35 @@ export function ergebnisWerte(z) {
 // Buchstabenaufgabe aus Testphase 3 des Originals: fortlaufende Reihe,
 // die Folge S-L-A wird mit der Schusstaste bestätigt. Das Alphabet der
 // Fülltakte enthält weder S noch L noch A, darum entstehen nie ungeplante
-// Folgen. Je Minute eine echte Folge und eine Falle S-L-x.
+// Folgen. Die Ereignisse (Folge S-L-A oder Falle S-L-x) kommen zufällig
+// verteilt, aber verlässlich wiederkehrend: Lücke zwischen den Ereignissen
+// 6 bis 20 Buchstaben, höchstens zwei Fallen nacheinander (Willis
+// Festlegung vom 25.08.2026 gegen minutenlanges Zuhören ohne Ereignis).
 export const BUCHSTABEN_ABSTAND_MS = 2000;
 export const SLA_FENSTER_MS = 2000;
+export const EREIGNIS_LUECKE_MIN = 6;
+export const EREIGNIS_LUECKE_MAX = 20;
 // Wählbare Tempostufen für den Buchstabenabstand; 2000 ms entspricht dem
 // Original, schnellere Stufen erhöhen die Schwierigkeit.
 export const TEMPOS = [2500, 2000, 1500, 1000];
 const FUELLER = "BCDEFGHKMNPRTUWXZ".split("");
 
 export function erzeugeBuchstabenreihe(dauerMin, rnd = Math.random, abstandMs = BUCHSTABEN_ABSTAND_MS) {
-  const jeMinute = Math.floor(60_000 / abstandMs);
-  const reihe = Array.from({ length: dauerMin * jeMinute }, () =>
+  const laenge = Math.floor(dauerMin * 60_000 / abstandMs);
+  const reihe = Array.from({ length: laenge }, () =>
     ({ b: FUELLER[Math.floor(rnd() * FUELLER.length)], sla: false }));
-  for (let minute = 0; minute < dauerMin; minute++) {
-    const von = minute * jeMinute;
-    // Zwei getrennte Drittel der Minute, damit Folge und Falle nie überlappen.
-    const folgeStart = von + 1 + Math.floor(rnd() * (jeMinute / 3 - 3));
-    const falleStart = von + Math.floor(jeMinute / 2) + Math.floor(rnd() * (jeMinute / 3 - 3));
-    reihe[folgeStart] = { b: "S", sla: false };
-    reihe[folgeStart + 1] = { b: "L", sla: false };
-    reihe[folgeStart + 2] = { b: "A", sla: true };
-    reihe[falleStart] = { b: "S", sla: false };
-    reihe[falleStart + 1] = { b: "L", sla: false };
-    reihe[falleStart + 2] = { b: FUELLER[Math.floor(rnd() * FUELLER.length)], sla: false };
+  let stelle = 1 + Math.floor(rnd() * 5);
+  let fallenNacheinander = 0;
+  while (stelle + 2 < laenge) {
+    const falle = fallenNacheinander < 2 && rnd() < 0.5;
+    reihe[stelle] = { b: "S", sla: false };
+    reihe[stelle + 1] = { b: "L", sla: false };
+    reihe[stelle + 2] = falle
+      ? { b: FUELLER[Math.floor(rnd() * FUELLER.length)], sla: false }
+      : { b: "A", sla: true };
+    fallenNacheinander = falle ? fallenNacheinander + 1 : 0;
+    stelle += 3 + EREIGNIS_LUECKE_MIN
+      + Math.floor(rnd() * (EREIGNIS_LUECKE_MAX - EREIGNIS_LUECKE_MIN + 1));
   }
   return reihe;
 }

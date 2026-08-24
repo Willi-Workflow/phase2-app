@@ -4,7 +4,7 @@ import {
   TESTDAUERN, HALTEZEIT_MS, KREIS_R, BILDVERHAELTNIS, MINDESTABSTAND, KEGEL, MAXROLL, TEMPOS,
   zufallsZiel, erzeugeLaufzustand, takt, inDeckung,
   deckungsquote, ergebnisWerte,
-  BUCHSTABEN_ABSTAND_MS, SLA_FENSTER_MS, erzeugeBuchstabenreihe, erzeugeSlaZaehler,
+  BUCHSTABEN_ABSTAND_MS, SLA_FENSTER_MS, EREIGNIS_LUECKE_MIN, EREIGNIS_LUECKE_MAX, erzeugeBuchstabenreihe, erzeugeSlaZaehler,
 } from "../js/uebung1.js";
 
 const still = { stickX: 0, stickY: 0, ruder: 0 };
@@ -154,13 +154,34 @@ test("Ergebniswerte ohne Treffer bleiben leer", () => {
   assert.equal(w.mittelS, null);
 });
 
-test("Buchstabenreihe: Länge, eine Folge und eine Falle je Minute", () => {
-  const reihe = erzeugeBuchstabenreihe(3, Math.random);
-  assert.equal(reihe.length, Math.floor(3 * 60_000 / BUCHSTABEN_ABSTAND_MS));
-  assert.equal(reihe.filter((e) => e.sla).length, 3);
+test("Buchstabenreihe: Ereignisse zufällig, aber verlässlich wiederkehrend", () => {
+  const reihe = erzeugeBuchstabenreihe(5, Math.random);
+  assert.equal(reihe.length, Math.floor(5 * 60_000 / BUCHSTABEN_ABSTAND_MS));
   const text = reihe.map((e) => e.b).join("");
-  assert.equal((text.match(/SLA/g) ?? []).length, 3);   // keine zufälligen Extra-Folgen
-  assert.equal((text.match(/SL[^A]/g) ?? []).length, 3); // die Fallen
+  // Jedes S beginnt ein Ereignis S-L-?; die Anfänge liegen im Abstandsband,
+  // nie drei Fallen nacheinander, jedes gesprochene SLA ist auch markiert.
+  const anfaenge = [];
+  for (let i = 0; i < text.length; i++) if (text[i] === "S") anfaenge.push(i);
+  assert.ok(anfaenge.length >= 6);
+  for (const a of anfaenge) assert.equal(text[a + 1], "L");
+  for (let i = 1; i < anfaenge.length; i++) {
+    const abstand = anfaenge[i] - anfaenge[i - 1];
+    assert.ok(abstand >= 3 + EREIGNIS_LUECKE_MIN && abstand <= 3 + EREIGNIS_LUECKE_MAX);
+  }
+  let fallenNacheinander = 0;
+  let echte = 0;
+  for (const a of anfaenge) {
+    if (text[a + 2] === "A") {
+      echte += 1;
+      fallenNacheinander = 0;
+      assert.equal(reihe[a + 2].sla, true);
+    } else {
+      fallenNacheinander += 1;
+      assert.ok(fallenNacheinander <= 2);
+    }
+  }
+  assert.ok(echte >= 2);
+  assert.equal(reihe.filter((e) => e.sla).length, echte);
 });
 
 test("Buchstabenreihe ist mit gleichem Zufall gleich", () => {
@@ -193,10 +214,9 @@ test("Tempostufen der Buchstabenreihe", () => {
 test("Buchstabenreihe folgt dem gewählten Tempo", () => {
   const schnell = erzeugeBuchstabenreihe(2, Math.random, 1000);
   assert.equal(schnell.length, Math.floor(2 * 60_000 / 1000));
-  assert.equal(schnell.filter((e) => e.sla).length, 2);
   const text = schnell.map((e) => e.b).join("");
-  assert.equal((text.match(/SLA/g) ?? []).length, 2);
-  assert.equal((text.match(/SL[^A]/g) ?? []).length, 2);
+  assert.ok((text.match(/SL/g) ?? []).length >= 5);  // dichteres Raster, mehr Ereignisse
+  assert.ok((text.match(/SLA/g) ?? []).length >= 1);
 });
 
 test("SLA-Zähler meldet Treffer, Fehlalarm und Fensterablauf als Ereignis", () => {

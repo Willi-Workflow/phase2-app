@@ -48,7 +48,7 @@ Vor dem Start auf der Missionsseite, gespeichert über die Einstellungen wie bei
 
 ## Buchstabenaufgabe (SLA)
 
-- Die Logik erzeugt die Buchstabenreihe deterministisch: eingeplante S-L-A-Folgen (grob eine je Minute) und Beinahe-Fallen wie S-L-B, dazwischen Zufallsbuchstaben.
+- Die Logik erzeugt die Buchstabenreihe deterministisch aus dem übergebenen Zufall: Die Ereignisse (echte Folge S-L-A oder Beinahe-Falle S-L-x) kommen zufällig verteilt, aber verlässlich wiederkehrend, mit 6 bis 20 Füllbuchstaben Lücke zwischen den Ereignissen und höchstens zwei Fallen nacheinander (Willis Festlegung vom 25.08.2026: deutlich dichter als eine Folge je Minute, damit nie minutenlang nichts kommt). Dazwischen Zufallsbuchstaben ohne S, L und A.
 - Gesprochen über ElevenLabs-Aufnahmen (Stimme Ralf DE Doku, deutsche Buchstabierweise, je Buchstabe eine Datei unter klaenge/buchstaben); die Sprachausgabe des Browsers ist nur der Ersatz, falls ein Klang nicht spielt. Der Abstand folgt dem gewählten Tempo.
 - Bestätigung binnen zwei Sekunden nach dem A mit der Schusstaste des Joysticks; Ersatz ist die Leertaste.
 - **Schusstaste:** `controls.js` wird um eine Knopf-Zuordnung nach dem Vorbild des Achsen-Fangs erweitert. Beim ersten Einschalten der Buchstabenaufgabe (oder auf der Geräteseite) fordert die App auf, einmal die Schusstaste zu drücken, und merkt sich Gerät und Knopfnummer. Danach zählt nur diese Taste.
