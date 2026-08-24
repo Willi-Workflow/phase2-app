@@ -227,6 +227,21 @@ main { position: relative; z-index: 1; }
 .wahlhinweis { font-size: 11px; letter-spacing: 0.08em; color: #c9ae4a; margin-top: 6px; }
 .startknopf:disabled { opacity: 0.45; cursor: default; filter: grayscale(0.4); }
 
+/* Mission 1: Verfolgungsszene mit Himmelsverlauf hinter der 3D-Leinwand */
+.laufschleier.uebung1 {
+  background: linear-gradient(180deg, #4a7ac0 0%, #8fb0d9 52%, #d5e2ec 70%, #e9eff3 100%);
+}
+.uebung1 .himmelbild { position: absolute; inset: 0; width: 100%; height: 100%; }
+.uebung1 .zielkreis {
+  position: absolute;
+  width: 9%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  stroke: #35e0d0;
+  pointer-events: none;
+}
+.uebung1 .zielkreis.deckung { stroke: #e5312b; }
+
 /* Instrumententafel Mission 4 */
 .instrumententafel {
   display: flex;
