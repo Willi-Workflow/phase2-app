@@ -167,7 +167,10 @@ export function momentanfehler(zustand, vorgaben, tS) {
 // Punkte eines Durchgangs aus der Summe der Momentanfehler über die Messungen
 // der Wertungszeit. Ohne Messung gilt der Durchgang als fehlerfrei.
 export function durchgangspunkte(fehlerSumme, messungen) {
-  if (!messungen) return 100;
+  // Ohne Messungen gibt es null Punkte: ein Durchgang, der nie getaktet
+  // wurde, darf nicht als perfekt in die Kennzahl eingehen, sonst
+  // verdeckte ein Fehler im Laufmodul sich selbst mit Bestnote.
+  if (!messungen) return 0;
   return Math.round(100 * (1 - fehlerSumme / messungen));
 }
 

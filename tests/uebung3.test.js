@@ -288,6 +288,7 @@ test("momentanfehler: Mittel über mehrere aktive Instrumente, Fahrt fällt vor 
 });
 
 test("durchgangspunkte", () => {
+  assert.equal(durchgangspunkte(0, 0), 0);   // nie getaktet ist nicht perfekt
   assert.equal(durchgangspunkte(0, 10), 100);
   assert.equal(durchgangspunkte(10, 10), 0);
   assert.equal(durchgangspunkte(5, 10), 50);
