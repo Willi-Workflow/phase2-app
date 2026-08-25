@@ -226,6 +226,7 @@ export function erzeugeUebung3({ speicher, controls }) {
     let aufgabeBeantwortet = false;
     let naechsteAufgabeS = RECHENTAKT_S;
 
+    let gezeichneteZone = null;
     const zeichneAntworten = (gewaehlt = -1, echo = null) => {
       if (!antwortenfeld) return;
       if (!aktuelleAufgabe) { antwortenfeld.innerHTML = ""; return; }
@@ -241,6 +242,7 @@ export function erzeugeUebung3({ speicher, controls }) {
       aktuelleAufgabe = erzeugeRechenaufgabe(Math.random);
       aktuelleAntworten = antworten5(aktuelleAufgabe, Math.random);
       aufgabeBeantwortet = false;
+      gezeichneteZone = null;
       naechsteAufgabeS += RECHENTAKT_S;
       sprecher.sprich(aktuelleAufgabe);
       zeichneAntworten();
@@ -251,7 +253,7 @@ export function erzeugeUebung3({ speicher, controls }) {
       const treffer = aktuelleAntworten[zone] === aktuelleAufgabe.antwort;
       if (treffer) rechnenRichtig += 1; else rechnenFalsch += 1;
       zeichneAntworten(-1, { zone, treffer });
-      spaeter(() => zeichneAntworten(), AUFGABENECHO_MS);
+      spaeter(() => { gezeichneteZone = null; zeichneAntworten(); }, AUFGABENECHO_MS);
     };
 
     const taktRechnen = (tS) => {
@@ -266,7 +268,8 @@ export function erzeugeUebung3({ speicher, controls }) {
       }
       if (aufgabeBeantwortet) return;
       const zone = pedalwahl(controls.wert("ruder"));
-      zeichneAntworten(zone);
+      // Neu gezeichnet wird nur bei Zonenwechsel, nicht in jedem Bild.
+      if (zone !== gezeichneteZone) { gezeichneteZone = zone; zeichneAntworten(zone); }
       if (controls.schussGedrueckt()) bestaetigeAufgabe(zone);
     };
 
@@ -348,6 +351,9 @@ export function erzeugeUebung3({ speicher, controls }) {
     // danach der nächste Durchgang oder, wenn die Testdauer um ist, die
     // Ergebnistafel.
     const beendeDurchgang = () => {
+      // Eine noch laufende Ansage endet mit dem Durchgang, sie soll nicht
+      // in die Zwischenanzeige hineinsprechen.
+      sprecher?.stopp();
       const punkte = durchgangspunkte(mfSumme, mfZaehler);
       punkteListe.push(punkte);
       zwischenfeld.textContent = `DURCHGANG ${durchgangsNummer} · ${punkte} PUNKTE`;

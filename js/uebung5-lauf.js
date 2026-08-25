@@ -1,5 +1,5 @@
 // Ablauf Mission 5 (Test Flugphysik) im Vollbild: Aufgaben am Stück in
-// Viererblöcken, bis die eingestellte Testdauer um ist, mit Ablaufbalken,
+// Sechserblöcken, bis die eingestellte Testdauer um ist, mit Ablaufbalken,
 // je Aufgabe als Auswahlfrage oder Zahleneingabe, sofortige Auflösung,
 // danach die Ergebnistafel. Der Wissensbereich steht als Karteikartenstapel
 // fest auf der Missionsseite, nicht im Lauf. Die Bühne ist dieselbe
@@ -92,8 +92,11 @@ export function erzeugeUebung5({ speicher }) {
     const { dauer } = einstellung;
     let vorrat = [];
     const naechsteAufgabe = () => {
-      // Nachschub in Viererblöcken: jeder Block enthält jedes Prinzip einmal.
-      if (vorrat.length === 0) vorrat = erzeugeLauf(4);
+      // Nachschub in Sechserblöcken: jedes Prinzip kommt mindestens einmal
+      // vor, und die Drittel-Regel geht auf (zwei von sechs Aufgaben lesen
+      // vom Instrument ab, zufällig über den Block verteilt). Viererblöcke
+      // ergäben starr jede vierte Aufgabe, ein Viertel statt ein Drittel.
+      if (vorrat.length === 0) vorrat = erzeugeLauf(6);
       return vorrat.shift();
     };
     const limitMs = AUFGABENZEIT * 1000;

@@ -216,3 +216,30 @@ test("kennzahl: Summe auf hundert hochgerechnet und gerundet", () => {
   assert.equal(kennzahl(55.6, 10), 56);
   assert.equal(kennzahl(0, 0), 0);
 });
+
+// Nacharbeiten aus der Endprüfung: die Drittel-Regel am echten Blockmaß des
+// Laufs (Sechserblöcke), der Geschwindigkeits-Sonderfall direkt und das
+// Höhenraster der Instrumentenaufgaben.
+test("Sechserblock trägt genau zwei Instrumentenaufgaben", () => {
+  for (let probe = 0; probe < 50; probe++) {
+    const block = erzeugeLauf(6, Math.random);
+    assert.equal(block.filter((a) => a.instrument).length, 2);
+  }
+});
+
+test("Geschwindigkeit bleibt auch auf Wunsch eine Textaufgabe", () => {
+  const a = erzeugeAufgabe("geschwindigkeit", Math.random, true);
+  assert.equal(a.instrument, null);
+});
+
+test("Höhen-Instrumentenaufgaben bleiben im Anzeigeraster", () => {
+  let gesehen = 0;
+  for (let probe = 0; probe < 400 && gesehen < 20; probe++) {
+    const a = erzeugeAufgabe("rate", Math.random, true);
+    if (a.instrument?.id !== "hoehe") continue;
+    gesehen += 1;
+    assert.ok(a.instrument.wert >= 1000 && a.instrument.wert <= 9900);
+    assert.equal(a.instrument.wert % 100, 0);
+  }
+  assert.ok(gesehen >= 20);
+});
