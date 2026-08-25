@@ -356,7 +356,7 @@ export function erzeugeUebung3({ speicher, controls }) {
       sprecher?.stopp();
       const punkte = durchgangspunkte(mfSumme, mfZaehler);
       punkteListe.push(punkte);
-      zwischenfeld.textContent = `DURCHGANG ${durchgangsNummer} · ${punkte} PUNKTE`;
+      zwischenfeld.textContent = `DURCHGANG ${durchgangsNummer} · ${punkte} %`;
       zwischenfeld.classList.add("da");
       spaeter(() => {
         zwischenfeld.classList.remove("da");
@@ -394,7 +394,7 @@ export function erzeugeUebung3({ speicher, controls }) {
       tafelErgebnis.className = "ergebnisschicht";
       tafelErgebnis.innerHTML = `
         <div class="frage">${gewertet ? "TEST BEENDET" : "TEST ABGEBROCHEN"}</div>
-        <div class="ergebnisgross">${wert} Punkte</div>
+        <div class="ergebnisgross">${wert} %</div>
         <div class="ergebniszeilen">
           <span class="trefferzeile">${punkteListe.length} ${punkteListe.length === 1 ? "Durchgang" : "Durchgänge"}</span>
           <span>Mittlere Abweichung Kurs: ${mittel("kurs", "Grad")}</span>
