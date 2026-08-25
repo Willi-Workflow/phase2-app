@@ -8,9 +8,9 @@
 // zeigt, denn ein Teil der Aufgaben verlangt das Ablesen am Instrument.
 import {
   TESTDAUERN, AUFGABENZEIT, erzeugeLauf, antwortenFuer, pruefeEingabe,
-  punkteFuerAntwort, kennzahl,
+  punkteFuerAntwort, kennzahl, panelwerte,
 } from "./uebung5.js";
-import { zufallswerte, tafelHtml } from "./instrumente.js";
+import { tafelHtml } from "./instrumente.js";
 import { KARTEN5 } from "./wissen5.js";
 
 // Rückmeldung: nach richtigen Antworten geht es zügig weiter, nach falschen
@@ -156,12 +156,12 @@ export function erzeugeUebung5({ speicher }) {
       nummer += 1;
       const aufgabe = naechsteAufgabe();
       zeigeKopf();
-      // Frische Instrumentenwerte je Aufgabe; bei einer Instrumentenaufgabe
-      // überschreibt der Aufgabenwert das betroffene Instrument, die übrigen
-      // zeigen weiter ihren Zufallswert. Das Panel bleibt während der ganzen
-      // Aufgabe stehen, unverwischt, damit sich der Wert ablesen lässt.
-      const werte = zufallswerte();
-      if (aufgabe.instrument) werte[aufgabe.instrument.id] = aufgabe.instrument.wert;
+      // Frische Instrumentenwerte je Aufgabe: panelwerte liefert das ganze
+      // Panel widerspruchsfrei zur Aufgabe (Ablesewert am betroffenen
+      // Instrument, der Rest passt zur Fluglage). Das Panel bleibt während
+      // der ganzen Aufgabe stehen, unverwischt, damit sich der Wert ablesen
+      // lässt.
+      const werte = panelwerte(aufgabe);
       panel.innerHTML = tafelHtml(werte);
       const antwortfeld = aufgabe.form === "auswahl"
         ? `<div class="antworten">${antwortenFuer(aufgabe).map((w, i) =>

@@ -3,6 +3,7 @@
 // ohne DOM, der Zufall ist einspeisbar, damit alles mit node --test prüfbar
 // bleibt.
 import { mische } from "./zufall.js";
+import { zufallswerte } from "./instrumente.js";
 
 export const AUFGABENZEIT = 20; // Sekunden je Aufgabe
 export const TESTDAUERN = [5, 10, 30]; // Minuten
@@ -30,7 +31,8 @@ for (let r = 200; r <= 4000; r += 100) for (let t = 2; t <= 12; t++) {
 const FAHRTMESSER_ANZEIGE = [60, 80, 90, 100, 120, 150, 180, 200, 240, 300];
 const WZG_PAARE_FAHRTMESSER = WZG_PAARE.filter((p) => FAHRTMESSER_ANZEIGE.includes(p.v));
 const RATEN_PAARE_HOEHENMESSER = RATEN_PAARE.filter((p) => p.h >= 1000 && p.h <= 9900);
-const RATEN_PAARE_VARIOMETER = RATEN_PAARE.filter((p) => p.r <= 2000);
+// Auch der Höhenmesser muss den abzubauenden Betrag plausibel zeigen können.
+const RATEN_PAARE_VARIOMETER = RATEN_PAARE.filter((p) => p.r <= 2000 && p.h <= 9400);
 
 const zufallAus = (feld, rnd) => feld[Math.floor(rnd() * feld.length)];
 
@@ -74,8 +76,8 @@ export function erzeugeAufgabe(prinzip, rnd = Math.random, mitInstrument = false
     return {
       prinzip,
       frage: sinken
-        ? `Das Luftfahrzeug muss ${h} ft in ${t} Minuten abbauen. Berechne die Sinkrate in ft/min.`
-        : `Das Luftfahrzeug muss ${h} ft in ${t} Minuten steigen. Berechne die Steigrate in ft/min.`,
+        ? `Ein Luftfahrzeug muss ${h} ft in ${t} Minuten abbauen. Berechne die Sinkrate in ft/min.`
+        : `Ein Luftfahrzeug muss ${h} ft in ${t} Minuten steigen. Berechne die Steigrate in ft/min.`,
       antwort: r,
       einheit: "ft/min",
       instrument: null,
@@ -103,21 +105,21 @@ export function erzeugeAufgabe(prinzip, rnd = Math.random, mitInstrument = false
   const { v, t, s } = zufallAus(WZG_PAARE, rnd);
   if (prinzip === "zeit") return {
     prinzip,
-    frage: `Das Luftfahrzeug fliegt ${v} kt. Das Ziel liegt ${s} NM entfernt. Berechne die Flugzeit in Minuten.`,
+    frage: `Ein Luftfahrzeug fliegt ${v} kt. Das Ziel liegt ${s} NM entfernt. Berechne die Flugzeit in Minuten.`,
     antwort: t,
     einheit: "min",
     instrument: null,
   };
   if (prinzip === "weg") return {
     prinzip,
-    frage: `Das Luftfahrzeug fliegt ${v} kt für ${t} Minuten. Berechne den zurückgelegten Weg in NM.`,
+    frage: `Ein Luftfahrzeug fliegt ${v} kt für ${t} Minuten. Berechne den zurückgelegten Weg in NM.`,
     antwort: s,
     einheit: "NM",
     instrument: null,
   };
   return {
     prinzip,
-    frage: `Das Luftfahrzeug legt ${s} NM in ${t} Minuten zurück. Berechne die Geschwindigkeit in Knoten.`,
+    frage: `Ein Luftfahrzeug legt ${s} NM in ${t} Minuten zurück. Berechne die Geschwindigkeit in Knoten.`,
     antwort: v,
     einheit: "kt",
     instrument: null,
@@ -201,4 +203,31 @@ export function punkteFuerAntwort(richtig, restzeitMs, limitMs) {
 export function kennzahl(punkteSumme, anzahl) {
   if (anzahl === 0) return 0;
   return Math.round((punkteSumme / (anzahl * 10)) * 100);
+}
+
+// Vollständiges, widerspruchsfreies Panel zur Aufgabe: bei Ablese-Aufgaben
+// zeigt das betroffene Instrument den Aufgabenwert und der Rest passt zur
+// Lage (Willis Vorgabe vom 25.08.2026). Textaufgaben sprechen von einem
+// fremden Luftfahrzeug, das eigene Panel würfelt frei.
+export function panelwerte(aufgabe, rnd = Math.random) {
+  const werte = zufallswerte(rnd);
+  const instrument = aufgabe.instrument;
+  if (!instrument) return werte;
+  werte[instrument.id] = instrument.wert;
+  if (instrument.id === "fahrt" || instrument.id === "hoehe") {
+    // Reiseflug beziehungsweise Abbau steht erst bevor: waagerecht, kein
+    // Steigen oder Sinken auf dem Variometer.
+    werte.vario = 0;
+    werte.horizont = { roll: 0, nick: 0 };
+  }
+  if (instrument.id === "vario") {
+    // Der Sinkflug läuft: Nase leicht gesenkt, und der Höhenmesser zeigt
+    // mindestens den abzubauenden Betrag (h = Rate mal Zeit), im
+    // Anzeigeraster mit etwas zufälliger Reserve.
+    const h = -instrument.wert * aufgabe.antwort;
+    const mindest = Math.max(1000, Math.ceil((h + 100) / 100) * 100);
+    werte.hoehe = Math.min(9900, mindest + 100 * Math.floor(rnd() * 5));
+    werte.horizont = { roll: 0, nick: -10 };
+  }
+  return werte;
 }

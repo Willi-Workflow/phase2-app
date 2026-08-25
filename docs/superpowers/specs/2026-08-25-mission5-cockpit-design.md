@@ -40,10 +40,15 @@ nicht 1:1 wie das Dokument aus (Willis Vorgabe).
     abgebaut sind, Zeit berechnen).
   - `geschwindigkeit`: nie als Instrumentenaufgabe, der gesuchte Wert
     stünde sonst ablesbar am Instrument.
-- Panelwerte: je Aufgabe frische `zufallswerte()`; bei einer
-  Instrumentenaufgabe wird das betroffene Instrument mit dem Aufgabenwert
-  überschrieben (Variometer mit Vorzeichen). Die übrigen Instrumente
-  zeigen ihre Zufallswerte weiter.
+- Panelwerte (`panelwerte(aufgabe, rnd)` in der Logik, Willis Vorgabe vom
+  25.08.2026): Das Panel widerspricht der Aufgabe nie. Bei einer
+  Instrumentenaufgabe zeigt das betroffene Instrument den Aufgabenwert
+  (Variometer mit Vorzeichen) und der Rest passt zur Lage: Reiseflug und
+  bevorstehender Abbau fliegen waagerecht (Variometer 0, Horizont
+  gerade); beim laufenden Sinken ist die Nase leicht gesenkt und der
+  Höhenmesser zeigt mehr Höhe, als abgebaut wird (Variometer-Paare darum
+  auf 9400 ft Abbau begrenzt). Reine Textaufgaben sprechen von "Ein
+  Luftfahrzeug", das eigene Panel ist nicht gemeint und würfelt frei.
 
 ## Tests
 
