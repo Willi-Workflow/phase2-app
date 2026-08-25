@@ -2,7 +2,7 @@
 
 - Entwurf: `docs/superpowers/specs/2026-08-22-phase2-app-design.md` ist die Referenz.
 - Immer in Chrome prüfen, Safari kennt die Gamepad-Geräte nicht.
-- Nach jeder Änderung an einer eingebundenen Datei die Versionsmarke (`?v=N`) hochzählen; bei Modulen zählt die Marke des Einstiegsskripts in der HTML-Seite.
+- Nach jeder Änderung an einer eingebundenen Datei die Versionsmarke (`?v=N`) hochzählen; bei Modulen zählt die Marke des Einstiegsskripts in der HTML-Seite. Örtlich prüfen über `python3 server.py` (Port 8000, ohne Zwischenspeicher); das nackte `python3 -m http.server` liefert Chrome veraltete Stände.
 - Reine Logik gehört in eigene Module unter `js/` und bekommt Tests unter `tests/` (`node --test tests/*.test.js`).
 - Oberfläche, Bezeichner und Commits auf Deutsch, keine Gedankenstriche, keine Emojis. "Controls" und "Letter-Task" sind als Projektbegriffe erlaubt.
 - Bilder nur aus `bilder/`; der Quellbestand liegt unter `entwurf/bilder/`.
