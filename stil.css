@@ -704,9 +704,10 @@ main { position: relative; z-index: 1; }
 .kartenzeile.beispielkopf { color: rgba(190, 60, 50, 0.9); }
 
 /* Mission 3: 60s Instrumentenflug (ICT-Nachbau). Cockpitbühne wie Mission
-   4/5; Uhr, Kurs, Fahrt und Höhe sitzen wie die Mission-4-Instrumente als
-   Fotogehäuse-Zeile direkt im Panelfeld der Bühne (gleicher Anker), die
-   schlanke Fehlersäule steht gezeichnet in der Mitte. Zielschilder hängen
+   4/5; Uhr, Kurs, Fahrt und Höhe sitzen im Fotogehäuse in der Anordnung
+   von Abbildung 3-9 (Uhr und Kurs oben, Fahrt und Höhe darunter, die
+   gezeichnete Fehlersäule mittig über beide Reihen), als Block auf dem
+   Panelfeld der Bühne verankert. Zielschilder hängen
    als kleine Schilder über den aktiven Instrumenten. Zwischenanzeige und
    Antwortleiste hängen wie der testkopf am Schleier (Fensterbezug). */
 .laufschleier.uebung3 { display: grid; place-items: center; padding: 0; overflow: hidden; background: #0d1109; }
@@ -715,13 +716,20 @@ main { position: relative; z-index: 1; }
 .ict-tafel {
   position: absolute;
   left: 50%;
-  bottom: 29.5%;
+  bottom: 23%;
   transform: translateX(-50%);
-  display: flex;
-  align-items: flex-end;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: auto auto auto;
+  grid-template-areas: "zeit saeule kurs" "fahrt saeule hoehe";
+  column-gap: 26px;
+  row-gap: 12px;
+  align-items: end;
 }
 .ict-zelle { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.ict-zelle-zeit { grid-area: zeit; }
+.ict-zelle-kurs { grid-area: kurs; }
+.ict-zelle-fahrt { grid-area: fahrt; }
+.ict-zelle-hoehe { grid-area: hoehe; }
 .ict-schild { font-size: 10px; letter-spacing: 0.08em; color: var(--hell); background: rgba(15, 17, 9, 0.85); border: 1px solid #39422c; border-radius: 4px; padding: 3px 9px; white-space: nowrap; box-shadow: 0 3px 7px rgba(0, 0, 0, 0.4); }
 /* Fotogehäuse wie in Mission 4: das Foto bringt Platte und Ring, die SVG
    zeichnet nur Zifferblatt und Zeiger (svg-gehaeuse wird ausgeblendet),
@@ -729,9 +737,9 @@ main { position: relative; z-index: 1; }
 .ict-instrument { width: 150px; background: url("bilder/gehaeuse.jpg") center / cover no-repeat; border-radius: 20px; overflow: hidden; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45)); }
 .ict-instrument svg { display: block; width: 100%; height: auto; transform: scale(0.94) translateY(-1%); transform-origin: center; }
 .ict-instrument svg .svg-gehaeuse { display: none; }
-.ict-saeule-feld { display: flex; align-items: flex-end; }
+.ict-saeule-feld { grid-area: saeule; align-self: stretch; display: flex; align-items: center; justify-content: center; }
 .ict-saeule-feld[hidden] { display: none; }
-.ict-saeule-feld svg { display: block; height: 150px; width: auto; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45)); }
+.ict-saeule-feld svg { display: block; height: 100%; max-height: 300px; width: auto; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45)); }
 
 /* Kurze Einblendung der Durchgangspunkte zwischen zwei Durchgängen. */
 .ict-zwischenanzeige {
