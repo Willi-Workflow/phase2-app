@@ -123,7 +123,7 @@ export function erzeugeAufgabe(prinzip, rnd = Math.random, mitInstrument = false
   };
   return {
     prinzip,
-    frage: `Ein Luftfahrzeug legt ${s} NM in ${t} Minuten zurück. Berechne die Geschwindigkeit in Knoten.`,
+    frage: `Du legst ${s} NM in ${t} Minuten zurück. Berechne deine Geschwindigkeit in Knoten.`,
     antwort: v,
     einheit: "kt",
     instrument: null,
@@ -220,6 +220,14 @@ export function panelwerte(aufgabe, rnd = Math.random) {
   const werte = zufallswerte(rnd);
   const instrument = aufgabe.instrument;
 
+  // Die Geschwindigkeitsfrage: der Fahrtmesser wird im Lauf verdeckt
+  // (siehe verdeckteInstrumente), der Rest fliegt ruhigen Reiseflug.
+  if (aufgabe.prinzip === "geschwindigkeit") {
+    werte.vario = 0;
+    werte.horizont = { roll: 0, nick: 0 };
+    return werte;
+  }
+
   // Geschwindigkeit gegeben, im Text oder am Zeiger: Reiseflug, waagerecht.
   const fahrt = instrument?.id === "fahrt" ? instrument.wert : aufgabe.lage?.fahrt;
   if (fahrt !== undefined) {
@@ -260,4 +268,14 @@ export function panelwerte(aufgabe, rnd = Math.random) {
   }
 
   return werte;
+}
+
+// Instrumente, die die gesuchte Antwort verrieten, zeigt der Lauf nicht mit
+// einem falschen Wert, sondern verdeckt sie (Willis Vorgabe vom
+// 25.08.2026): der Fahrtmesser bei der Geschwindigkeitsfrage, das
+// Variometer, wenn die Rate die Antwort ist.
+export function verdeckteInstrumente(aufgabe) {
+  if (aufgabe.prinzip === "geschwindigkeit") return ["fahrt"];
+  if (aufgabe.prinzip === "rate" && aufgabe.einheit === "ft/min") return ["vario"];
+  return [];
 }

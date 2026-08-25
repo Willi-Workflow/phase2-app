@@ -327,7 +327,7 @@ export function svgInstrument(id, wert) {
 
 // Die komplette Tafel: drei Hauptinstrumente, Trennsteg, zwei Ergänzungen.
 export function tafelHtml(werte) {
-  const links = ["fahrt", "horizont", "hoehe"].map((id) => `<span class="instrument">${svgInstrument(id, id === "horizont" ? werte.horizont : werte[id])}</span>`).join("");
-  const rechts = ["kurs", "vario"].map((id) => `<span class="instrument">${svgInstrument(id, werte[id])}</span>`).join("");
+  const links = ["fahrt", "horizont", "hoehe"].map((id) => `<span class="instrument" data-id="${id}">${svgInstrument(id, id === "horizont" ? werte.horizont : werte[id])}</span>`).join("");
+  const rechts = ["kurs", "vario"].map((id) => `<span class="instrument" data-id="${id}">${svgInstrument(id, werte[id])}</span>`).join("");
   return `<div class="instrumententafel"><div class="tafelgruppe">${links}</div><div class="tafelsteg"></div><div class="tafelgruppe">${rechts}</div></div>`;
 }

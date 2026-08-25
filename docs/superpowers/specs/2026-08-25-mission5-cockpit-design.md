@@ -51,10 +51,12 @@ nicht 1:1 wie das Dokument aus (Willis Vorgabe).
   (Variometer-Ablesung) ist die Nase leicht gesenkt und der Höhenmesser
   zeigt mehr Höhe, als abgebaut wird. Die Rückmeldung nach einer Antwort
   zeigt keine Punktzahl (Willis Vorgabe), gezählt wird sie weiter.
-  Einzige Ausnahme ist die Geschwindigkeitsfrage: Dort ist die
-  Geschwindigkeit die gesuchte Antwort, der Fahrtmesser würde sie
-  verraten; ihr Text spricht darum von "Ein Luftfahrzeug" und das eigene
-  Panel würfelt frei.
+  Instrumente, die die gesuchte Antwort verrieten, zeigen keinen falschen
+  Wert, sondern werden im Lauf unscharf verdeckt (Willis Festlegung vom
+  25.08.2026, `verdeckteInstrumente`): der Fahrtmesser bei der
+  Geschwindigkeitsfrage (die darum wieder vom eigenen Flug spricht, "Du
+  legst ... zurück"), das Variometer, wenn die Rate die Antwort ist. Beim
+  Ablesen der Rate (Antwort in Minuten) bleibt das Variometer sichtbar.
 
 ## Tests
 

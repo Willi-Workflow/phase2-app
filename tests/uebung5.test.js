@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   TESTDAUERN, AUFGABENZEIT, PRINZIPIEN,
-  waehlePrinzipien, erzeugeAufgabe, erzeugeLauf, panelwerte,
+  waehlePrinzipien, erzeugeAufgabe, erzeugeLauf, panelwerte, verdeckteInstrumente,
   ablenker, antwortenFuer, pruefeEingabe,
   punkteFuerAntwort, kennzahl,
 } from "../js/uebung5.js";
@@ -269,11 +269,25 @@ test("panelwerte: das Panel widerspricht der Aufgabe nicht", () => {
   }
 });
 
-test("panelwerte: Textaufgaben lassen das Panel frei würfeln", () => {
+test("Geschwindigkeitsfrage: ruhiger Reiseflug, Fahrtmesser wird verdeckt", () => {
   const text = erzeugeAufgabe("geschwindigkeit", Math.random);
   const w = panelwerte(text, Math.random);
   for (const feld of ["fahrt", "hoehe", "kurs", "vario", "horizont"]) assert.ok(feld in w);
-  assert.ok(text.frage.startsWith("Ein Luftfahrzeug"));
+  assert.equal(w.vario, 0);
+  assert.deepEqual(w.horizont, { roll: 0, nick: 0 });
+  assert.ok(text.frage.startsWith("Du legst"));
+  assert.deepEqual(verdeckteInstrumente(text), ["fahrt"]);
+});
+
+test("verdeckteInstrumente: nur verräterische Zeiger", () => {
+  assert.deepEqual(verdeckteInstrumente(erzeugeAufgabe("zeit", Math.random)), []);
+  assert.deepEqual(verdeckteInstrumente(erzeugeAufgabe("weg", Math.random, true)), []);
+  for (let probe = 0; probe < 50; probe++) {
+    const rate = erzeugeAufgabe("rate", Math.random, probe % 2 === 0);
+    // Ist die Rate die Antwort, wird das Variometer verdeckt; liest man
+    // die Rate ab (Antwort in Minuten), bleibt es sichtbar.
+    assert.deepEqual(verdeckteInstrumente(rate), rate.einheit === "ft/min" ? ["vario"] : []);
+  }
 });
 
 test("panelwerte: auch Textwerte stehen am Instrument", () => {

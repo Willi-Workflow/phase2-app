@@ -431,6 +431,9 @@ main { position: relative; z-index: 1; }
    wird leicht verkleinert und nach oben verschoben, damit ihr Zifferblattkreis
    sauber im Fotoring liegt und nirgends auf den Fotorand übergreift. */
 .panelflaeche .instrument svg { transform: scale(0.94) translateY(-1%); transform-origin: center; }
+/* Verdecktes Instrument: der Zeiger würde die gesuchte Antwort verraten,
+   darum unscharf statt mit falschem Wert (Mission 5). */
+.panelflaeche .instrument.verdeckt svg { filter: blur(6px); opacity: 0.55; }
 .laufschleier.uebung4 .testkopf { position: absolute; top: 3vh; left: 50%; transform: translateX(-50%); z-index: 2; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8); }
 .laufschleier.uebung4 .testmitte { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 2; width: min(760px, 90vw); }
 .laufschleier.uebung4 .testmitte:not(:empty) { background: rgba(13, 17, 9, 0.55); border-radius: 10px; padding: 22px; }

@@ -8,7 +8,7 @@
 // zeigt, denn ein Teil der Aufgaben verlangt das Ablesen am Instrument.
 import {
   TESTDAUERN, AUFGABENZEIT, erzeugeLauf, antwortenFuer, pruefeEingabe,
-  punkteFuerAntwort, kennzahl, panelwerte,
+  punkteFuerAntwort, kennzahl, panelwerte, verdeckteInstrumente,
 } from "./uebung5.js";
 import { tafelHtml } from "./instrumente.js";
 import { KARTEN5 } from "./wissen5.js";
@@ -163,6 +163,11 @@ export function erzeugeUebung5({ speicher }) {
       // lässt.
       const werte = panelwerte(aufgabe);
       panel.innerHTML = tafelHtml(werte);
+      // Verräterische Zeiger unscharf statt falsch (etwa der Fahrtmesser,
+      // wenn die Geschwindigkeit die Antwort ist).
+      for (const id of verdeckteInstrumente(aufgabe)) {
+        panel.querySelector(`.instrument[data-id="${id}"]`)?.classList.add("verdeckt");
+      }
       const antwortfeld = aufgabe.form === "auswahl"
         ? `<div class="antworten">${antwortenFuer(aufgabe).map((w, i) =>
             `<button class="antwortknopf" data-nr="${i}" data-wert="${w}">${w} ${aufgabe.einheit}</button>`).join("")}</div>`
