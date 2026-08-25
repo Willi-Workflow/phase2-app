@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Übung 3 · Probe</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../stil.css?v=67">
+</head>
+<body>
+<button id="start" type="button">START</button>
+<pre id="protokoll"></pre>
+<script>
+  // rAF-Ersatz für headless ohne Zeichenfläche (Muster m3-sicht.html,
+  // m5-sicht.html): ohne Ersatz feuert requestAnimationFrame im
+  // Headless-Chrome ohne sichtbaren Bildschirm kaum oder gar nicht.
+  window.requestAnimationFrame = (fn) => setTimeout(() => fn(performance.now()), 16);
+  // Skriptfehler laufen ins Protokollfeld statt nur in die Konsole, damit
+  // die Sichtprüfung sie auch ohne Konsolenzugriff sieht (--dump-dom).
+  window.onerror = (nachricht) => {
+    const feld = document.getElementById("protokoll");
+    if (feld) feld.textContent += `SKRIPTFEHLER: ${nachricht}\n`;
+  };
+</script>
+<script type="module">
+  // Probeaufbau ohne App-Rahmen (Mission 3, Instrumentenflug): gestellte
+  // Achsen statt echter Geräte, damit sich Uhr, Fehlersäule, Kurs, Fahrt,
+  // Höhe und in Stufe 4 die Antwortleiste ohne Bewerber am Stick bewegen.
+  // Stick quer/längs und Schub fahren langsame Sinuskurven, das Ruder
+  // wandert als Dreieckskurve stetig über die fünf Pedalzonen, die
+  // Schusstaste liefert alle 8 Sekunden genau eine steigende Flanke
+  // (Merker, kein Dauerfeuer). Der Startknopf ruft starte() mit einer
+  // Attrappen-Tür auf, die ohne Torfahrt sofort offen beziehungsweise zu
+  // ist; beiEnde schreibt das Ergebnis als JSON-Zeile ins Protokollfeld.
+  // Für die headless-Sichtprüfung (--dump-dom) läuft der Start ohne Klick
+  // von selbst an, ?warte=1 schaltet das ab und überlässt den Start dem
+  // Knopf. ?stufe=<1..4> und ?testdauer=<3|5|10> überschreiben die
+  // Einstellung, ?abbruch=<ms> bricht den laufenden Test ab.
+  import { erzeugeUebung3 } from "../js/uebung3-lauf.js";
+
+  const protokollfeld = document.getElementById("protokoll");
+  const start = performance.now();
+  const schreibe = (ereignis, angaben = {}) => {
+    const zeile = { ms: Math.round(performance.now() - start), ereignis, ...angaben };
+    protokollfeld.textContent += `${JSON.stringify(zeile)}\n`;
+  };
+
+  const params = new URLSearchParams(location.search);
+  const stufe = Number(params.get("stufe")) || 4;
+  const testdauer = Number(params.get("testdauer")) || 3;
+
+  const speicher = {
+    ladeEinstellung: async () => ({ stufe, testdauer, fehlersaeule: true }),
+    setzeEinstellung: async () => {},
+  };
+
+  let schussAlt = false;
+  const controls = {
+    wert(rolle) {
+      const t = (performance.now() - start) / 1000;
+      if (rolle === "ruder") {
+        // Dreieckskurve -1 bis 1, Periode 40 s: wandert stetig und ohne
+        // Sprung über alle fünf Pedalzonen (pedalwahl in uebung3.js).
+        const periode = 40;
+        const phase = (t % periode) / periode;
+        return phase < 0.5 ? -1 + 4 * phase : 3 - 4 * phase;
+      }
+      const kurven = {
+        stickX: Math.sin(t * 0.12) * 0.5,
+        stickY: Math.cos(t * 0.09) * 0.4,
+        schub: Math.sin(t * 0.05) * 0.4, // langsamer Sinus um die Mitte (schub 0 = mittlere Fahrt)
+      };
+      return kurven[rolle] ?? 0;
+    },
+    // Flanke statt Dauerfeuer: gedrückt gilt nur die ersten 120 ms je
+    // 8-Sekunden-Fenster, der Merker liefert genau einmal je Fenster true.
+    schussGedrueckt() {
+      const phase = (performance.now() - start) % 8000;
+      const gedrueckt = phase < 120;
+      const flanke = gedrueckt && !schussAlt;
+      schussAlt = gedrueckt;
+      return flanke;
+    },
+    schusstasteVon: () => null,
+    starteSchussFang: () => {},
+    brichSchussFangAb: () => {},
+    geraete: () => [],
+  };
+
+  const uebung = erzeugeUebung3({ speicher, controls });
+  await uebung.ladeEinstellung();
+
+  // Protokoll der Durchgangspunkte: die Zwischenanzeige bekommt bei
+  // Durchgangsende die Klasse "da" mit dem Punktetext ("DURCHGANG N ·
+  // X PUNKTE"); das wird hier mitgeschrieben statt nur sichtbar zu sein,
+  // damit ein vollendeter Durchgang auch ohne Bildschirm nachweisbar ist.
+  new MutationObserver((eintraege) => {
+    for (const eintrag of eintraege) {
+      const el = eintrag.target;
+      if (el.classList?.contains("ict-zwischenanzeige") && el.classList.contains("da")) {
+        schreibe("durchgang", { text: el.textContent });
+      }
+    }
+  }).observe(document.body, { attributes: true, attributeFilter: ["class"], subtree: true });
+
+  // Attrappen-Tür: öffnet und schließt sofort, ohne Torfahrt, damit die
+  // Probe ohne die reale Übergangszeit läuft.
+  const tuer = { schliesse: async () => {}, oeffne: async () => {}, verwische: () => {} };
+
+  let brichAb = null;
+  const starteLauf = () => {
+    schreibe("start", { stufe, testdauer });
+    uebung.starte({
+      tuer,
+      registriereAbbruch: (fn) => { brichAb = fn; },
+      beiEnde: (ergebnis) => schreibe("ende", { ergebnis }),
+    });
+  };
+  document.getElementById("start").addEventListener("click", starteLauf);
+
+  const abbruchNach = Number(params.get("abbruch"));
+  if (abbruchNach > 0) setTimeout(() => brichAb?.(), abbruchNach);
+
+  if (!params.has("warte")) starteLauf();
+</script>
+</body>
+</html>
