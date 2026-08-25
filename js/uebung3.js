@@ -17,7 +17,6 @@ const INSTRUMENTE = ["kurs", "hoehe", "fahrt"]; // feste Reihenfolge im Ergebnis
 // Raster der Zielvorgaben laut Entwurf.
 const KURS_START_SCHRITTE = 72;               // 0 bis 355 in 5er Schritten
 const KURS_SCHRITT = 5;
-const KURS_AENDERUNG_BETRAEGE = [90, 120, 150, 180, 210, 240, 270, 300, 330, 360];
 
 const HOEHE_MIN = 2000, HOEHE_MAX = 8000, HOEHE_SCHRITT = 500;
 const HOEHE_START_SCHRITTE = (HOEHE_MAX - HOEHE_MIN) / HOEHE_SCHRITT + 1; // 13
@@ -45,11 +44,13 @@ const mod360 = (grad) => ((grad % 360) + 360) % 360;
 const begrenze = (wert, min, max) => Math.min(max, Math.max(min, wert));
 const wuerfelIndex = (anzahl, rnd) => Math.floor(rnd() * anzahl);
 
+// Immer eine volle Drehung in der Flugzeit (Willis Festlegung vom
+// 25.08.2026), nur die Richtung wird gewürfelt: 6 Grad je Sekunde bei
+// höchstens 9 vom Stick. Das Ziel ist damit wieder der Startkurs.
 function wuerfleKurs(rnd) {
   const start = wuerfelIndex(KURS_START_SCHRITTE, rnd) * KURS_SCHRITT;
-  const betrag = KURS_AENDERUNG_BETRAEGE[wuerfelIndex(KURS_AENDERUNG_BETRAEGE.length, rnd)];
   const vorzeichen = rnd() < 0.5 ? -1 : 1;
-  const aenderung = vorzeichen * betrag;
+  const aenderung = vorzeichen * 360;
   return { start, aenderung, ziel: mod360(start + aenderung) };
 }
 

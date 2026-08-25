@@ -22,14 +22,14 @@ test("Konstanten des Instrumentenflugs", () => {
 });
 
 test("erzeugeVorgaben: Rasterwerte einer durchgerechneten Zufallsfolge", () => {
-  // Kurs: Start 35, Änderung -150 -> Ziel 245.
+  // Kurs: Start 35, volle Linksdrehung -360 -> Ziel wieder 35.
   // Höhe: Start 3500, Änderung +1000 -> Ziel 4500 (kein Neuwürfeln nötig).
   // Fahrt: Start 60, Ziel 160 (Unterschied 100, kein Neuwürfeln nötig).
-  const rnd = folge([0.1, 0.25, 0.1, 0.25, 0.2, 0.6, 0.01, 0.39]);
+  const rnd = folge([0.1, 0.25, 0.25, 0.2, 0.6, 0.01, 0.39]);
   const v = erzeugeVorgaben(3, rnd);
   assert.deepEqual(v, {
     aktive: ["kurs", "hoehe", "fahrt"],
-    kurs: { start: 35, aenderung: -150, ziel: 245 },
+    kurs: { start: 35, aenderung: -360, ziel: 35 },
     hoehe: { start: 3500, aenderung: 1000, ziel: 4500 },
     fahrt: { start: 60, ziel: 160 },
   });
@@ -39,7 +39,7 @@ test("erzeugeVorgaben: Höhe würfelt neu, bis das Ziel im Bereich liegt", () =>
   // Erster Versuch: Start 8000, Änderung +3000 -> Ziel 11000, außerhalb.
   // Zweiter Versuch: Start 2000, Änderung -500 -> Ziel 1500, gültig.
   const rnd = folge([
-    0.1, 0.25, 0.1,       // Kurs (unverändert für diesen Test)
+    0.1, 0.25,            // Kurs (unverändert für diesen Test)
     0.95, 0.9, 0.9,       // Höhe, ungültiger Versuch
     0.01, 0.01, 0.1,      // Höhe, gültiger Versuch
     0.01, 0.39,           // Fahrt
@@ -52,7 +52,7 @@ test("erzeugeVorgaben: Fahrt würfelt neu, bis der Unterschied reicht", () => {
   // Erster Versuch: Start 110, Ziel 120, Unterschied 10, zu klein.
   // Zweiter Versuch: Start 60, Ziel 260, Unterschied 200, gültig.
   const rnd = folge([
-    0.1, 0.25, 0.1,        // Kurs
+    0.1, 0.25,             // Kurs
     0.25, 0.2, 0.6,        // Höhe
     0.19, 0.23,            // Fahrt, ungültiger Versuch
     0.01, 0.75,            // Fahrt, gültiger Versuch
@@ -68,11 +68,10 @@ test("erzeugeVorgaben: Raster und Erreichbarkeit über viele Zufallszüge", () =
 
       assert.ok(v.kurs.start >= 0 && v.kurs.start <= 355);
       assert.equal(v.kurs.start % 5, 0);
-      const kursBetrag = Math.abs(v.kurs.aenderung);
-      assert.ok(kursBetrag >= 90 && kursBetrag <= 360);
-      assert.equal(kursBetrag % 30, 0);
-      assert.ok(v.kurs.ziel >= 0 && v.kurs.ziel < 360);
-      assert.equal(v.kurs.ziel, ((v.kurs.start + v.kurs.aenderung) % 360 + 360) % 360);
+      // Immer die volle Drehung, nur die Richtung wechselt; das Ziel ist
+      // damit wieder der Startkurs.
+      assert.equal(Math.abs(v.kurs.aenderung), 360);
+      assert.equal(v.kurs.ziel, v.kurs.start);
 
       assert.ok(v.hoehe.start >= 2000 && v.hoehe.start <= 8000);
       assert.equal(v.hoehe.start % 500, 0);
@@ -94,7 +93,7 @@ test("erzeugeVorgaben: Raster und Erreichbarkeit über viele Zufallszüge", () =
 test("erzeugeVorgaben: aktive je Stufe, feste Reihenfolge im Ergebnis", () => {
   // Nach den unveränderten Kurs-/Höhen-/Fahrt-Würfen mischt aktive mit den
   // Werten 0.9 und 0.1 die Reihenfolge zu [hoehe, kurs, fahrt].
-  const basis = [0.1, 0.25, 0.1, 0.25, 0.2, 0.6, 0.01, 0.39];
+  const basis = [0.1, 0.25, 0.25, 0.2, 0.6, 0.01, 0.39];
   const v1 = erzeugeVorgaben(1, folge([...basis, 0.9, 0.1]));
   assert.deepEqual(v1.aktive, ["hoehe"]);
   const v2 = erzeugeVorgaben(2, folge([...basis, 0.9, 0.1]));
@@ -121,7 +120,7 @@ test("erzeugeVorgaben ist mit gleichem Zufall gleich", () => {
 });
 
 test("erzeugeFlugzustand: Kurs und Höhe auf Start, Fahrt auf 60", () => {
-  const v = erzeugeVorgaben(3, folge([0.1, 0.25, 0.1, 0.25, 0.2, 0.6, 0.01, 0.39]));
+  const v = erzeugeVorgaben(3, folge([0.1, 0.25, 0.25, 0.2, 0.6, 0.01, 0.39]));
   const z = erzeugeFlugzustand(v);
   assert.deepEqual(z, { kurs: 35, hoehe: 3500, fahrt: 60 });
 });

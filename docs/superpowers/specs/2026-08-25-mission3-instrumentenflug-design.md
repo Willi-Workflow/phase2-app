@@ -34,10 +34,12 @@ Start zu Ziel). Durchgänge folgen am Stück, bis die Testdauer um ist.
 
 ## Zielvorgaben je Durchgang
 
-- **Kurs:** Startkurs aus 0 bis 355 (Fünferschritt). Änderung ±90 bis ±360
-  Grad in 30er-Schritten; das Schild zeigt sie mit Vorzeichen wie im
-  Original ("-270 Grad", minus dreht links). Kurs startet systemseitig auf
-  dem Startkurs.
+- **Kurs:** Startkurs aus 0 bis 355 (Fünferschritt). Die Änderung ist
+  immer die volle Drehung, ±360 Grad (Willis Festlegung vom 25.08.2026),
+  nur die Richtung wird gewürfelt; das Schild zeigt sie mit Vorzeichen wie
+  im Original, minus dreht links. Das Ziel ist damit wieder der Startkurs,
+  gefordert sind 6 Grad je Sekunde bei höchstens 9 vom Stick. Kurs startet
+  systemseitig auf dem Startkurs.
 - **Höhe:** Start 2000 bis 8000 ft (500er-Schritt), Änderung ±500 bis
   ±3000 ft (500er-Schritt), Ziel bleibt zwischen 500 und 9900 ft. Das
   Schild zeigt den Betrag und die Richtung ergibt sich wie im Original aus
