@@ -130,8 +130,9 @@ export function erzeugeUebung3({ speicher, controls }) {
     const schleier = document.createElement("div");
     schleier.className = "laufschleier uebung3";
     schleier.innerHTML = `
-      <div class="cockpitbuehne"></div>
-      <div class="ict-tafel"></div>
+      <div class="cockpitbuehne">
+        <div class="ict-tafel"></div>
+      </div>
       ${stufe4 ? '<div class="ict-antworten"></div>' : ""}
       <div class="ict-zwischenanzeige"></div>
       <div class="testkopf"></div>`;
@@ -200,8 +201,8 @@ export function erzeugeUebung3({ speicher, controls }) {
         </div>`;
       tafel.innerHTML =
         zelle("zeit", "ict-zelle-zeit", `${FLUGZEIT_S} Sekunden`)
-        + `<div class="ict-saeule-feld" data-id="saeule" ${fehlersaeule ? "" : "hidden"}></div>`
         + zelle("kurs", "ict-zelle-kurs", aktiv("kurs") ? schildKurs(vorgaben) : "")
+        + `<div class="ict-saeule-feld" data-id="saeule" ${fehlersaeule ? "" : "hidden"}></div>`
         + zelle("fahrt", "ict-zelle-fahrt", aktiv("fahrt") ? schildFahrt(vorgaben) : "")
         + zelle("hoehe", "ict-zelle-hoehe", aktiv("hoehe") ? schildHoehe(vorgaben) : "");
       return {

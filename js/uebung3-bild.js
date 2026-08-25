@@ -7,12 +7,13 @@
 // Beide bewusst gezeichnet statt fotografiert, wie im Original (Abbildung
 // 3-9 der Dissertation). Die Zeichenhelfer aus instrumente.js sind dort
 // nicht exportiert, deshalb stehen sie hier in eigener Fassung, mit den
-// gleichen Farbwerten und demselben Aufbau. Anders als die fünf Instrumente
-// aus instrumente.js tragen Uhr und Fehlersäule kein Kamerafoto, darum
-// bekommt ihr Gehäuse nicht die Klasse "svg-gehaeuse": das Stylesheet würde
-// die Platte sonst im Cockpit-Lauf ausblenden (stil.css, Regel für
-// ".panelflaeche .instrument svg .svg-gehaeuse"), ohne dass ein Foto
-// nachrückt. Reine Funktionen ohne DOM, mit node --test prüfbar.
+// gleichen Farbwerten und demselben Aufbau. Die Uhr sitzt im Cockpit-Lauf
+// wie die Bestandsinstrumente im Fotogehäuse: ihre Platte, der Bezel und
+// das schwarze Zifferblattfeld stecken darum in der Klasse "svg-gehaeuse"
+// und werden dort per Stylesheet ausgeblendet, überall sonst zeigt die SVG
+// das komplette Gerät. Die Fehlersäule hat kein Foto-Pendant und bleibt
+// vollständig gezeichnet. Reine Funktionen ohne DOM, mit node --test
+// prüfbar.
 
 const S = (n) => n.toFixed(2);
 const HELL = "#e8e6dd";
@@ -110,14 +111,14 @@ const PLATTE = `<rect x="1.5" y="1.5" width="117" height="117" rx="9" fill="url(
   <rect x="1.5" y="1.5" width="117" height="117" rx="9" fill="none" stroke="#0f1011" stroke-width="1"/>
   ${schraube(11.5, 11.5, 28)}${schraube(108.5, 11.5, -37)}${schraube(11.5, 108.5, 64)}${schraube(108.5, 108.5, 8)}`;
 
-const GEHAEUSE_UHR = `${PLATTE}
+const GEHAEUSE_UHR = `<g class="svg-gehaeuse">${PLATTE}
   <circle cx="60" cy="60" r="54.5" fill="url(#u3-bezel-aussen)"/>
   <circle cx="60" cy="60" r="50.6" fill="url(#u3-bezel-innen)"/>
   ${bogen(-56, 56, 52.6, "rgba(255,255,255,0.4)", 1.7)}
   ${bogen(120, 240, 52.6, "rgba(0,0,0,0.5)", 1.9)}
-  <circle cx="60" cy="60" r="49" fill="#0b0c0d"/>`;
+  <circle cx="60" cy="60" r="49" fill="#0b0c0d"/></g>`;
 
-const SCHLIFF_UHR = `<circle cx="60" cy="60" r="49" fill="url(#u3-schatten)"/>
+const SCHLIFF_UHR = `<g class="svg-gehaeuse"><circle cx="60" cy="60" r="49" fill="url(#u3-schatten)"/></g>
   <ellipse cx="44" cy="32" rx="28" ry="12" fill="rgba(255,255,255,0.05)" transform="rotate(-25 44 32)" filter="url(#u3-weich)"/>`;
 
 // Schwarzes Rundinstrument nach Abbildung 3-9: Ziffern 1 bis 12 im

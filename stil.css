@@ -701,49 +701,34 @@ main { position: relative; z-index: 1; }
 .kartenzeile.beispielkopf { color: rgba(190, 60, 50, 0.9); }
 
 /* Mission 3: 60s Instrumentenflug (ICT-Nachbau). Cockpitbühne wie Mission
-   4/5, aber ohne die panelflaeche-Instrumente: die Uhr, Kurs, Fahrt und
-   Höhe sowie die Fehlersäule stehen auf einer eigenen ICT-Tafel, in der
-   Anordnung von Abbildung 3-9 (oben Uhr und Kurs, unten Fahrt und Höhe,
-   die Säule mittig dazwischen). Anders als panelflaeche blendet hier
-   keine Regel .svg-gehaeuse aus: die Anzeigen sind vollständig
-   gezeichnet, kein Foto liegt darunter, ihr eigenes Gehäuse muss also
-   sichtbar bleiben. Tafel, Zwischenanzeige und Antwortleiste hängen wie
-   testkopf direkt am Schleier (Fensterbezug), nicht an der
-   bodenverankerten, überhohen cockpitbuehne, sonst lägen sie oberhalb
-   des Fensters. */
+   4/5; Uhr, Kurs, Fahrt und Höhe sitzen wie die Mission-4-Instrumente als
+   Fotogehäuse-Zeile direkt im Panelfeld der Bühne (gleicher Anker), die
+   schlanke Fehlersäule steht gezeichnet in der Mitte. Zielschilder hängen
+   als kleine Schilder über den aktiven Instrumenten. Zwischenanzeige und
+   Antwortleiste hängen wie der testkopf am Schleier (Fensterbezug). */
 .laufschleier.uebung3 { display: grid; place-items: center; padding: 0; overflow: hidden; background: #0d1109; }
 .laufschleier.uebung3 .testkopf { position: absolute; top: 3vh; left: 50%; transform: translateX(-50%); z-index: 2; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8); }
 
 .ict-tafel {
   position: absolute;
   left: 50%;
-  bottom: 14vh;
+  bottom: 29.5%;
   transform: translateX(-50%);
-  z-index: 2;
-  display: grid;
-  grid-template-columns: auto auto auto;
-  grid-template-areas: "zeit saeule kurs" "fahrt saeule hoehe";
-  column-gap: clamp(20px, 3vw, 40px);
-  row-gap: clamp(14px, 1.8vw, 22px);
-  align-items: center;
-  padding: clamp(14px, 1.8vw, 22px) clamp(20px, 2.6vw, 34px);
-  background: linear-gradient(180deg, #232527, #191b1d);
-  border: 1px solid #3c3f42;
-  border-radius: 10px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
 }
 .ict-zelle { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.ict-zelle-zeit { grid-area: zeit; }
-.ict-zelle-kurs { grid-area: kurs; }
-.ict-zelle-fahrt { grid-area: fahrt; }
-.ict-zelle-hoehe { grid-area: hoehe; }
-/* Leer, wenn das Instrument in diesem Durchgang nicht aktiv ist; die
-   Mindesthöhe hält die Zeile trotzdem an ihrem Platz. */
-.ict-schild { min-height: 12px; font-size: 10px; letter-spacing: 0.08em; color: var(--hell); background: #0f1109; border: 1px solid #39422c; border-radius: 4px; padding: 3px 9px; white-space: nowrap; }
-.ict-instrument { width: clamp(92px, 10vw, 124px); filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45)); }
-.ict-instrument svg { display: block; width: 100%; height: auto; }
-.ict-saeule-feld { grid-area: saeule; align-self: stretch; display: flex; align-items: center; justify-content: center; }
-.ict-saeule-feld svg { height: 100%; max-height: clamp(190px, 22vw, 260px); width: auto; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45)); }
+.ict-schild { font-size: 10px; letter-spacing: 0.08em; color: var(--hell); background: rgba(15, 17, 9, 0.85); border: 1px solid #39422c; border-radius: 4px; padding: 3px 9px; white-space: nowrap; box-shadow: 0 3px 7px rgba(0, 0, 0, 0.4); }
+/* Fotogehäuse wie in Mission 4: das Foto bringt Platte und Ring, die SVG
+   zeichnet nur Zifferblatt und Zeiger (svg-gehaeuse wird ausgeblendet),
+   leicht verkleinert, damit der Blattkreis sauber im Fotoring liegt. */
+.ict-instrument { width: 150px; background: url("bilder/gehaeuse.jpg") center / cover no-repeat; border-radius: 20px; overflow: hidden; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45)); }
+.ict-instrument svg { display: block; width: 100%; height: auto; transform: scale(0.94) translateY(-1%); transform-origin: center; }
+.ict-instrument svg .svg-gehaeuse { display: none; }
+.ict-saeule-feld { display: flex; align-items: flex-end; }
+.ict-saeule-feld[hidden] { display: none; }
+.ict-saeule-feld svg { display: block; height: 150px; width: auto; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45)); }
 
 /* Kurze Einblendung der Durchgangspunkte zwischen zwei Durchgängen. */
 .ict-zwischenanzeige {
