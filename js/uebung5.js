@@ -24,7 +24,7 @@ for (const v of GESCHWINDIGKEITEN) for (const t of ZEITEN) {
 const RATEN_PAARE = [];
 for (let r = 200; r <= 4000; r += 100) for (let t = 2; t <= 12; t++) {
   const h = r * t;
-  if (h >= 500 && h <= 8900) RATEN_PAARE.push({ r, t, h });
+  if (h >= 1000 && h <= 8900) RATEN_PAARE.push({ r, t, h });
 }
 
 // Anzeigeraster der Instrumente für Instrumentenaufgaben: Der Fahrtmesser
@@ -248,17 +248,14 @@ export function panelwerte(aufgabe, rnd = Math.random) {
     return werte;
   }
 
-  // Höhenänderung im Text: die Änderung steht erst bevor (waagerecht,
-  // Variometer null, es verriete sonst die gesuchte Rate), der Höhenmesser
-  // zeigt eine Höhe, aus der die Änderung möglich ist.
+  // Höhenwert im Text: der Höhenmesser zeigt wörtlich die genannte Zahl
+  // (Willis Vorgabe: was in der Aufgabe steht, steht auch am Instrument).
+  // Waagerecht mit Variometer null, die Änderung steht erst bevor und die
+  // Rate ist die gesuchte Antwort.
   if (aufgabe.lage?.aenderung !== undefined) {
-    const { aenderung, sinken } = aufgabe.lage;
     werte.vario = 0;
     werte.horizont = { roll: 0, nick: 0 };
-    const stufen = 100 * Math.floor(rnd() * 5);
-    werte.hoehe = sinken
-      ? Math.min(9900, Math.max(1000, Math.ceil((aenderung + 100) / 100) * 100) + stufen)
-      : Math.max(1000, Math.min(9900 - aenderung, 1000 + stufen));
+    werte.hoehe = aufgabe.lage.aenderung;
     return werte;
   }
 

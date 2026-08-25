@@ -196,8 +196,10 @@ export function erzeugeUebung5({ speicher }) {
         if (eingabe) { eingabe.disabled = true; eingabe.classList.add(getroffen ? "richtig" : "falsch"); }
         mitte.querySelector(".zeitbalken span").style.animationPlayState = "paused";
         const rueck = mitte.querySelector(".rueckmeldung");
+        // Ohne Punktzahl in der Rückmeldung (Willis Vorgabe); gezählt wird
+        // sie für die Kennzahl weiterhin.
         rueck.textContent = getroffen
-          ? `RICHTIG · ${Math.round(punkte)} PUNKTE`
+          ? "RICHTIG"
           : `${abgelaufen ? "ZEIT ABGELAUFEN" : "FALSCH"} · richtig: ${aufgabe.antwort} ${aufgabe.einheit}`;
         rueck.classList.add(getroffen ? "gut" : "schlecht");
         let weitergegangen = false;

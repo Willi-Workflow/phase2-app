@@ -288,9 +288,7 @@ test("panelwerte: auch Textwerte stehen am Instrument", () => {
     const rate = erzeugeAufgabe("rate", Math.random);
     const wr = panelwerte(rate, Math.random);
     assert.equal(wr.vario, 0);          // die Rate ist die Antwort, kein Verrat
-    assert.ok(wr.hoehe >= 1000 && wr.hoehe <= 9900);
-    assert.equal(wr.hoehe % 100, 0);
-    if (rate.lage.sinken) assert.ok(wr.hoehe > rate.lage.aenderung);
-    else assert.ok(wr.hoehe + rate.lage.aenderung <= 9900);
+    assert.equal(wr.hoehe, rate.lage.aenderung);  // wörtlich wie im Text
+    assert.ok(rate.frage.includes(`${rate.lage.aenderung} ft`));
   }
 });

@@ -42,14 +42,15 @@ nicht 1:1 wie das Dokument aus (Willis Vorgabe).
     stünde sonst ablesbar am Instrument.
 - Panelwerte (`panelwerte(aufgabe, rnd)` in der Logik, Willis Vorgaben vom
   25.08.2026): Das Panel spiegelt die Aufgabenwerte immer, auch wenn sie
-  im Text stehen. Steht "200 kt" in der Aufgabe, zeigt der Fahrtmesser
-  200 kt. Damit das aufgeht, bleiben alle Aufgabenwerte im Anzeigebereich
-  (Geschwindigkeiten 60 bis 300 kt aus dem Zehnerraster, Höhenänderungen
-  500 bis 8900 ft). Die Lage passt dazu: Reiseflug und bevorstehende
-  Höhenänderung fliegen waagerecht (Variometer 0, es verriete sonst die
-  gesuchte Rate; der Höhenmesser zeigt eine Höhe, aus der die Änderung
-  möglich ist); beim laufenden Sinken (Variometer-Ablesung) ist die Nase
-  leicht gesenkt und der Höhenmesser zeigt mehr Höhe, als abgebaut wird.
+  im Text stehen, und zwar wörtlich: Steht "200 kt" in der Aufgabe, zeigt
+  der Fahrtmesser 200 kt; steht "4000 ft", zeigt der Höhenmesser 4000 ft.
+  Damit das aufgeht, bleiben alle Aufgabenwerte im Anzeigebereich
+  (Geschwindigkeiten 60 bis 300 kt aus dem Zehnerraster, Höhenwerte 1000
+  bis 8900 ft). Die Lage passt dazu: waagerecht mit Variometer 0 (es
+  verriete sonst die gesuchte Rate); nur beim laufenden Sinken
+  (Variometer-Ablesung) ist die Nase leicht gesenkt und der Höhenmesser
+  zeigt mehr Höhe, als abgebaut wird. Die Rückmeldung nach einer Antwort
+  zeigt keine Punktzahl (Willis Vorgabe), gezählt wird sie weiter.
   Einzige Ausnahme ist die Geschwindigkeitsfrage: Dort ist die
   Geschwindigkeit die gesuchte Antwort, der Fahrtmesser würde sie
   verraten; ihr Text spricht darum von "Ein Luftfahrzeug" und das eigene
