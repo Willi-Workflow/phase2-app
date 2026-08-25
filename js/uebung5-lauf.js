@@ -2,11 +2,15 @@
 // Viererblöcken, bis die eingestellte Testdauer um ist, mit Ablaufbalken,
 // je Aufgabe als Auswahlfrage oder Zahleneingabe, sofortige Auflösung,
 // danach die Ergebnistafel. Der Wissensbereich steht als Karteikartenstapel
-// fest auf der Missionsseite, nicht im Lauf.
+// fest auf der Missionsseite, nicht im Lauf. Die Bühne ist dieselbe
+// Cockpitbühne wie Mission 4: Fragetext, Ablaufbalken und Antworten liegen
+// im Scheibenfeld über dem Panel, das je Aufgabe frische Instrumentenwerte
+// zeigt, denn ein Teil der Aufgaben verlangt das Ablesen am Instrument.
 import {
   TESTDAUERN, AUFGABENZEIT, erzeugeLauf, antwortenFuer, pruefeEingabe,
   punkteFuerAntwort, kennzahl,
 } from "./uebung5.js";
+import { zufallswerte, tafelHtml } from "./instrumente.js";
 import { KARTEN5 } from "./wissen5.js";
 
 // Rückmeldung: nach richtigen Antworten geht es zügig weiter, nach falschen
@@ -17,9 +21,10 @@ const RUECKMELDEDAUER_FALSCH = 1800;
 export function erzeugeUebung5({ speicher }) {
   let einstellung = { dauer: 5 };
   const hinweis = "Rechenaufgaben zu Weg, Zeit, Geschwindigkeit und Sink- oder Steigrate am Stück, "
-    + "bis die eingestellte Testdauer um ist, je Aufgabe 20 Sekunden. Geantwortet wird per Auswahl "
-    + "oder Zahleneingabe. Punkte gibt es für richtige und schnelle Antworten, die Formeln stehen "
-    + "auf den Karteikarten darunter.";
+    + "bis die eingestellte Testdauer um ist, je Aufgabe 20 Sekunden, im Cockpit. Manche Aufgaben "
+    + "nennen keinen Wert, sondern verweisen aufs Ablesen am Instrumentenpanel. Geantwortet wird "
+    + "per Auswahl oder Zahleneingabe. Punkte gibt es für richtige und schnelle Antworten, die "
+    + "Formeln stehen auf den Karteikarten darunter.";
 
   async function ladeEinstellung() {
     const gespeichert = await speicher.ladeEinstellung("uebung5-einstellung", {});
@@ -97,15 +102,17 @@ export function erzeugeUebung5({ speicher }) {
     const schleier = document.createElement("div");
     schleier.className = "laufschleier uebung5";
     schleier.innerHTML = `
-      <div class="rechnerbuehne">
-        <div class="monitorflaeche">
-          <div class="testkopf"></div>
+      <div class="cockpitbuehne">
+        <div class="panelflaeche"></div>
+        <div class="scheibenfeld">
           <div class="testmitte"></div>
         </div>
-      </div>`;
+      </div>
+      <div class="testkopf"></div>`;
     document.body.append(schleier);
     if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
 
+    const panel = schleier.querySelector(".panelflaeche");
     const mitte = schleier.querySelector(".testmitte");
     const kopf = schleier.querySelector(".testkopf");
     let testende = Infinity;
@@ -146,6 +153,13 @@ export function erzeugeUebung5({ speicher }) {
       nummer += 1;
       const aufgabe = naechsteAufgabe();
       zeigeKopf();
+      // Frische Instrumentenwerte je Aufgabe; bei einer Instrumentenaufgabe
+      // überschreibt der Aufgabenwert das betroffene Instrument, die übrigen
+      // zeigen weiter ihren Zufallswert. Das Panel bleibt während der ganzen
+      // Aufgabe stehen, unverwischt, damit sich der Wert ablesen lässt.
+      const werte = zufallswerte();
+      if (aufgabe.instrument) werte[aufgabe.instrument.id] = aufgabe.instrument.wert;
+      panel.innerHTML = tafelHtml(werte);
       const antwortfeld = aufgabe.form === "auswahl"
         ? `<div class="antworten">${antwortenFuer(aufgabe).map((w, i) =>
             `<button class="antwortknopf" data-nr="${i}" data-wert="${w}">${w} ${aufgabe.einheit}</button>`).join("")}</div>`

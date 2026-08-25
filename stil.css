@@ -659,32 +659,18 @@ main { position: relative; z-index: 1; }
 .zahlenfeld.falsch { border-color: #b0563c; box-shadow: 0 0 0 2px rgba(176, 86, 60, 0.5); }
 .eingabezeile .einheit { font-size: 14px; letter-spacing: 0.1em; color: var(--gedeckt); min-width: 52px; text-align: left; }
 
-/* Mission 5: Abfrage auf dem Rechner-Bildschirm. Die Bühne hält das feste
-   Seitenverhältnis des Bildes, dahinter füllt eine abgedunkelte, vergrößerte
-   Fassung derselben Szene das Fenster. Alles auf der Mattscheibe ist schwarze
-   Schreibmaschinenschrift. */
-.laufschleier.uebung5 { display: grid; place-items: center; padding: 0; background: linear-gradient(rgba(13, 17, 9, 0.55), rgba(13, 17, 9, 0.55)), url("bilder/rechner.jpg") center / cover no-repeat #0d1109; }
-.rechnerbuehne { position: relative; width: min(100vw, calc(100vh * (2688 / 1536))); aspect-ratio: 2688 / 1536; background: url("bilder/rechner.jpg") center / contain no-repeat; }
-.monitorflaeche { position: absolute; left: 24.5%; top: 10%; width: 50%; height: 55%; display: grid; align-content: start; justify-items: center; row-gap: 4%; padding-top: 1.5%; color: #1a1a1a; font-family: "Courier New", monospace; }
-.laufschleier.uebung5 .testkopf { min-height: 0; color: #4a4a45; font-weight: 700; font-size: clamp(10px, 1.1vw, 14px); letter-spacing: 0.25em; }
-.laufschleier.uebung5 .testmitte { width: 100%; gap: 4%; }
-.laufschleier.uebung5 .testmitte .frage { color: #1a1a1a; font-family: inherit; font-weight: 700; font-size: clamp(13px, 1.4vw, 20px); letter-spacing: 0.05em; line-height: 1.55; max-width: 94%; }
-.laufschleier.uebung5 .antworten { width: 86%; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3%; }
-.laufschleier.uebung5 .antwortknopf { background: transparent; border: 2px solid #1a1a1a; border-radius: 4px; color: #1a1a1a; font-family: inherit; font-weight: 700; font-size: clamp(12px, 1.25vw, 18px); }
-.laufschleier.uebung5 .antwortknopf:hover:not(:disabled) { background: rgba(26, 26, 26, 0.08); }
-.laufschleier.uebung5 .antwortknopf.richtig { border-color: #2f6b2f; box-shadow: 0 0 0 2px rgba(47, 107, 47, 0.35); }
-.laufschleier.uebung5 .antwortknopf.falsch { border-color: #a03028; box-shadow: 0 0 0 2px rgba(160, 48, 40, 0.35); }
-.laufschleier.uebung5 .zahlenfeld { background: transparent; border: 2px solid #1a1a1a; border-radius: 4px; color: #1a1a1a; font-family: inherit; font-weight: 700; font-size: clamp(14px, 1.5vw, 22px); width: clamp(90px, 11vw, 170px); }
-.laufschleier.uebung5 .zahlenfeld:focus { border-color: #1a1a1a; outline: 2px solid rgba(26, 26, 26, 0.25); }
-.laufschleier.uebung5 .zahlenfeld.richtig { border-color: #2f6b2f; box-shadow: 0 0 0 2px rgba(47, 107, 47, 0.35); }
-.laufschleier.uebung5 .zahlenfeld.falsch { border-color: #a03028; box-shadow: 0 0 0 2px rgba(160, 48, 40, 0.35); }
-.laufschleier.uebung5 .eingabezeile .einheit { color: #1a1a1a; font-family: inherit; font-weight: 700; font-size: clamp(12px, 1.3vw, 18px); }
-/* Der Füllstand behält seine Ampelfarben aus der Laufanimation (Grün nach
-   Rot), nur die Schiene wird an die helle Mattscheibe angepasst. */
-.laufschleier.uebung5 .zeitbalken { width: 72%; background: rgba(26, 26, 26, 0.15); }
-.laufschleier.uebung5 .rueckmeldung { font-family: inherit; font-weight: 700; font-size: clamp(11px, 1.2vw, 15px); }
-.laufschleier.uebung5 .rueckmeldung.gut { color: #2f6b2f; }
-.laufschleier.uebung5 .rueckmeldung.schlecht { color: #a03028; }
+/* Mission 5: Rechenaufgaben im Cockpit. Bühne und Panel sind dieselben wie
+   in Mission 4 (cockpitbuehne, panelflaeche mit den fünf Instrumenten);
+   anders als dort bleibt das Panel während der ganzen Aufgabe scharf und
+   unverwischt, denn ein Teil der Aufgaben verlangt das Ablesen eines
+   Instruments. Fragetext, Ablaufbalken und Antworten liegen im neuen
+   Scheibenfeld, einer dunklen, leicht durchscheinenden Fläche im freien,
+   oberen Teil der Cockpitscheibe, oberhalb des Panels. Die Schrift darin
+   ist dieselbe App-Schrift wie überall, kein eigenes Erscheinungsbild mehr
+   wie zuvor auf dem Rechnerbildschirm. */
+.laufschleier.uebung5 { display: grid; place-items: center; padding: 0; overflow: hidden; background: #0d1109; }
+.laufschleier.uebung5 .testkopf { position: absolute; top: 3vh; left: 50%; transform: translateX(-50%); z-index: 2; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8); }
+.scheibenfeld { position: absolute; left: 50%; top: 9%; transform: translateX(-50%); z-index: 2; width: min(640px, 88vw); background: rgba(13, 17, 9, 0.6); border-radius: 10px; padding: 22px; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35); }
 
 /* Mission 5: Wissensbereich als Karteikartenstapel. Die Karten tragen die
    Papieranmutung des Prüfungskalenders: cremefarbener Grund, blaues
