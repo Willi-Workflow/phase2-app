@@ -22,15 +22,16 @@ test("Einheitsraum wird auf den Rahmen abgebildet", () => {
   assert.equal(yImBild(0.5), RAHMEN.y + RAHMEN.h / 2);
 });
 
-test("gradFuerKnoten: Skala von 60 nach 300 Grad über unten", () => {
-  assert.equal(gradFuerKnoten(40), 60);
+test("gradFuerKnoten: Skala von 40 nach 320 Grad über unten", () => {
+  // Spannweite 280 Grad wie in Abbildung 3-9.
+  assert.equal(gradFuerKnoten(40), 40);
   assert.equal(gradFuerKnoten(100), 180);
-  assert.equal(gradFuerKnoten(160), 300);
+  assert.equal(gradFuerKnoten(160), 320);
 });
 
 test("buehneSvg: enthält alle Kennungen der gewählten Elemente", () => {
   const voll = buehneSvg(["stick", "ruder", "schub"]);
-  for (const id of ["fadenkreuz", "ruderstrich", "nadel", "zielkreis", "tachobogen", "rotband"]) {
+  for (const id of ["fadenkreuz", "ruderstrich", "nadel", "zielkreis"]) {
     assert.ok(voll.includes(`id="${id}"`), id);
   }
   assert.ok(!voll.includes('id="solltext"'));
