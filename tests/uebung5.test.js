@@ -275,3 +275,22 @@ test("panelwerte: Textaufgaben lassen das Panel frei würfeln", () => {
   for (const feld of ["fahrt", "hoehe", "kurs", "vario", "horizont"]) assert.ok(feld in w);
   assert.ok(text.frage.startsWith("Ein Luftfahrzeug"));
 });
+
+test("panelwerte: auch Textwerte stehen am Instrument", () => {
+  for (let probe = 0; probe < 200; probe++) {
+    const zeit = erzeugeAufgabe(probe % 2 ? "zeit" : "weg", Math.random);
+    const wz = panelwerte(zeit, Math.random);
+    assert.equal(wz.fahrt, zeit.lage.fahrt);
+    assert.ok(zeit.frage.includes(`${zeit.lage.fahrt} kt`));
+    assert.equal(wz.vario, 0);
+    assert.deepEqual(wz.horizont, { roll: 0, nick: 0 });
+
+    const rate = erzeugeAufgabe("rate", Math.random);
+    const wr = panelwerte(rate, Math.random);
+    assert.equal(wr.vario, 0);          // die Rate ist die Antwort, kein Verrat
+    assert.ok(wr.hoehe >= 1000 && wr.hoehe <= 9900);
+    assert.equal(wr.hoehe % 100, 0);
+    if (rate.lage.sinken) assert.ok(wr.hoehe > rate.lage.aenderung);
+    else assert.ok(wr.hoehe + rate.lage.aenderung <= 9900);
+  }
+});

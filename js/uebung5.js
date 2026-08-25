@@ -10,29 +10,30 @@ export const TESTDAUERN = [5, 10, 30]; // Minuten
 export const PRINZIPIEN = ["zeit", "weg", "geschwindigkeit", "rate"];
 
 // Wertelisten laut Entwurf: nur Paare, deren Ergebnis ganzzahlig ist und im
-// erlaubten Bereich liegt, einmal beim Laden gerechnet.
-const GESCHWINDIGKEITEN = [60, 80, 90, 100, 120, 150, 180, 200, 240, 300, 360, 420, 480];
+// erlaubten Bereich liegt, einmal beim Laden gerechnet. Alle Werte bleiben
+// im Anzeigebereich der Instrumente (Fahrt bis 300 kt, Höhenänderung bis
+// 8900 ft), denn das Panel spiegelt die Aufgabenwerte auch dann, wenn sie
+// im Text stehen (Willis Vorgabe vom 25.08.2026).
+const GESCHWINDIGKEITEN = [60, 80, 90, 100, 120, 150, 180, 200, 240, 300];
 const ZEITEN = [12, 15, 20, 30, 45, 60, 90, 120, 150, 180, 240, 300];
 const WZG_PAARE = [];
 for (const v of GESCHWINDIGKEITEN) for (const t of ZEITEN) {
   const s = (v * t) / 60;
-  if (Number.isInteger(s) && s >= 20 && s <= 2400) WZG_PAARE.push({ v, t, s });
+  if (Number.isInteger(s) && s >= 20 && s <= 1500) WZG_PAARE.push({ v, t, s });
 }
 const RATEN_PAARE = [];
 for (let r = 200; r <= 4000; r += 100) for (let t = 2; t <= 12; t++) {
   const h = r * t;
-  if (h >= 500 && h <= 30000) RATEN_PAARE.push({ r, t, h });
+  if (h >= 500 && h <= 8900) RATEN_PAARE.push({ r, t, h });
 }
 
 // Anzeigeraster der Instrumente für Instrumentenaufgaben: Der Fahrtmesser
 // zeigt nur diese Geschwindigkeiten an, der Höhenmesser nur Hunderterschritte
 // zwischen 1000 und 9900 ft, das Variometer nur Werte bis 2000 ft/min. Wer
 // den gegebenen Wert am Zeiger abliest, darf ihn also nur dort auch finden.
-const FAHRTMESSER_ANZEIGE = [60, 80, 90, 100, 120, 150, 180, 200, 240, 300];
-const WZG_PAARE_FAHRTMESSER = WZG_PAARE.filter((p) => FAHRTMESSER_ANZEIGE.includes(p.v));
-const RATEN_PAARE_HOEHENMESSER = RATEN_PAARE.filter((p) => p.h >= 1000 && p.h <= 9900);
-// Auch der Höhenmesser muss den abzubauenden Betrag plausibel zeigen können.
-const RATEN_PAARE_VARIOMETER = RATEN_PAARE.filter((p) => p.r <= 2000 && p.h <= 9400);
+const WZG_PAARE_FAHRTMESSER = WZG_PAARE;
+const RATEN_PAARE_HOEHENMESSER = RATEN_PAARE.filter((p) => p.h >= 1000);
+const RATEN_PAARE_VARIOMETER = RATEN_PAARE.filter((p) => p.r <= 2000);
 
 const zufallAus = (feld, rnd) => feld[Math.floor(rnd() * feld.length)];
 
@@ -76,11 +77,12 @@ export function erzeugeAufgabe(prinzip, rnd = Math.random, mitInstrument = false
     return {
       prinzip,
       frage: sinken
-        ? `Ein Luftfahrzeug muss ${h} ft in ${t} Minuten abbauen. Berechne die Sinkrate in ft/min.`
-        : `Ein Luftfahrzeug muss ${h} ft in ${t} Minuten steigen. Berechne die Steigrate in ft/min.`,
+        ? `Du musst ${h} ft in ${t} Minuten abbauen. Berechne die Sinkrate in ft/min.`
+        : `Du musst ${h} ft in ${t} Minuten steigen. Berechne die Steigrate in ft/min.`,
       antwort: r,
       einheit: "ft/min",
       instrument: null,
+      lage: { aenderung: h, sinken },
     };
   }
 
@@ -105,17 +107,19 @@ export function erzeugeAufgabe(prinzip, rnd = Math.random, mitInstrument = false
   const { v, t, s } = zufallAus(WZG_PAARE, rnd);
   if (prinzip === "zeit") return {
     prinzip,
-    frage: `Ein Luftfahrzeug fliegt ${v} kt. Das Ziel liegt ${s} NM entfernt. Berechne die Flugzeit in Minuten.`,
+    frage: `Du fliegst ${v} kt. Das Ziel liegt ${s} NM entfernt. Berechne die Flugzeit in Minuten.`,
     antwort: t,
     einheit: "min",
     instrument: null,
+    lage: { fahrt: v },
   };
   if (prinzip === "weg") return {
     prinzip,
-    frage: `Ein Luftfahrzeug fliegt ${v} kt für ${t} Minuten. Berechne den zurückgelegten Weg in NM.`,
+    frage: `Du fliegst ${v} kt für ${t} Minuten. Berechne den zurückgelegten Weg in NM.`,
     antwort: s,
     einheit: "NM",
     instrument: null,
+    lage: { fahrt: v },
   };
   return {
     prinzip,
@@ -205,29 +209,58 @@ export function kennzahl(punkteSumme, anzahl) {
   return Math.round((punkteSumme / (anzahl * 10)) * 100);
 }
 
-// Vollständiges, widerspruchsfreies Panel zur Aufgabe: bei Ablese-Aufgaben
-// zeigt das betroffene Instrument den Aufgabenwert und der Rest passt zur
-// Lage (Willis Vorgabe vom 25.08.2026). Textaufgaben sprechen von einem
-// fremden Luftfahrzeug, das eigene Panel würfelt frei.
+// Vollständiges, widerspruchsfreies Panel zur Aufgabe (Willis Vorgabe vom
+// 25.08.2026): Werte, die die Aufgabe verwendet, zeigt das Panel, egal ob
+// sie im Text stehen oder abgelesen werden sollen; der Rest passt zur
+// Fluglage. Nur die Geschwindigkeitsfrage lässt das Panel frei würfeln,
+// dort ist die Geschwindigkeit die gesuchte Antwort, der Fahrtmesser
+// würde sie verraten (ihr Text spricht darum von einem fremden
+// Luftfahrzeug).
 export function panelwerte(aufgabe, rnd = Math.random) {
   const werte = zufallswerte(rnd);
   const instrument = aufgabe.instrument;
-  if (!instrument) return werte;
-  werte[instrument.id] = instrument.wert;
-  if (instrument.id === "fahrt" || instrument.id === "hoehe") {
-    // Reiseflug beziehungsweise Abbau steht erst bevor: waagerecht, kein
-    // Steigen oder Sinken auf dem Variometer.
+
+  // Geschwindigkeit gegeben, im Text oder am Zeiger: Reiseflug, waagerecht.
+  const fahrt = instrument?.id === "fahrt" ? instrument.wert : aufgabe.lage?.fahrt;
+  if (fahrt !== undefined) {
+    werte.fahrt = fahrt;
     werte.vario = 0;
     werte.horizont = { roll: 0, nick: 0 };
+    return werte;
   }
-  if (instrument.id === "vario") {
-    // Der Sinkflug läuft: Nase leicht gesenkt, und der Höhenmesser zeigt
-    // mindestens den abzubauenden Betrag (h = Rate mal Zeit), im
-    // Anzeigeraster mit etwas zufälliger Reserve.
+
+  // Höhe am Zeiger ablesen, der Abbau steht erst bevor: noch waagerecht.
+  if (instrument?.id === "hoehe") {
+    werte.hoehe = instrument.wert;
+    werte.vario = 0;
+    werte.horizont = { roll: 0, nick: 0 };
+    return werte;
+  }
+
+  // Sinken am Zeiger ablesen, der Sinkflug läuft: Nase leicht gesenkt, der
+  // Höhenmesser zeigt mehr Höhe, als abgebaut wird (h = Rate mal Zeit).
+  if (instrument?.id === "vario") {
+    werte.vario = instrument.wert;
     const h = -instrument.wert * aufgabe.antwort;
     const mindest = Math.max(1000, Math.ceil((h + 100) / 100) * 100);
     werte.hoehe = Math.min(9900, mindest + 100 * Math.floor(rnd() * 5));
     werte.horizont = { roll: 0, nick: -10 };
+    return werte;
   }
+
+  // Höhenänderung im Text: die Änderung steht erst bevor (waagerecht,
+  // Variometer null, es verriete sonst die gesuchte Rate), der Höhenmesser
+  // zeigt eine Höhe, aus der die Änderung möglich ist.
+  if (aufgabe.lage?.aenderung !== undefined) {
+    const { aenderung, sinken } = aufgabe.lage;
+    werte.vario = 0;
+    werte.horizont = { roll: 0, nick: 0 };
+    const stufen = 100 * Math.floor(rnd() * 5);
+    werte.hoehe = sinken
+      ? Math.min(9900, Math.max(1000, Math.ceil((aenderung + 100) / 100) * 100) + stufen)
+      : Math.max(1000, Math.min(9900 - aenderung, 1000 + stufen));
+    return werte;
+  }
+
   return werte;
 }

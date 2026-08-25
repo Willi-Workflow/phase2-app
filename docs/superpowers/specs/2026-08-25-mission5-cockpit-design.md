@@ -40,15 +40,20 @@ nicht 1:1 wie das Dokument aus (Willis Vorgabe).
     abgebaut sind, Zeit berechnen).
   - `geschwindigkeit`: nie als Instrumentenaufgabe, der gesuchte Wert
     stünde sonst ablesbar am Instrument.
-- Panelwerte (`panelwerte(aufgabe, rnd)` in der Logik, Willis Vorgabe vom
-  25.08.2026): Das Panel widerspricht der Aufgabe nie. Bei einer
-  Instrumentenaufgabe zeigt das betroffene Instrument den Aufgabenwert
-  (Variometer mit Vorzeichen) und der Rest passt zur Lage: Reiseflug und
-  bevorstehender Abbau fliegen waagerecht (Variometer 0, Horizont
-  gerade); beim laufenden Sinken ist die Nase leicht gesenkt und der
-  Höhenmesser zeigt mehr Höhe, als abgebaut wird (Variometer-Paare darum
-  auf 9400 ft Abbau begrenzt). Reine Textaufgaben sprechen von "Ein
-  Luftfahrzeug", das eigene Panel ist nicht gemeint und würfelt frei.
+- Panelwerte (`panelwerte(aufgabe, rnd)` in der Logik, Willis Vorgaben vom
+  25.08.2026): Das Panel spiegelt die Aufgabenwerte immer, auch wenn sie
+  im Text stehen. Steht "200 kt" in der Aufgabe, zeigt der Fahrtmesser
+  200 kt. Damit das aufgeht, bleiben alle Aufgabenwerte im Anzeigebereich
+  (Geschwindigkeiten 60 bis 300 kt aus dem Zehnerraster, Höhenänderungen
+  500 bis 8900 ft). Die Lage passt dazu: Reiseflug und bevorstehende
+  Höhenänderung fliegen waagerecht (Variometer 0, es verriete sonst die
+  gesuchte Rate; der Höhenmesser zeigt eine Höhe, aus der die Änderung
+  möglich ist); beim laufenden Sinken (Variometer-Ablesung) ist die Nase
+  leicht gesenkt und der Höhenmesser zeigt mehr Höhe, als abgebaut wird.
+  Einzige Ausnahme ist die Geschwindigkeitsfrage: Dort ist die
+  Geschwindigkeit die gesuchte Antwort, der Fahrtmesser würde sie
+  verraten; ihr Text spricht darum von "Ein Luftfahrzeug" und das eigene
+  Panel würfelt frei.
 
 ## Tests
 
