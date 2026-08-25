@@ -89,6 +89,56 @@ test("erzeugeLauf: ein Viererblock enthält jedes Prinzip genau einmal", () => {
   }
 });
 
+test("erzeugeAufgabe: ohne mitInstrument steht instrument auf null, bei jedem Prinzip", () => {
+  const rnd = saatZufall(47);
+  for (let i = 0; i < 50; i++) {
+    for (const prinzip of PRINZIPIEN) {
+      assert.equal(erzeugeAufgabe(prinzip, rnd).instrument, null);
+    }
+  }
+});
+
+test("erzeugeLauf: bei zwölf Aufgaben genau vier mit Instrument, keine davon Geschwindigkeit", () => {
+  const rnd = saatZufall(53);
+  for (let i = 0; i < 20; i++) {
+    const lauf = erzeugeLauf(12, rnd);
+    const mitInstrument = lauf.filter((a) => a.instrument !== null);
+    assert.equal(mitInstrument.length, 4);
+    for (const a of mitInstrument) assert.notEqual(a.prinzip, "geschwindigkeit");
+  }
+});
+
+test("erzeugeLauf: Fahrt-Werte im Anzeigeraster, Vario-Werte zwischen -2000 und -200", () => {
+  const rnd = saatZufall(61);
+  const fahrtErlaubt = [60, 80, 90, 100, 120, 150, 180, 200, 240, 300];
+  for (let i = 0; i < 50; i++) {
+    const lauf = erzeugeLauf(12, rnd);
+    for (const a of lauf) {
+      if (a.instrument === null) continue;
+      if (a.instrument.id === "fahrt") assert.ok(fahrtErlaubt.includes(a.instrument.wert));
+      if (a.instrument.id === "vario") {
+        assert.ok(a.instrument.wert >= -2000 && a.instrument.wert <= -200);
+      }
+    }
+  }
+});
+
+test("erzeugeLauf: Fragetext einer Instrumentenaufgabe nennt den Ablesewert nicht", () => {
+  const rnd = saatZufall(67);
+  for (let i = 0; i < 50; i++) {
+    const lauf = erzeugeLauf(12, rnd);
+    for (const a of lauf) {
+      if (a.instrument === null) continue;
+      if (a.instrument.id === "fahrt") assert.ok(!a.frage.includes(`${a.instrument.wert} kt`));
+      if (a.instrument.id === "hoehe") assert.ok(!a.frage.includes(`${a.instrument.wert} ft`));
+    }
+  }
+});
+
+test("erzeugeLauf: gleicher Zufall ergibt gleichen Lauf, auch bei den Instrumentenaufgaben", () => {
+  assert.deepEqual(erzeugeLauf(12, saatZufall(83)), erzeugeLauf(12, saatZufall(83)));
+});
+
 test("ablenker: drei eindeutige, positive, ganzzahlige Werte ungleich der Antwort", () => {
   const rnd = saatZufall(17);
   for (let i = 0; i < 100; i++) {

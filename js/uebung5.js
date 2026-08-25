@@ -23,6 +23,15 @@ for (let r = 200; r <= 4000; r += 100) for (let t = 2; t <= 12; t++) {
   if (h >= 500 && h <= 30000) RATEN_PAARE.push({ r, t, h });
 }
 
+// Anzeigeraster der Instrumente für Instrumentenaufgaben: Der Fahrtmesser
+// zeigt nur diese Geschwindigkeiten an, der Höhenmesser nur Hunderterschritte
+// zwischen 1000 und 9900 ft, das Variometer nur Werte bis 2000 ft/min. Wer
+// den gegebenen Wert am Zeiger abliest, darf ihn also nur dort auch finden.
+const FAHRTMESSER_ANZEIGE = [60, 80, 90, 100, 120, 150, 180, 200, 240, 300];
+const WZG_PAARE_FAHRTMESSER = WZG_PAARE.filter((p) => FAHRTMESSER_ANZEIGE.includes(p.v));
+const RATEN_PAARE_HOEHENMESSER = RATEN_PAARE.filter((p) => p.h >= 1000 && p.h <= 9900);
+const RATEN_PAARE_VARIOMETER = RATEN_PAARE.filter((p) => p.r <= 2000);
+
 const zufallAus = (feld, rnd) => feld[Math.floor(rnd() * feld.length)];
 
 // Jedes Prinzip kommt mindestens einmal vor, der Rest wird gewürfelt.
@@ -32,8 +41,34 @@ export function waehlePrinzipien(anzahl, rnd = Math.random) {
   return mische(folge.slice(0, anzahl), rnd);
 }
 
-export function erzeugeAufgabe(prinzip, rnd = Math.random) {
+// Bei mitInstrument entfällt der Gegebenwert im Text, stattdessen verweist
+// die Frage aufs Ablesen am Instrument, dessen Wert im Anzeigeraster liegen
+// muss. Beim Prinzip Geschwindigkeit stünde der gesuchte Wert sonst ablesbar
+// am Instrument, darum bleibt es dort immer bei der Textaufgabe.
+export function erzeugeAufgabe(prinzip, rnd = Math.random, mitInstrument = false) {
+  if (prinzip === "geschwindigkeit") mitInstrument = false;
+
   if (prinzip === "rate") {
+    if (mitInstrument) {
+      if (rnd() < 0.5) {
+        const { r, t, h } = zufallAus(RATEN_PAARE_HOEHENMESSER, rnd);
+        return {
+          prinzip,
+          frage: `Du musst deine aktuelle Höhe (Höhenmesser) in ${t} Minuten vollständig abbauen. Berechne die Sinkrate in ft/min.`,
+          antwort: r,
+          einheit: "ft/min",
+          instrument: { id: "hoehe", wert: h },
+        };
+      }
+      const { r, t, h } = zufallAus(RATEN_PAARE_VARIOMETER, rnd);
+      return {
+        prinzip,
+        frage: `Du sinkst mit deinem aktuellen Sinken (Variometer). Berechne die Flugzeit für ${h} ft in Minuten.`,
+        antwort: t,
+        einheit: "min",
+        instrument: { id: "vario", wert: -r },
+      };
+    }
     const { r, t, h } = zufallAus(RATEN_PAARE, rnd);
     const sinken = rnd() < 0.5;
     return {
@@ -43,33 +78,67 @@ export function erzeugeAufgabe(prinzip, rnd = Math.random) {
         : `Das Luftfahrzeug muss ${h} ft in ${t} Minuten steigen. Berechne die Steigrate in ft/min.`,
       antwort: r,
       einheit: "ft/min",
+      instrument: null,
     };
   }
+
+  if (mitInstrument) {
+    const { v, t, s } = zufallAus(WZG_PAARE_FAHRTMESSER, rnd);
+    if (prinzip === "zeit") return {
+      prinzip,
+      frage: `Du fliegst mit deiner aktuellen Geschwindigkeit (Fahrtmesser). Das Ziel liegt ${s} NM entfernt. Berechne die Flugzeit in Minuten.`,
+      antwort: t,
+      einheit: "min",
+      instrument: { id: "fahrt", wert: v },
+    };
+    return {
+      prinzip,
+      frage: `Du fliegst ${t} Minuten mit deiner aktuellen Geschwindigkeit (Fahrtmesser). Berechne den zurückgelegten Weg in NM.`,
+      antwort: s,
+      einheit: "NM",
+      instrument: { id: "fahrt", wert: v },
+    };
+  }
+
   const { v, t, s } = zufallAus(WZG_PAARE, rnd);
   if (prinzip === "zeit") return {
     prinzip,
     frage: `Das Luftfahrzeug fliegt ${v} kt. Das Ziel liegt ${s} NM entfernt. Berechne die Flugzeit in Minuten.`,
     antwort: t,
     einheit: "min",
+    instrument: null,
   };
   if (prinzip === "weg") return {
     prinzip,
     frage: `Das Luftfahrzeug fliegt ${v} kt für ${t} Minuten. Berechne den zurückgelegten Weg in NM.`,
     antwort: s,
     einheit: "NM",
+    instrument: null,
   };
   return {
     prinzip,
     frage: `Das Luftfahrzeug legt ${s} NM in ${t} Minuten zurück. Berechne die Geschwindigkeit in Knoten.`,
     antwort: v,
     einheit: "kt",
+    instrument: null,
   };
 }
 
 // Ein Lauf: Prinzipienfolge, je Aufgabe die gewürfelte Erscheinungsform.
+// Zusätzlich wird rund ein Drittel der Aufgaben zu Instrumentenaufgaben, rein
+// zufällig verteilt über die Positionen, deren Prinzip nicht Geschwindigkeit
+// ist. Gibt es weniger geeignete Positionen als das Drittel, werden alle
+// geeigneten genommen.
 export function erzeugeLauf(anzahl, rnd = Math.random) {
-  return waehlePrinzipien(anzahl, rnd).map((prinzip) => ({
-    ...erzeugeAufgabe(prinzip, rnd),
+  const prinzipien = waehlePrinzipien(anzahl, rnd);
+  const geeignete = prinzipien.reduce((liste, prinzip, i) => {
+    if (prinzip !== "geschwindigkeit") liste.push(i);
+    return liste;
+  }, []);
+  const anzahlInstrument = Math.min(Math.round(anzahl / 3), geeignete.length);
+  const instrumentPositionen = new Set(mische(geeignete, rnd).slice(0, anzahlInstrument));
+  return prinzipien.map((prinzip, i) => ({
+    ...erzeugeAufgabe(prinzip, rnd, instrumentPositionen.has(i)),
     form: rnd() < 0.5 ? "auswahl" : "eingabe",
   }));
 }
