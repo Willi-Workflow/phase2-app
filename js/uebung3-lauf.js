@@ -82,6 +82,7 @@ function erzeugeAufgabenSprecher() {
 
 export function erzeugeUebung3({ speicher, controls }) {
   let einstellung = { stufe: 1, testdauer: 5, fehlersaeule: true };
+  let uebungsStart = false; // der Übungsknopf startet den nächsten Lauf als reine Rechenübung
   const hinweis = "Nachbau des Instrumententests der Eignungsfeststellung (ICT): Führe Kurs, Höhe "
     + "und Fahrt in 60 Sekunden gleichmäßig vom Start- zum Zielwert, wie es das Schild über jedem "
     + "Instrument vorgibt. Stick quer steuert den Kurs, Stick längs die Höhe (Ziehen steigt), der "
@@ -104,10 +105,22 @@ export function erzeugeUebung3({ speicher, controls }) {
           `<option value="${w}" ${w === einstellung.testdauer ? "selected" : ""}>${w} min</option>`).join("")}</select></div>
       <div class="wahlzeile"><span class="wahltitel">FEHLERSÄULE</span>
         <button type="button" class="wahlknopf ${einstellung.fehlersaeule ? "an" : ""}" data-element="fehlersaeule"
-          aria-pressed="${einstellung.fehlersaeule}">${einstellung.fehlersaeule ? "EIN" : "AUS"}</button></div>`;
+          aria-pressed="${einstellung.fehlersaeule}">${einstellung.fehlersaeule ? "EIN" : "AUS"}</button></div>
+      <div class="wahlzeile"><span class="wahltitel">KOPFRECHNEN</span>
+        <button type="button" class="wahlknopf" data-element="ueben">NUR ÜBEN</button></div>`;
     feld.onclick = (e) => {
       const knopf = e.target.closest(".wahlknopf");
       if (!knopf) return;
+      if (knopf.dataset.element === "ueben") {
+        // Reine Rechenübung über den normalen Startweg, damit Tür, Vollbild
+        // und Abbruch wie bei jedem Lauf funktionieren. Der Fokus muss vom
+        // Knopf runter, sonst löst die Leertaste im Lauf erneute Klicks aus.
+        knopf.blur();
+        uebungsStart = true;
+        document.getElementById("start")?.click();
+        return;
+      }
+      if (knopf.dataset.element !== "fehlersaeule") return;
       einstellung.fehlersaeule = !einstellung.fehlersaeule;
       knopf.classList.toggle("an", einstellung.fehlersaeule);
       knopf.setAttribute("aria-pressed", String(einstellung.fehlersaeule));
@@ -122,7 +135,155 @@ export function erzeugeUebung3({ speicher, controls }) {
     };
   }
 
+  // Reine Kopfrechenübung ohne Flug (Muster: Buchstabenübung von Mission 1):
+  // dunkler Schirm, alle RECHENTAKT_S Sekunden eine angesagte Aufgabe, die
+  // Pedale wählen den Knopf, die Schusstaste bestätigt. Zählt nie zur
+  // Statistik (beiEnde(null)).
+  function starteRechenUebung({ tuer, beiEnde, registriereAbbruch }) {
+    const { testdauer } = einstellung;
+    const schleier = document.createElement("div");
+    schleier.className = "laufschleier buchstaben";
+    schleier.innerHTML = `<div class="testkopf"></div>
+      <div class="hinweis">Höre die Aufgabe. Wähle mit den Pedalen den passenden Knopf,<br>die Schusstaste bestätigt. Ohne Bestätigung zählt die Aufgabe als verpasst.</div>
+      <div class="ict-antworten"></div>`;
+    document.body.append(schleier);
+    if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+
+    const kopf = schleier.querySelector(".testkopf");
+    const antwortenfeld = schleier.querySelector(".ict-antworten");
+    const sprecher = erzeugeAufgabenSprecher();
+    let beendet = false;
+    let ergebnisOffen = false;
+    let testende = Infinity;
+    let laeuft = false;
+    let vorher = 0;
+    let testMs = 0;
+    let naechsteMs = 0;
+    let aufgabe = null;
+    let antworten = [];
+    let beantwortet = false;
+    let gezeichneteZone = null;
+    let echoUhr = null;
+    let richtig = 0;
+    let falsch = 0;
+    let verpasst = 0;
+
+    const zeichne = (gewaehlt = -1, echo = null) => {
+      if (!aufgabe) { antwortenfeld.innerHTML = ""; return; }
+      antwortenfeld.innerHTML = antworten.map((wert, i) => {
+        const klassen = ["antwortknopf"];
+        if (i === gewaehlt) klassen.push("gewaehlt");
+        if (echo && echo.zone === i) klassen.push(echo.treffer ? "richtig" : "falsch");
+        return `<button class="${klassen.join(" ")}" disabled>${wert}</button>`;
+      }).join("");
+    };
+
+    const raeumeAuf = () => {
+      beendet = true;
+      clearTimeout(echoUhr);
+      sprecher.stopp();
+      document.removeEventListener("fullscreenchange", beiVollbildwechsel);
+      document.removeEventListener("visibilitychange", beiSichtwechsel);
+      schleier.remove();
+    };
+    const beiVollbildwechsel = () => { if (!document.fullscreenElement) verlasse?.(); };
+    const beiSichtwechsel = () => { if (document.hidden) verlasse?.(); };
+    let verlasse = () => zeigeErgebnis(false);
+    document.addEventListener("fullscreenchange", beiVollbildwechsel);
+    document.addEventListener("visibilitychange", beiSichtwechsel);
+    registriereAbbruch(() => verlasse?.());
+
+    const schleife = (jetzt) => {
+      if (beendet || ergebnisOffen || !laeuft) return;
+      const dtMs = Math.min(100, jetzt - vorher || 16);
+      vorher = jetzt;
+      testMs += dtMs;
+      if (testMs >= naechsteMs) {
+        if (aufgabe && !beantwortet) verpasst += 1;
+        aufgabe = erzeugeRechenaufgabe(Math.random);
+        antworten = antworten5(aufgabe, Math.random);
+        beantwortet = false;
+        gezeichneteZone = null;
+        sprecher.sprich(aufgabe);
+        naechsteMs += RECHENTAKT_S * 1000;
+      }
+      if (aufgabe && !beantwortet) {
+        const zone = pedalwahl(controls.wert("ruder"));
+        if (zone !== gezeichneteZone) { gezeichneteZone = zone; zeichne(zone); }
+        if (controls.schussGedrueckt()) {
+          beantwortet = true;
+          const treffer = antworten[zone] === aufgabe.antwort;
+          if (treffer) richtig += 1; else falsch += 1;
+          zeichne(-1, { zone, treffer });
+          echoUhr = setTimeout(() => { if (!beendet && !ergebnisOffen) zeichne(); }, 600);
+        }
+      }
+      const rest = Math.max(0, testende - performance.now());
+      kopf.textContent = `KOPFRECHNEN · REST ${Math.floor(rest / 60_000)}:${String(Math.floor((rest % 60_000) / 1000)).padStart(2, "0")}`;
+      if (performance.now() >= testende) { zeigeErgebnis(true); return; }
+      requestAnimationFrame(schleife);
+    };
+
+    const zeigeErgebnis = async (fertig) => {
+      if (beendet || ergebnisOffen) return;
+      ergebnisOffen = true;
+      sprecher.stopp();
+      document.removeEventListener("fullscreenchange", beiVollbildwechsel);
+      document.removeEventListener("visibilitychange", beiSichtwechsel);
+      kopf.textContent = "";
+      if (aufgabe && !beantwortet) verpasst += 1;
+      await tuer.schliesse();
+      tuer.verwische(true);
+      const gestellt = richtig + falsch + verpasst;
+      const tafel = document.createElement("div");
+      tafel.className = "ergebnisschicht";
+      tafel.innerHTML = `
+        <div class="frage">${fertig ? "ÜBUNG BEENDET" : "ÜBUNG ABGEBROCHEN"}</div>
+        <div class="ergebnisgross">${richtig} / ${gestellt}</div>
+        <div class="ergebniszeilen">
+          <span>Richtig: ${richtig}</span>
+          <span>Falsch: ${falsch}</span>
+          <span>Verpasst: ${verpasst}</span>
+        </div>
+        <button class="punkt" id="u3-uebung-fertig">ZURÜCK ZUR MISSION</button>
+        <div class="ergebnisfuss"><span>${testdauer} min · Die Übung zählt nicht zur Statistik</span></div>`;
+      document.body.append(tafel);
+      requestAnimationFrame(() => tafel.classList.add("da"));
+      let geschlossen = false;
+      const schliesse = async () => {
+        if (geschlossen) return;
+        geschlossen = true;
+        tafel.classList.remove("da");
+        setTimeout(() => tafel.remove(), 260);
+        tuer.verwische(false);
+        raeumeAuf();
+        if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
+        await beiEnde(null); // die Übung zählt nie
+        await tuer.oeffne();
+      };
+      verlasse = schliesse;
+      tafel.querySelector("#u3-uebung-fertig").addEventListener("click", schliesse);
+    };
+
+    (async () => {
+      await tuer.oeffne();
+      if (beendet || ergebnisOffen) return;
+      testende = performance.now() + testdauer * 60_000;
+      laeuft = true;
+      vorher = performance.now();
+      requestAnimationFrame(schleife);
+    })();
+  }
+
   function starte({ tuer, beiEnde, registriereAbbruch }) {
+    // Den Übungsmerker immer verbrauchen: bleibt er versehentlich scharf,
+    // darf er keinen späteren Fluglauf umleiten.
+    const nurUebung = uebungsStart;
+    uebungsStart = false;
+    if (nurUebung) {
+      starteRechenUebung({ tuer, beiEnde, registriereAbbruch });
+      return;
+    }
     const { stufe, testdauer, fehlersaeule } = einstellung;
     const stufe4 = stufe >= 4;
     // Der Aufrufer hat die Hangartür bereits geschlossen: der Testbildschirm
