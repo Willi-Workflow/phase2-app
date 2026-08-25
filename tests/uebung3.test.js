@@ -6,6 +6,7 @@ import {
   momentanfehler, durchgangspunkte, kennzahl3,
   erzeugeRechenaufgabe, antworten5, pedalwahl,
 } from "../js/uebung3.js";
+import { svgUhr, svgSaeule, uhrwinkel, saeulenanteil } from "../js/uebung3-bild.js";
 
 // Feste Zufallsfolge über ein Array, wie in tests/uebung1.test.js.
 const folge = (werte) => { let i = 0; return () => werte[i++]; };
@@ -375,4 +376,32 @@ test("pedalwahl: fünf gleich breite Zonen von -1 bis 1", () => {
   assert.equal(pedalwahl(0.59), 3);
   assert.equal(pedalwahl(0.61), 4);
   assert.equal(pedalwahl(1), 4);
+});
+
+test("uhrwinkel: volle Umdrehung über 60 Sekunden ab der 12-Uhr-Stellung", () => {
+  assert.equal(uhrwinkel(60), 0);
+  assert.equal(uhrwinkel(30), 180);
+  assert.equal(uhrwinkel(0), 360);
+});
+
+test("saeulenanteil: linear zwischen 0 und 1, außerhalb gedeckelt", () => {
+  assert.equal(saeulenanteil(-5), 0);
+  assert.equal(saeulenanteil(50), 0.5);
+  assert.equal(saeulenanteil(120), 1);
+});
+
+test("svgUhr: Zeiger steht auf dem gerechneten Winkel, Aufschrift Zeit", () => {
+  assert.ok(svgUhr(60).includes('rotate(0.00 60 60)'));
+  assert.ok(svgUhr(30).includes('rotate(180.00 60 60)'));
+  assert.ok(svgUhr(0).includes('rotate(360.00 60 60)'));
+  assert.ok(svgUhr(45).includes("ZEIT"));
+  assert.ok(svgUhr(45).includes("<svg"));
+});
+
+test("svgSaeule: Punkt steht auf der gerechneten Höhe, Aufschrift Fehlersäule", () => {
+  assert.ok(svgSaeule(-5).includes('cy="106.00"'));
+  assert.ok(svgSaeule(50).includes('cy="67.00"'));
+  assert.ok(svgSaeule(120).includes('cy="28.00"'));
+  assert.ok(svgSaeule(50).includes("FEHLERSÄULE"));
+  assert.ok(svgSaeule(50).includes("<svg"));
 });
