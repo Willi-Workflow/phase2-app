@@ -34,21 +34,25 @@ const punktAmTacho = (grad, r) => {
   return { x: TACHO.cx + Math.sin(w) * r, y: TACHO.cy - Math.cos(w) * r };
 };
 
-// Zifferblatt nach der Video-Nahaufnahme smt-referenz-tacho.jpg (Video 4:40):
-// kräftiges Skalenband, Striche und Zahlen außen, AIRSPEED und KNOTS in der
-// Skalenlücke oben, rotes Bandende ab 140, kein Gehäusering.
+// Zifferblatt nach der Geschwindigkeitsanzeige in Abbildung 3-9 der
+// Dissertation (Willis Festlegung vom 25.08.2026, sie ersetzt die
+// Video-Nahaufnahme): komplettes rundes Instrument mit dunklem Blatt,
+// Skalenband nahe dem Rand, Striche und Zahlen innen, AIRSPEED und KNOTS
+// in der Skalenlücke oben, rotes Bandende ab 140. Bewusst ohne Gehäuse
+// darum, nur das Blatt.
 const ROT_AB_KT = 140;
+const BLATT_R = 113;
 
 function tachoSvg() {
   const striche = [];
   for (let kt = NADEL_MIN; kt <= NADEL_MAX; kt += 10) {
     const grad = gradFuerKnoten(kt);
     const lang = kt % 20 === 0;
-    const a = punktAmTacho(grad, TACHO.r - 6);
-    const b = punktAmTacho(grad, TACHO.r + (lang ? 14 : 8));
+    const a = punktAmTacho(grad, TACHO.r + 6);
+    const b = punktAmTacho(grad, TACHO.r - (lang ? 14 : 8));
     striche.push(`<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="${LINIE}" stroke-width="${lang ? 2.6 : 1.6}"/>`);
     if (lang) {
-      const t = punktAmTacho(grad, TACHO.r + 27);
+      const t = punktAmTacho(grad, TACHO.r - 28);
       striche.push(`<text x="${t.x.toFixed(1)}" y="${(t.y + 4).toFixed(1)}" fill="${LINIE}" font-size="13" text-anchor="middle">${kt}</text>`);
     }
   }
@@ -60,15 +64,15 @@ function tachoSvg() {
   const bis = punktAmTacho(gradFuerKnoten(NADEL_MAX), TACHO.r);
   const bogen = `<path id="tachobogen" d="M ${von.x.toFixed(1)} ${von.y.toFixed(1)} A ${TACHO.r} ${TACHO.r} 0 1 1 ${wechsel.x.toFixed(1)} ${wechsel.y.toFixed(1)}" pathLength="${ROT_AB_KT - NADEL_MIN}" fill="none" stroke="${TUERKIS}" stroke-width="13" stroke-dasharray="3.8 1.2"/>`
     + `<path id="rotband" d="M ${wechsel.x.toFixed(1)} ${wechsel.y.toFixed(1)} A ${TACHO.r} ${TACHO.r} 0 0 1 ${bis.x.toFixed(1)} ${bis.y.toFixed(1)}" pathLength="${NADEL_MAX - ROT_AB_KT}" fill="none" stroke="${ROT_BAND}" stroke-width="13" stroke-dasharray="3.8 1.2"/>`;
-  // AIRSPEED dicht unter der Rahmenkante, KNOTS auf der Zeile von 160 und 40.
+  // AIRSPEED und KNOTS in der Skalenlücke oben im Blatt.
   // Bewusst ohne Leuchtfilter: Willi will die Zeichnung scharf (24.08.2026).
-  const zeileKnots = punktAmTacho(gradFuerKnoten(NADEL_MAX), TACHO.r + 27).y + 4;
   return `
     <g font-family="Arial, Helvetica, sans-serif">
+      <circle cx="${TACHO.cx}" cy="${TACHO.cy}" r="${BLATT_R}" fill="#10151a" stroke="#232a30" stroke-width="1.5"/>
       ${bogen}
       ${striche.join("")}
-      <text x="${TACHO.cx}" y="${(TACHO.cy - TACHO.r - 16).toFixed(1)}" fill="${LINIE}" font-size="12" text-anchor="middle" letter-spacing="1">AIRSPEED</text>
-      <text x="${TACHO.cx}" y="${zeileKnots.toFixed(1)}" fill="${LINIE}" font-size="9" text-anchor="middle" letter-spacing="2">KNOTS</text>
+      <text x="${TACHO.cx}" y="${(TACHO.cy - 56).toFixed(1)}" fill="${LINIE}" font-size="12" text-anchor="middle" letter-spacing="1">AIRSPEED</text>
+      <text x="${TACHO.cx}" y="${(TACHO.cy - 42).toFixed(1)}" fill="${LINIE}" font-size="9" text-anchor="middle" letter-spacing="2">KNOTS</text>
       <g id="nadel" transform="rotate(180 ${TACHO.cx} ${TACHO.cy})">
         <line x1="${TACHO.cx}" y1="${TACHO.cy}" x2="${TACHO.cx}" y2="${TACHO.cy - TACHO.r + 8}" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
       </g>
