@@ -104,9 +104,9 @@ export function erzeugeUebung5({ speicher }) {
     schleier.innerHTML = `
       <div class="cockpitbuehne">
         <div class="panelflaeche"></div>
-        <div class="scheibenfeld">
-          <div class="testmitte"></div>
-        </div>
+      </div>
+      <div class="scheibenfeld">
+        <div class="testmitte"></div>
       </div>
       <div class="testkopf"></div>`;
     document.body.append(schleier);
