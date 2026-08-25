@@ -46,17 +46,23 @@ function erzeugeAufgabenSprecher() {
     klang.preload = "auto";
     vorrat.set(datei, klang);
   }
+  // Nach stopp() darf kein Glied der Kette mehr weiterlaufen: ein zum
+  // Abbruchzeitpunkt noch offenes play() lehnt sonst später ab und spräche
+  // über den Ersatzweg weiter, obwohl der Schleier längst entfernt ist.
+  let angehalten = false;
   return {
     sprich(aufgabe) {
+      angehalten = false;
       const folge = [`n${aufgabe.a}`, OP_DATEI[aufgabe.op], `n${aufgabe.b}`];
       const spieleAb = (i) => {
-        if (i >= folge.length) return;
+        if (angehalten || i >= folge.length) return;
         const name = folge[i];
         const klang = vorrat.get(name);
         if (!klang) { spieleAb(i + 1); return; }
         klang.currentTime = 0;
         klang.onended = () => spieleAb(i + 1);
         klang.play().catch(() => {
+          if (angehalten) return;
           const wort = name.startsWith("n") ? name.slice(1) : WORT_VON_DATEI[name];
           const laut = new SpeechSynthesisUtterance(wort);
           laut.lang = "de-DE";
@@ -67,6 +73,7 @@ function erzeugeAufgabenSprecher() {
       spieleAb(0);
     },
     stopp() {
+      angehalten = true;
       for (const klang of vorrat.values()) { klang.pause(); klang.onended = null; }
       speechSynthesis?.cancel?.();
     },
@@ -184,9 +191,11 @@ export function erzeugeUebung3({ speicher, controls }) {
     const schildFahrt = (v) => `${v.fahrt.start} bis ${v.fahrt.ziel} Knoten`;
     const baueTafel = (vorgaben) => {
       const aktiv = (id) => vorgaben.aktive.includes(id);
+      // Ohne Zielwert kein Schild: sonst hinge ein leerer Rahmen über den
+      // nicht aktiven Instrumenten.
       const zelle = (id, klasse, schild) => `
         <div class="ict-zelle ${klasse}">
-          <div class="ict-schild">${schild}</div>
+          ${schild ? `<div class="ict-schild">${schild}</div>` : ""}
           <div class="ict-instrument" data-id="${id}"></div>
         </div>`;
       tafel.innerHTML =
