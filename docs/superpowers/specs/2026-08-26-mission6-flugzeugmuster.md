@@ -82,14 +82,20 @@ Zweck der Mission ist noch offen, die Liste steht aber fest.
 - Focke-Wulf Fw 190
 - Messerschmitt Me 262, erstes einsatzreifes Düsenjagdflugzeug
 
-## Offene Punkte
+## Umsetzung, Stand 26.08.2026
 
-- Zweck der Mission: In `js/missionen.js` heißt Mission 6 bislang
-  "Psychologisches Gespräch"; die Liste deutet auf eine Muster- oder
-  Erkennungsübung. Vor dem Bau festlegen.
-- Bildmaterial: Sollen die Muster erkannt werden, braucht jedes Muster
-  Ansichten (gemeinfreie Fotos, etwa Wikimedia Commons, oder erzeugte
-  Bilder). Bei rund 55 Mustern ist das der größte Einzelposten.
+Beide Punkte sind entschieden und gebaut:
+
+- Zweck: Mission 6 bleibt "Psychologisches Gespräch" und enthält die
+  Wissensabfrage (Bereich Flugzeugmuster, weitere Bereiche vorgesehen)
+  samt Lexikon. Quiz: Foto sehen, Muster per Texteingabe benennen,
+  großzügige Prüfung (Spitznamen, Schreibweise egal), Ergebnis in Prozent.
+  Daten in `js/muster6.js`, Logik in `js/uebung6.js`, Ablauf in
+  `js/uebung6-lauf.js`.
+- Bildmaterial: je Muster vier Ansichten (A350: drei) von Wikimedia
+  Commons unter `bilder/muster/<id>/`, Quellen und Lizenzen in
+  `bilder/muster/QUELLEN.md`, Bilderzahl je Muster erzeugt
+  `zaehle-ansichten.py` nach `js/muster6-ansichten.js`.
 
 ## Quellen für den aktuellen Stand
 
