@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { RASTER, rasterwerte, zufallswerte, formatiere, gradFahrt, gradHoehe100, gradHoehe1000, gradVario, svgInstrument } from "../js/instrumente.js";
+import { RASTER, rasterwerte, zufallswerte, formatiere, gradFahrt, gradHoehe100, gradHoehe1000, gradVario, svgInstrument, TAFELREIHE, tafelHtml,
+} from "../js/instrumente.js";
 
 function saatZufall(saat) {
   let s = saat;
@@ -53,4 +54,12 @@ test("svgInstrument: Zeiger stehen im Bild auf dem gerechneten Winkel", () => {
   assert.ok(svgInstrument("fahrt", 230).includes('rotate(40.00 60 60)'));
   assert.ok(svgInstrument("kurs", 285).includes('rotate(-285.00 60 60)'));
   assert.ok(svgInstrument("horizont", { roll: 30, nick: 0 }).includes('rotate(-30.00 60 60)'));
+});
+
+test("Tafelreihe folgt der Anordnung aus Abbildung 3-10", () => {
+  assert.deepEqual(TAFELREIHE, ["kurs", "fahrt", "horizont", "hoehe", "vario"]);
+  const html = tafelHtml({ fahrt: 120, hoehe: 3000, kurs: 90, vario: 500, horizont: { roll: 0, nick: 0 } });
+  const reihenfolge = [...html.matchAll(/data-id="([a-z]+)"/g)].map((m) => m[1]);
+  assert.deepEqual(reihenfolge, TAFELREIHE);
+  assert.ok(!html.includes("tafelsteg"));
 });
