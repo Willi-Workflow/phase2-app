@@ -331,6 +331,53 @@ export function svgInstrument(id, wert) {
 // Höhenmesser, Variometer, alle fünf in einer Reihe.
 export const TAFELREIHE = ["kurs", "fahrt", "horizont", "hoehe", "vario"];
 
+// Lagebild für die Horizontfrage (Willis Vorgabe vom 26.08.2026 nach
+// Abbildung 3-10 der Dissertation): Statt der Winkel in Zahlen zeigt die
+// Antwort das Flugzeug von außen, aus dem sich die Lage ablesen lässt.
+// Links die Heckansicht für die Querlage (positiver Rollwert heißt rechter
+// Flügel tief, also aus unserer Sicht von hinten der rechte Flügel unten),
+// rechts die Seitenansicht für die Nicklage (positiver Nickwert heißt Nase
+// hoch), beide vor einer Horizontlinie als Bezug.
+const LAGE_HIMMEL = "#3c556e";
+const LAGE_BODEN = "#5c452a";
+const LAGE_FLIEGER = "#f4f2ea";
+
+// Flugzeug von hinten: Tragflächen als breiter Balken, Rumpf, darüber
+// Höhenleitwerk und Seitenleitwerk. Die Querlage ist an der Neigung des
+// Balkens abzulesen.
+const heckriss = `<g fill="${LAGE_FLIEGER}">
+    <rect x="-27" y="-1.9" width="54" height="3.8" rx="1.7"/>
+    <ellipse cx="0" cy="-1" rx="4.2" ry="5.4"/>
+    <rect x="-8" y="-12.6" width="16" height="2.6" rx="1.2"/>
+    <path d="M-1.5 -4 L-2.6 -13.6 L2.6 -13.6 L1.5 -4 Z"/>
+  </g>`;
+
+// Flugzeug von der Seite, Nase nach rechts: schlanker Rumpf mit
+// hochgezogenem Heck und Seitenleitwerk. Die Tragfläche bleibt weg, in der
+// Seitenansicht steht sie hochkant und verunklart nur die Neigung.
+const seitenriss = `<g fill="${LAGE_FLIEGER}">
+    <path d="M27 0 L14 -2.6 L-14 -3.4 L-22 -5.6 L-22 4.4 L-14 3.6 L14 2.8 Z"/>
+    <path d="M-13 -3.4 L-22 -14 L-17.5 -14 L-8 -3.4 Z"/>
+  </g>`;
+
+function lagefeld(x, inhalt, dreh) {
+  return `<g transform="translate(${x} 34)">
+    <line x1="-30" y1="0" x2="30" y2="0" stroke="rgba(244,242,234,0.32)" stroke-width="1" stroke-dasharray="4 3"/>
+    <g transform="rotate(${S(dreh)})">${inhalt}</g>
+  </g>`;
+}
+
+export function svgLage(wert) {
+  const { roll, nick } = wert;
+  return `<svg viewBox="0 0 148 68" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0" y="0" width="148" height="68" rx="6" fill="${LAGE_HIMMEL}"/>
+    <rect x="0" y="34" width="148" height="34" fill="${LAGE_BODEN}"/>
+    <line x1="0" y1="34" x2="148" y2="34" stroke="rgba(244,242,234,0.5)" stroke-width="1"/>
+    ${lagefeld(40, heckriss, roll)}
+    ${lagefeld(108, seitenriss, -nick)}
+  </svg>`;
+}
+
 export function tafelHtml(werte) {
   const zellen = TAFELREIHE.map((id) =>
     `<span class="instrument" data-id="${id}">${svgInstrument(id, id === "horizont" ? werte.horizont : werte[id])}</span>`).join("");

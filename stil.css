@@ -765,3 +765,9 @@ main { position: relative; z-index: 1; }
 .ict-antworten { position: absolute; left: 50%; bottom: 3vh; transform: translateX(-50%); z-index: 2; display: flex; gap: 10px; }
 .ict-antworten .antwortknopf { padding: 10px 16px; font-size: 14px; cursor: default; }
 .ict-antworten .antwortknopf.gewaehlt { border-color: #6a7a52; box-shadow: 0 0 0 2px rgba(106, 122, 82, 0.45); }
+
+/* Mission 4: Antworten auf die Horizontfrage sind Lagebilder statt Zahlen
+   (Abbildung 3-10 des Originals). Der Knopf trägt nur die Zeichnung, die
+   Zustandsfarben für richtig und falsch bleiben. */
+.antwortknopf.lagebild { padding: 6px; line-height: 0; }
+.antwortknopf.lagebild svg { width: 100%; height: auto; display: block; border-radius: 4px; }

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { RASTER, rasterwerte, zufallswerte, formatiere, gradFahrt, gradHoehe100, gradHoehe1000, gradVario, svgInstrument, TAFELREIHE, tafelHtml,
+import { RASTER, rasterwerte, zufallswerte, formatiere, gradFahrt, gradHoehe100, gradHoehe1000, gradVario, svgInstrument, TAFELREIHE, tafelHtml, svgLage,
 } from "../js/instrumente.js";
 
 function saatZufall(saat) {
@@ -62,4 +62,17 @@ test("Tafelreihe folgt der Anordnung aus Abbildung 3-10", () => {
   const reihenfolge = [...html.matchAll(/data-id="([a-z]+)"/g)].map((m) => m[1]);
   assert.deepEqual(reihenfolge, TAFELREIHE);
   assert.ok(!html.includes("tafelsteg"));
+});
+
+test("svgLage: Heckansicht kippt mit der Querlage, Seitenansicht mit der Nicklage", () => {
+  // Rechte Querlage senkt den rechten Flügel: Drehung im Uhrzeigersinn,
+  // also positiver Winkel. Nase hoch dreht die Seitenansicht gegen den
+  // Uhrzeigersinn, also negativer Winkel.
+  const quer = svgLage({ roll: 30, nick: 0 });
+  assert.ok(quer.includes("rotate(30.00)"), "Querlage rechts dreht positiv");
+  const laengs = svgLage({ roll: 0, nick: 20 });
+  assert.ok(laengs.includes("rotate(-20.00)"), "Nase hoch dreht negativ");
+  const gerade = svgLage({ roll: 0, nick: 0 });
+  assert.equal((gerade.match(/rotate\(0\.00\)/g) ?? []).length, 2);
+  assert.ok(gerade.startsWith("<svg") && gerade.includes("viewBox"));
 });
