@@ -433,7 +433,19 @@ main { position: relative; z-index: 1; }
 .panelflaeche .instrument svg { transform: scale(0.94) translateY(-1%); transform-origin: center; }
 /* Verdecktes Instrument: der Zeiger würde die gesuchte Antwort verraten,
    darum unscharf statt mit falschem Wert (Mission 5). */
-.panelflaeche .instrument.verdeckt svg { filter: blur(6px); opacity: 0.55; }
+/* Kräftig genug, dass der Zeiger nicht mehr zu erahnen ist (Willis
+   Nachbesserung vom 26.08.2026): starke Unschärfe, abgesenkter Kontrast
+   und ein dunkler Schleier über der Zeichnung. */
+.panelflaeche .instrument.verdeckt svg { filter: blur(14px) contrast(0.35) brightness(0.55); opacity: 0.4; }
+.panelflaeche .instrument.verdeckt { position: relative; }
+.panelflaeche .instrument.verdeckt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  background: radial-gradient(circle at 50% 46%, rgba(8, 10, 12, 0.82) 42%, rgba(8, 10, 12, 0.35) 72%, transparent 88%);
+  pointer-events: none;
+}
 .laufschleier.uebung4 .testkopf { position: absolute; top: 3vh; left: 50%; transform: translateX(-50%); z-index: 2; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8); }
 .laufschleier.uebung4 .testmitte { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 2; width: min(760px, 90vw); }
 .laufschleier.uebung4 .testmitte:not(:empty) { background: rgba(13, 17, 9, 0.55); border-radius: 10px; padding: 22px; }
