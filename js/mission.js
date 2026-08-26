@@ -10,6 +10,7 @@ import { erzeugeUebung2 } from "./uebung2-lauf.js";
 import { erzeugeUebung3 } from "./uebung3-lauf.js";
 import { erzeugeUebung4 } from "./uebung4-lauf.js";
 import { erzeugeUebung5 } from "./uebung5-lauf.js";
+import { erzeugeUebung6 } from "./uebung6-lauf.js";
 import { erzeugeHangartuer } from "./hangartuer.js";
 
 const speicher = erzeugeSpeicher({ konfig: KONFIG });
@@ -19,7 +20,7 @@ const mission = MISSIONEN.find((m) => m.nr === nr);
 let laufAktiv = false;
 const controls = erzeugeControls(speicher);
 // Bereiche mit echter Übung; alle übrigen laufen über den Probelauf.
-const UEBUNGEN = { 1: erzeugeUebung1, 2: erzeugeUebung2, 3: erzeugeUebung3, 4: erzeugeUebung4, 5: erzeugeUebung5 };
+const UEBUNGEN = { 1: erzeugeUebung1, 2: erzeugeUebung2, 3: erzeugeUebung3, 4: erzeugeUebung4, 5: erzeugeUebung5, 6: erzeugeUebung6 };
 const uebung = mission && UEBUNGEN[mission.nr] ? UEBUNGEN[mission.nr]({ speicher, controls }) : null;
 
 let alleLaeufe = [];

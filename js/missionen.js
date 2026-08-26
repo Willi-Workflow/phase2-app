@@ -9,5 +9,5 @@ export const MISSIONEN = [
   { nr: 3, name: "60s Instrumentenflug", kennzahlName: "Genauigkeit %", wertung: false, maximal: 100 },
   { nr: 4, name: "Instrumente merken", kennzahlName: "Punkte", wertung: false, maximal: 100 },
   { nr: 5, name: "Test Flugphysik", kennzahlName: "Punkte", wertung: false, maximal: 100 },
-  { nr: 6, name: "Psychologisches Gespräch", kennzahlName: "Punkte", wertung: false },
+  { nr: 6, name: "Psychologisches Gespräch", kennzahlName: "Treffer %", wertung: false, maximal: 100 },
 ];
