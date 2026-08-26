@@ -14,7 +14,6 @@ export const GRUPPEN = [
   { id: "kampf-aktuell", name: "Kampfflugzeuge international" },
   { id: "bw-klassiker", name: "Klassiker der Bundeswehr" },
   { id: "klassiker", name: "Internationale Klassiker" },
-  { id: "legenden", name: "Legenden der Propellerzeit" },
 ];
 
 // Die Bilder liegen unter bilder/muster/<id>/1.jpg aufwärts, mindestens vier
@@ -176,21 +175,6 @@ export const MUSTER = [
     steckbrief: "Kleiner Erdkämpfer aus Italien, bei der Truppe Gina genannt.",
   },
   {
-    id: "f84f", name: "Republic F-84F Thunderstreak", gruppe: "bw-klassiker",
-    loesungen: ["F-84", "F-84F", "Thunderstreak", "F-84 Thunderstreak"],
-    steckbrief: "Gepfeilter Jagdbomber der Aufbaujahre, Nachfolger der geraden Thunderjet.",
-  },
-  {
-    id: "sabre", name: "Canadair Sabre Mk.6", gruppe: "bw-klassiker",
-    loesungen: ["Sabre", "Canadair Sabre", "Sabre Mk.6", "F-86"],
-    steckbrief: "In Kanada gebaute Fassung der F-86, erster Jagdjet der jungen Bundeswehr.",
-  },
-  {
-    id: "noratlas", name: "Nord Noratlas", gruppe: "bw-klassiker",
-    loesungen: ["Noratlas", "Nord Noratlas", "Nord 2501", "N2501"],
-    steckbrief: "Transporter mit Doppelleitwerk und Ladeluke im Heck, bis 1971 im Dienst.",
-  },
-  {
     id: "f14", name: "Grumman F-14 Tomcat", gruppe: "klassiker",
     loesungen: ["F-14", "Tomcat", "F-14 Tomcat"],
     steckbrief: "Trägergestützter Schwenkflügler der US Navy, bekannt aus Top Gun.",
@@ -254,46 +238,6 @@ export const MUSTER = [
     id: "viggen", name: "Saab 37 Viggen", gruppe: "klassiker",
     loesungen: ["Viggen", "Saab 37", "JA37", "Saab Viggen"],
     steckbrief: "Schwedischer Deltaflügler mit Entenflügeln, für Straßenstarts gebaut.",
-  },
-  {
-    id: "lightning", name: "English Electric Lightning", gruppe: "klassiker",
-    loesungen: ["Lightning", "English Electric Lightning", "EE Lightning"],
-    steckbrief: "Britischer Abfangjäger mit zwei übereinander liegenden Triebwerken, enorme Steigleistung.",
-  },
-  {
-    id: "f111", name: "General Dynamics F-111 Aardvark", gruppe: "klassiker",
-    loesungen: ["F-111", "Aardvark", "F-111 Aardvark"],
-    steckbrief: "Großer Schwenkflügel-Jagdbomber, Vorbild für den Tornado.",
-  },
-  {
-    id: "su25", name: "Suchoi Su-25", gruppe: "klassiker",
-    loesungen: ["Su-25", "Frogfoot", "Suchoi 25", "Sukhoi 25"],
-    steckbrief: "Gepanzertes Erdkampfflugzeug, das östliche Gegenstück zur A-10.",
-  },
-  {
-    id: "spitfire", name: "Supermarine Spitfire", gruppe: "legenden",
-    loesungen: ["Spitfire", "Supermarine Spitfire", "Spit"],
-    steckbrief: "Britischer Jäger mit elliptischen Flügeln, Sinnbild der Luftschlacht um England.",
-  },
-  {
-    id: "p51", name: "North American P-51 Mustang", gruppe: "legenden",
-    loesungen: ["P-51", "Mustang", "P-51 Mustang"],
-    steckbrief: "Amerikanischer Langstreckenjäger mit Bauchkühler, begleitete die Bomber bis Berlin.",
-  },
-  {
-    id: "bf109", name: "Messerschmitt Bf 109", gruppe: "legenden",
-    loesungen: ["Bf 109", "Me 109", "109", "Messerschmitt 109"],
-    steckbrief: "Meistgebauter Jäger der Geschichte, schmaler Rumpf und schmalspuriges Fahrwerk.",
-  },
-  {
-    id: "fw190", name: "Focke-Wulf Fw 190", gruppe: "legenden",
-    loesungen: ["Fw 190", "190", "Focke-Wulf 190", "Würger"],
-    steckbrief: "Robuster Jäger mit Sternmotor, breitspuriges Fahrwerk, genannt Würger.",
-  },
-  {
-    id: "me262", name: "Messerschmitt Me 262", gruppe: "legenden",
-    loesungen: ["Me 262", "262", "Schwalbe", "Messerschmitt 262"],
-    steckbrief: "Erstes einsatzreifes Düsenjagdflugzeug der Welt, zwei Triebwerke unter den Flügeln.",
   },
 ];
 

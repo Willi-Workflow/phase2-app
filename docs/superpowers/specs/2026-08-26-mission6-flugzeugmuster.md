@@ -50,9 +50,6 @@ Zweck der Mission ist noch offen, die Liste steht aber fest.
 
 - Lockheed F-104G Starfighter, das prägendste Muster der frühen Luftwaffe
 - Fiat G.91, der "Gina" genannte Erdkämpfer
-- Republic F-84F Thunderstreak
-- Canadair Sabre Mk.6, deutsche Version der F-86
-- Nord Noratlas, Transporter mit Doppelleitwerk
 - McDonnell Douglas F-4F Phantom II (siehe oben)
 
 ## Internationale Klassiker
@@ -70,17 +67,12 @@ Zweck der Mission ist noch offen, die Liste steht aber fest.
 - Dassault Mirage III
 - Saab 35 Draken
 - Saab 37 Viggen
-- English Electric Lightning
-- General Dynamics F-111 Aardvark
-- Suchoi Su-25 Frogfoot
 
-## Propeller-Legenden und früher Düsenflug
+## Gestrichen am 26.08.2026 (Willis Entscheidung)
 
-- Supermarine Spitfire
-- North American P-51 Mustang
-- Messerschmitt Bf 109
-- Focke-Wulf Fw 190
-- Messerschmitt Me 262, erstes einsatzreifes Düsenjagdflugzeug
+Aus der Liste entfernt, samt Bildern: alle Propeller-Legenden (Spitfire,
+P-51 Mustang, Bf 109, Fw 190, Me 262) sowie English Electric Lightning,
+Su-25, F-111, Nord Noratlas, Canadair Sabre Mk.6 und F-84F Thunderstreak.
 
 ## Umsetzung, Stand 26.08.2026
 

@@ -34,10 +34,10 @@ test("istRichtig lehnt falsche, halbe und leere Eingaben ab", () => {
   assert.equal(istRichtig("   ", f16), false);
 });
 
-test("istRichtig kennt die gängigen Namen der Bf 109", () => {
-  const bf = muster("bf109");
-  for (const eingabe of ["bf109", "Bf-109", "me 109", "109", "messerschmitt 109"]) {
-    assert.equal(istRichtig(eingabe, bf), true, eingabe);
+test("istRichtig kennt Kennung und Codename der MiG-29", () => {
+  const mig = muster("mig29");
+  for (const eingabe of ["mig29", "MiG-29", "mig 29", "Fulcrum"]) {
+    assert.equal(istRichtig(eingabe, mig), true, eingabe);
   }
 });
 
@@ -46,8 +46,8 @@ test("anzeigenamen streicht Doppelformen und den vollen Namen", () => {
   assert.deepEqual(anzeigenamen(muster("rafale")), ["Rafale"]);
 });
 
-test("Datenbestand: 55 Muster, Kennungen eindeutig, Felder gefüllt, Gruppen gültig", () => {
-  assert.equal(MUSTER.length, 55);
+test("Datenbestand: 44 Muster, Kennungen eindeutig, Felder gefüllt, Gruppen gültig", () => {
+  assert.equal(MUSTER.length, 44);
   const ids = new Set(MUSTER.map((m) => m.id));
   assert.equal(ids.size, MUSTER.length);
   const gruppenIds = new Set(GRUPPEN.map((g) => g.id));
@@ -62,7 +62,7 @@ test("jede Gruppe hat Muster und die Aufteilung stimmt", () => {
   for (const g of GRUPPEN) {
     assert.ok(musterNachGruppe(g.id).length >= 1, `${g.id} ist leer`);
   }
-  assert.equal(musterNachGruppe("legenden").length, 5);
+  assert.equal(musterNachGruppe("klassiker").length, 13);
   assert.equal(musterNachGruppe("bw-aktuell").length, 10);
 });
 
