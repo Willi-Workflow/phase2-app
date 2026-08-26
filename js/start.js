@@ -1,42 +1,12 @@
 import { KONFIG } from "./konfig.js";
 import { ANHEFT, pendelGroessen, pendelSchritt, glatt } from "./pendel.js";
 import { erzeugeSpeicher } from "./speicher.js";
-import { VORSPANN_MERKER, sollVorspannLaufen } from "./vorspann.js";
 
 const speicher = erzeugeSpeicher({ konfig: KONFIG });
 
-// Wer schon gewählt hat, geht in den Übungsbereich; davor läuft
-// gegebenenfalls der Vorspann (Hangaraufnahme).
-const weiter = speicher.profil() ? () => location.replace("uebersicht.html") : null;
-
-const vorspann = document.getElementById("vorspann");
-const navTyp = performance.getEntriesByType("navigation")[0]?.type ?? "navigate";
-let vorspannGesehen = false;
-try { vorspannGesehen = sessionStorage.getItem(VORSPANN_MERKER) === "1"; } catch {}
-
-if (vorspann && sollVorspannLaufen({ gesehen: vorspannGesehen, navTyp })) {
-  try { sessionStorage.setItem(VORSPANN_MERKER, "1"); } catch {}
-  const video = vorspann.querySelector("video");
-  let beendet = false;
-  const schliessen = () => {
-    if (beendet) return;
-    beendet = true;
-    // Mit gewähltem Profil lädt die Übersicht unter dem stehenden
-    // Schlussbild, so blitzt die Profilwahl nicht kurz auf.
-    if (weiter) { weiter(); return; }
-    vorspann.classList.add("aus");
-    setTimeout(() => vorspann.remove(), 700);
-  };
-  vorspann.addEventListener("click", schliessen);
-  video.addEventListener("ended", schliessen);
-  video.addEventListener("error", schliessen);
-  const abspielen = video.play();
-  if (abspielen?.catch) abspielen.catch(schliessen);
-  // Sicherung: stockt das Video, geht es trotzdem weiter.
-  setTimeout(schliessen, 9000);
-} else {
-  vorspann?.remove();
-  if (weiter) weiter();
+// Wer schon gewählt hat, geht direkt in den Übungsbereich.
+if (speicher.profil()) {
+  location.replace("uebersicht.html");
 }
 
 // Chrome-Hinweis: alles außer echtem Chrome bekommt die Warnung.
