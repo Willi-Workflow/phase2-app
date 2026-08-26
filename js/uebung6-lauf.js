@@ -28,7 +28,7 @@ export function erzeugeUebung6({ speicher }) {
 
   function zeichneFeld(feld) {
     feld.innerHTML = `
-      <div class="wahlzeile"><span class="wahltitel">WISSENSBEREICH</span>
+      <div class="wahlzeile"><span class="wahltitel">ABFRAGE</span>
         <select class="wahlliste" data-name="bereich">${BEREICHE.map((b) =>
           `<option value="${b.id}" ${b.id === einstellung.bereich ? "selected" : ""}>${b.name}</option>`).join("")}</select></div>
       <div class="wahlzeile"><span class="wahltitel">FRAGEN</span>
