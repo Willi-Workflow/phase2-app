@@ -21,14 +21,16 @@ export const MAXROLL = 1.0;            // rad, etwa 57 Grad
 // Die Raten laufen träge an (Anlaufzeit), die Fluglage bleibt stehen statt
 // zurückzufedern, nur eine schwache Eigenstabilität richtet langsam auf.
 // Kalibrierung vom 28.08.2026 nach Willis Rückmeldung (Steuerung zu
-// empfindlich und zu impulsartig): längere Anlaufzeit für einen weichen,
-// bewussten Steuereinsatz statt eines Anreißens wie im Referenzvideo, und
-// spürbar niedrigere Roll-, Nick- und Gierraten. Die Feinfühligkeit um die
-// Mittellage (Totzone, Expo) kommt zusätzlich aus der Empfindlichkeitskurve
-// in controls/kurve, einstellbar im Controls-Dialog.
-const RATE_NICK = 0.21;
-const RATE_GIER = 0.24;
-const ROLLRATE = 0.42;
+// empfindlich und zu impulsartig). Aufgeteilt auf die passenden Hebel: Die
+// weiche, feinfühlige Mittellage kommt aus der Empfindlichkeitskurve in
+// controls/kurve (tote Mitte plus Expo, im Video fliegt der Bewerber mit
+// feinen kleinen Ausschlägen), die längere Anlaufzeit nimmt das Impulsartige
+// (weicher Steuereinsatz statt Anreißen), und die Raten bleiben nur leicht
+// unter dem Ursprung, damit am Vollausschlag die Autorität für die kräftigen
+// Bankmomente aus dem Referenzvideo erhalten bleibt.
+const RATE_NICK = 0.25;
+const RATE_GIER = 0.29;
+const ROLLRATE = 0.50;
 const ANLAUF_MS = 300;    // Trägheit, bis eine Steuerrate voll anliegt
 const STABIL = 0.12;      // schwache Eigenstabilität je Sekunde
 const NICK_SICHT = 0.5;   // rad Blickneigung je Einheit Nickbewegung

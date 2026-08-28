@@ -9,10 +9,22 @@ const ROLLEN = [
   ["ruder", "Seitenruder"],
 ];
 
+// Vorgaben der Empfindlichkeitskurve (Willis Rückmeldung vom 28.08.2026,
+// Steuerung insgesamt zu empfindlich; im Referenzvideo fliegt der Bewerber
+// überwiegend mit feinen, kleinen Ausschlägen an Stick, Schub und Ruder).
+// Totzone: die tote Mitte, in der der Stick noch keinen Steuereingang erzeugt.
+// Sie fängt das Mittenspiel des Sticks ab, damit ein ruhig gehaltener Stick
+// wirklich nichts bewegt; von 6 auf 10 Prozent angehoben.
+// Expo: staucht die Mittellage, kleine Ausschläge wirken sanft, der volle
+// Ausschlag bleibt voll. Beide Werte sind im Controls-Dialog live verstellbar
+// und werden je Profil gespeichert.
+const TOTZONE_VORGABE = 0.10;
+const EXPO_VORGABE = 0.4;
+
 export function erzeugeControls(speicher) {
   let zuordnung = {};        // rolle -> {geraet, achse, invert}
-  let totzone = 0.06;
-  let expo = 0;
+  let totzone = TOTZONE_VORGABE;
+  let expo = EXPO_VORGABE;
   let knopfPadAlt = false;
   let knopfRaumAlt = false;
   let fang = null;           // {rolle, basen, beiTreffer}
@@ -51,8 +63,8 @@ export function erzeugeControls(speicher) {
 
     async lade() {
       zuordnung = await speicher.ladeEinstellung("zuordnung", {});
-      totzone = await speicher.ladeEinstellung("totzone", 0.06);
-      expo = await speicher.ladeEinstellung("expo", 0);
+      totzone = await speicher.ladeEinstellung("totzone", TOTZONE_VORGABE);
+      expo = await speicher.ladeEinstellung("expo", EXPO_VORGABE);
       schusstaste = await speicher.ladeEinstellung("schusstaste", null);
     },
 
