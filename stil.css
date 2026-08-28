@@ -856,14 +856,16 @@ main { position: relative; z-index: 1; }
    navigiert über Inhaltsverzeichnis und Blätterzeilen, nicht über Knöpfe.
    Auf den Papierseiten gilt Buchsatz: Serifenschrift, dunkle Tinte, die
    dunklen Kartenkästen der App weichen zurückhaltenden Linien. */
-.lexikonbuch { width: 100%; display: grid; justify-items: center; }
+/* Zugeklappt und aufgeschlagen teilen sich dasselbe Buchformat (Willis
+   Vorgabe vom 28.08.2026), lange Kapitel wachsen nach unten weiter. */
+.lexikonbuch { --buchbreite: min(820px, 94vw); width: 100%; display: grid; justify-items: center; }
 .lexikonbuch [data-blatt][hidden] { display: none; }
-.buchdeckel { position: relative; width: min(520px, 88vw); aspect-ratio: 3 / 4; background: url("bilder/lexikon/einband.jpg") center / cover no-repeat; border-radius: 6px 14px 14px 6px; box-shadow: 0 24px 50px rgba(0, 0, 0, 0.55), inset 0 0 60px rgba(0, 0, 0, 0.25); display: grid; align-content: center; justify-items: center; gap: 18px; padding: 40px; cursor: pointer; }
-.buchdeckel:hover { box-shadow: 0 28px 56px rgba(0, 0, 0, 0.65), inset 0 0 60px rgba(0, 0, 0, 0.25); }
-.deckeltitel { font-size: clamp(38px, 5vw, 56px); letter-spacing: 0.26em; color: #2c3226; text-shadow: 0 1px 0 rgba(214, 214, 190, 0.28), 0 -1px 2px rgba(0, 0, 0, 0.55); }
-.deckeluntertitel { font-size: 11px; letter-spacing: 0.3em; color: #333a2c; text-shadow: 0 1px 0 rgba(214, 214, 190, 0.22); }
-.deckelhinweis { margin-top: 26px; font-size: 10px; letter-spacing: 0.2em; color: rgba(43, 49, 37, 0.85); text-shadow: 0 1px 0 rgba(214, 214, 190, 0.18); }
-.buchseite { position: relative; width: 100%; background: url("bilder/lexikon/papier.jpg") center / cover no-repeat; border-radius: 4px 10px 10px 4px; padding: 44px clamp(26px, 4vw, 60px) 30px; color: #2e2a20; font-family: Georgia, "Times New Roman", serif; box-shadow: 2px 2px 0 #d6cbaa, 4px 4px 0 #cabf9e, 6px 6px 0 #bdb192, 0 18px 40px rgba(0, 0, 0, 0.55); }
+.buchdeckel { position: relative; width: var(--buchbreite); aspect-ratio: 3 / 4; background: url("bilder/lexikon/einband.jpg") center / cover no-repeat; border-radius: 8px 16px 16px 8px; box-shadow: 0 24px 50px rgba(0, 0, 0, 0.55), inset 0 0 70px rgba(30, 5, 5, 0.3); display: grid; align-content: center; justify-items: center; gap: 20px; padding: 40px; cursor: pointer; }
+.buchdeckel:hover { box-shadow: 0 28px 56px rgba(0, 0, 0, 0.65), inset 0 0 70px rgba(30, 5, 5, 0.3); }
+.deckeltitel { font-size: clamp(42px, 5.4vw, 64px); letter-spacing: 0.26em; color: #d3a955; text-shadow: 0 1px 1px rgba(40, 8, 6, 0.85), 0 -1px 0 rgba(255, 230, 170, 0.35); }
+.deckeluntertitel { font-size: 12px; letter-spacing: 0.3em; color: #c19a4e; text-shadow: 0 1px 1px rgba(40, 8, 6, 0.8); }
+.deckelhinweis { margin-top: 30px; font-size: 10px; letter-spacing: 0.2em; color: rgba(211, 169, 85, 0.75); text-shadow: 0 1px 1px rgba(40, 8, 6, 0.8); }
+.buchseite { position: relative; width: var(--buchbreite); aspect-ratio: 3 / 4; display: flex; flex-direction: column; background: url("bilder/lexikon/papier.jpg") center / cover no-repeat; border-radius: 4px 10px 10px 4px; padding: 44px clamp(26px, 4vw, 56px) 30px; color: #2e2a20; font-family: Georgia, "Times New Roman", serif; box-shadow: 2px 2px 0 #d6cbaa, 4px 4px 0 #cabf9e, 6px 6px 0 #bdb192, 0 18px 40px rgba(0, 0, 0, 0.55); }
 .buchseite::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(90deg, rgba(60, 45, 20, 0.16), rgba(60, 45, 20, 0.04) 46px, transparent 90px); pointer-events: none; }
 .buchseite > * { position: relative; }
 
@@ -876,7 +878,7 @@ main { position: relative; z-index: 1; }
 .inhaltseintrag:hover .inhaltstitel { text-decoration: underline; text-underline-offset: 4px; }
 .punktlinie { flex: 1; border-bottom: 2px dotted rgba(70, 58, 34, 0.55); transform: translateY(-4px); }
 .inhaltsnummer { font-style: italic; color: #6b6046; }
-.seitenfuss { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-top: 34px; padding-top: 12px; border-top: 1px solid rgba(70, 58, 34, 0.3); }
+.seitenfuss { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-top: auto; padding-top: 26px; border-top: 1px solid rgba(70, 58, 34, 0.3); }
 .blaettern { font-style: italic; font-size: 15px; color: #5b5138; cursor: pointer; }
 .blaettern:hover { color: #2e2a20; text-decoration: underline; text-underline-offset: 4px; }
 
