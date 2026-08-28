@@ -862,16 +862,20 @@ main { position: relative; z-index: 1; }
    passt; der Kapitelinhalt rollt innen zwischen festem Kopf und Fuß. */
 .lexikonbuch { width: 100%; display: grid; justify-items: center; }
 .lexikonbuch [data-blatt][hidden] { display: none; }
-/* Deckel und Doppelseite haben exakt dieselbe Größe, damit beim
-   Aufschlagen nichts springt; die Goldprägung skaliert mit dem Deckel
-   (Behälterbreite als Maß, nicht der Bildschirm) und sitzt klassisch im
-   oberen Drittel. */
-.buchdeckel { position: relative; width: min(114vh, 1280px, 94vw); aspect-ratio: 3 / 2; container-type: inline-size; background: url("bilder/lexikon/einband.jpg") center / cover no-repeat; border-radius: 8px 16px 16px 8px; box-shadow: 0 24px 50px rgba(0, 0, 0, 0.55), inset 0 0 70px rgba(30, 5, 5, 0.3); display: flex; flex-direction: column; align-items: center; padding: 9% 8% 6%; cursor: pointer; }
+/* Der Deckel steht hochkant in fester Größe auf der Missionsseite; die
+   Goldprägung bemisst sich an der Deckelbreite und sitzt im oberen
+   Drittel. Aufgeschlagen liegt das Buch als Fenster über der Seite. */
+.buchdeckel { position: relative; width: min(420px, 85vw); aspect-ratio: 3 / 4; container-type: inline-size; background: url("bilder/lexikon/einband.jpg") center / cover no-repeat; border-radius: 8px 16px 16px 8px; box-shadow: 0 24px 50px rgba(0, 0, 0, 0.55), inset 0 0 70px rgba(30, 5, 5, 0.3); display: flex; flex-direction: column; align-items: center; padding: 14% 9% 8%; cursor: pointer; }
 .buchdeckel:hover { box-shadow: 0 28px 56px rgba(0, 0, 0, 0.65), inset 0 0 70px rgba(30, 5, 5, 0.3); }
-.deckeluntertitel { font-size: 1.5cqw; letter-spacing: 0.32em; color: #c19a4e; text-shadow: 0 1px 1px rgba(40, 8, 6, 0.8); }
-.deckeltitel { margin-top: 2.4cqw; font-size: 6.4cqw; letter-spacing: 0.24em; text-indent: 0.24em; color: #d3a955; text-shadow: 0 1px 1px rgba(40, 8, 6, 0.85), 0 -1px 0 rgba(255, 230, 170, 0.35); }
-.deckelhinweis { margin-top: auto; font-size: 1.2cqw; letter-spacing: 0.24em; color: rgba(211, 169, 85, 0.7); text-shadow: 0 1px 1px rgba(40, 8, 6, 0.8); }
-.buchseite { position: relative; width: min(114vh, 1280px, 94vw); aspect-ratio: 3 / 2; display: flex; flex-direction: column; overflow: hidden; background: url("bilder/lexikon/papier.jpg") center / cover no-repeat; border-radius: 4px 10px 10px 4px; padding: 34px clamp(26px, 4vw, 56px) 24px; color: #2e2a20; font-family: Georgia, "Times New Roman", serif; box-shadow: 2px 2px 0 #d6cbaa, 4px 4px 0 #cabf9e, 6px 6px 0 #bdb192, 0 18px 40px rgba(0, 0, 0, 0.55); }
+.deckeluntertitel { font-size: 2.6cqw; letter-spacing: 0.3em; color: #c19a4e; text-shadow: 0 1px 1px rgba(40, 8, 6, 0.8); }
+.deckeltitel { margin-top: 4cqw; font-size: 9cqw; letter-spacing: 0.24em; text-indent: 0.24em; color: #d3a955; text-shadow: 0 1px 1px rgba(40, 8, 6, 0.85), 0 -1px 0 rgba(255, 230, 170, 0.35); }
+.deckelhinweis { margin-top: auto; font-size: 2.1cqw; letter-spacing: 0.24em; color: rgba(211, 169, 85, 0.7); text-shadow: 0 1px 1px rgba(40, 8, 6, 0.8); }
+
+/* Das aufgeschlagene Buch als Fenster: mittig, hochkant, dahinter die
+   verschwommene Missionsseite. Der Kapitelinhalt rollt innen. */
+.buchschleier { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 3vh 16px; background: rgba(8, 10, 6, 0.5); backdrop-filter: blur(9px); -webkit-backdrop-filter: blur(9px); }
+.buchschleier[hidden] { display: none; }
+.buchseite { position: relative; width: min(70vh, 780px, 94vw); aspect-ratio: 3 / 4; max-height: 94vh; display: flex; flex-direction: column; overflow: hidden; background: url("bilder/lexikon/papier.jpg") center / cover no-repeat; border-radius: 4px 10px 10px 4px; padding: 30px clamp(22px, 3vw, 44px) 22px; color: #2e2a20; font-family: Georgia, "Times New Roman", serif; box-shadow: 2px 2px 0 #d6cbaa, 4px 4px 0 #cabf9e, 6px 6px 0 #bdb192, 0 18px 40px rgba(0, 0, 0, 0.55); }
 .seiteninhalt { flex: 1; min-height: 0; overflow-y: auto; padding-right: 10px; scrollbar-width: thin; scrollbar-color: rgba(70, 58, 34, 0.4) transparent; }
 .seiteninhalt::-webkit-scrollbar { width: 8px; }
 .seiteninhalt::-webkit-scrollbar-thumb { background: rgba(70, 58, 34, 0.35); border-radius: 4px; }

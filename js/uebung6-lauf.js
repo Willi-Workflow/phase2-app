@@ -129,11 +129,12 @@ export function erzeugeUebung6({ speicher }) {
     feld.innerHTML = `
       <section class="wissensbereich lexikonbereich">
         <div class="lexikonbuch">
-          <div class="buchdeckel" data-ziel="inhalt" data-blatt="deckel" role="button" tabindex="0">
+          <div class="buchdeckel" data-ziel="inhalt" role="button" tabindex="0">
             <span class="deckeluntertitel">PHASE II · PSYCHOLOGISCHES GESPRÄCH</span>
             <span class="deckeltitel">LEXIKON</span>
             <span class="deckelhinweis">Zum Aufschlagen anklicken</span>
           </div>
+          <div class="buchschleier" hidden>
           <div class="buchseite inhaltsseite" data-blatt="inhalt" hidden>
             <div class="kapitelkopf">
               <span class="kapitelnummer">Inhalt</span>
@@ -149,19 +150,24 @@ export function erzeugeUebung6({ speicher }) {
             <div class="seitenfuss">${blaettern("deckel", "◂ Zuklappen")}<span></span>${blaettern(kapitel[0].id, "Kapitel 1 ▸")}</div>
           </div>
           ${seiten}
+          </div>
         </div>
       </section>`;
-    // Ein Hörer fürs ganze Buch: alles mit data-ziel blättert (Deckel,
-    // Inhaltseinträge, Blätterzeilen), Klick aufs Musterbild wechselt die
+    // Aufgeschlagen liegt das Buch als Fenster über der Seite, dahinter
+    // verschwimmt die Missionsseite. Alles mit data-ziel blättert (Deckel,
+    // Inhaltseinträge, Blätterzeilen), das Ziel deckel klappt zu, ebenso
+    // Esc und ein Klick neben das Buch. Klick aufs Musterbild wechselt die
     // Ansicht, alles über Delegation.
+    const schleier = feld.querySelector(".buchschleier");
+    const schlage = (ziel) => {
+      if (ziel === "deckel") { schleier.hidden = true; return; }
+      schleier.hidden = false;
+      schleier.querySelectorAll("[data-blatt]").forEach((b) => { b.hidden = b.dataset.blatt !== ziel; });
+    };
     feld.addEventListener("click", (e) => {
       const zielTraeger = e.target.closest("[data-ziel]");
-      if (zielTraeger) {
-        const ziel = zielTraeger.dataset.ziel;
-        feld.querySelectorAll("[data-blatt]").forEach((b) => { b.hidden = b.dataset.blatt !== ziel; });
-        feld.querySelector(".lexikonbuch").scrollIntoView({ block: "nearest" });
-        return;
-      }
+      if (zielTraeger) { schlage(zielTraeger.dataset.ziel); return; }
+      if (e.target === schleier) { schlage("deckel"); return; }
       const knopf = e.target.closest(".lexikonbild[data-id]");
       if (!knopf) return;
       const anzahl = Number(knopf.dataset.anzahl);
@@ -169,6 +175,9 @@ export function erzeugeUebung6({ speicher }) {
       knopf.dataset.ansicht = naechste;
       knopf.querySelector("img").src = bildpfad(knopf.dataset.id, naechste);
       knopf.querySelector(".bildzaehler").textContent = `${naechste}/${anzahl}`;
+    });
+    addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !schleier.hidden) schlage("deckel");
     });
   }
 
