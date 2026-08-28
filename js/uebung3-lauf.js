@@ -10,7 +10,7 @@
 import {
   TESTDAUERN, STUFEN, FLUGZEIT_S, EINRICHTZEIT_S, RECHENTAKT_S,
   erzeugeVorgaben, erzeugeFlugzustand, takt, sollwert, winkelabstand,
-  momentanfehler, durchgangspunkte, kennzahl3,
+  momentanfehler, durchgangspunkte, kennzahl3, schwierigkeitsfaktor3,
   erzeugeRechenaufgabe, antworten5, pedalwahl,
 } from "./uebung3.js";
 import { svgUhr, svgSaeule } from "./uebung3-bild.js";
@@ -543,7 +543,9 @@ export function erzeugeUebung3({ speicher, controls }) {
       await tuer.schliesse();
       tuer.verwische(true);
 
-      const wert = kennzahl3(punkteListe);
+      const genauigkeit = kennzahl3(punkteListe);
+      const faktor = schwierigkeitsfaktor3(stufe);
+      const wert = Math.round(genauigkeit * faktor);
       const mittel = (id, einheit) => abwZaehler[id]
         ? `${(abwSumme[id] / abwZaehler[id]).toFixed(1)} ${einheit}`
         : "–";
@@ -557,7 +559,7 @@ export function erzeugeUebung3({ speicher, controls }) {
         <div class="frage">${gewertet ? "TEST BEENDET" : "TEST ABGEBROCHEN"}</div>
         <div class="ergebnisgross">${wert} %</div>
         <div class="ergebniszeilen">
-          <span class="trefferzeile">${punkteListe.length} ${punkteListe.length === 1 ? "Durchgang" : "Durchgänge"}</span>
+          <span class="trefferzeile">Genauigkeit ${genauigkeit} % · ${punkteListe.length} ${punkteListe.length === 1 ? "Durchgang" : "Durchgänge"}</span>
           <span>Mittlere Abweichung Kurs: ${mittel("kurs", "Grad")}</span>
           <span>Mittlere Abweichung Höhe: ${mittel("hoehe", "Fuß")}</span>
           <span>Mittlere Abweichung Fahrt: ${mittel("fahrt", "Knoten")}</span>
@@ -565,7 +567,7 @@ export function erzeugeUebung3({ speicher, controls }) {
         </div>
         <button class="punkt" id="u3-fertig">ZURÜCK ZUR MISSION</button>
         <div class="ergebnisfuss">
-          <span>Stufe ${stufe} · ${testdauer} min Testdauer${fehlersaeule ? "" : " · Fehlersäule aus"}</span>
+          <span>Stufe ${stufe} · ${testdauer} min Testdauer${fehlersaeule ? "" : " · Fehlersäule aus"} · Faktor ${faktor.toFixed(2)}</span>
           ${abbruchzeile}
         </div>`;
       document.body.append(tafelErgebnis);
@@ -585,6 +587,8 @@ export function erzeugeUebung3({ speicher, controls }) {
           daten: {
             art: "instrumentenflug",
             stufe,
+            faktor,
+            genauigkeit,
             testdauerMin: testdauer,
             fehlersaeule,
             durchgaenge: punkteListe.length,

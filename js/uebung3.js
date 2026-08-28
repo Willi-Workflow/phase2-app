@@ -176,6 +176,14 @@ export function durchgangspunkte(fehlerSumme, messungen) {
 }
 
 // Kennzahl des Laufs: gerundetes Mittel der Durchgangspunkte.
+// Schwierigkeitsfaktor: Stufe 1 fliegt nur ein Instrument, Stufe 3 alle,
+// Stufe 4 rechnet nebenbei; nur Stufe 4 erreicht den Faktor 1,0. So kommt
+// eine leichte Einstellung nie auf 100 Prozent.
+const STUFENFAKTOR = { 1: 0.65, 2: 0.8, 3: 0.9, 4: 1.0 };
+export function schwierigkeitsfaktor3(stufe) {
+  return STUFENFAKTOR[stufe] ?? 0.65;
+}
+
 export function kennzahl3(punkteListe) {
   if (punkteListe.length === 0) return 0;
   return Math.round(punkteListe.reduce((summe, p) => summe + p, 0) / punkteListe.length);

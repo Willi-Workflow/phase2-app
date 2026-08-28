@@ -2,7 +2,7 @@
 // Rahmen, Fadenkreuz, Ruderstrich und Geschwindigkeitsanzeige. Die Logik
 // rechnet in uebung2.js, hier laufen Achsenabfrage, Zeichnung und Tafeln.
 import {
-  TESTDAUERN, ELEMENTE, erzeugeLaufzustand, takt, punkte, pruefeAuswahl, deckungsquote,
+  TESTDAUERN, ELEMENTE, erzeugeLaufzustand, takt, punkte, pruefeAuswahl, deckungsquote, schwierigkeitsfaktor2,
 } from "./uebung2.js";
 import { xImBild, yImBild, TACHO, gradFuerKnoten, buehneSvg } from "./uebung2-bild.js";
 
@@ -150,19 +150,21 @@ export function erzeugeUebung2({ speicher, controls }) {
 
       const wert = punkte(zustand, dauer);
       const quote = deckungsquote(zustand);
-      const zeilen = auswahl.map((e) =>
-        `<span>${NAMEN[e]}: ${zustand.treffer[e]} Treffer</span>`).join("");
+      const faktor = schwierigkeitsfaktor2(auswahl.length);
+      const wertung = Math.round(quote * faktor);
+      const zeilen = [`<span>Deckungsquote: ${quote} %</span>`].concat(auswahl.map((e) =>
+        `<span>${NAMEN[e]}: ${zustand.treffer[e]} Treffer</span>`)).join("");
       const kombizeile = auswahl.length > 1 ? `<span>Kombitreffer: ${zustand.kombitreffer}</span>` : "";
       const abbruchzeile = gewertet ? "" : `<span class="abgebrochen">ABGEBROCHEN · DER LAUF ZÄHLT NICHT ZUR STATISTIK</span>`;
       const tafel = document.createElement("div");
       tafel.className = "ergebnisschicht";
       tafel.innerHTML = `
         <div class="frage">${gewertet ? "TEST BEENDET" : "TEST ABGEBROCHEN"}</div>
-        <div class="ergebnisgross">${quote} %</div>
+        <div class="ergebnisgross">${wertung} %</div>
         <div class="ergebniszeilen">${zeilen}${kombizeile}</div>
         <button class="punkt" id="u2-fertig">ZURÜCK ZUR MISSION</button>
         <div class="ergebnisfuss">
-          <span>${dauer} min Testdauer · ${auswahl.map((e) => NAMEN[e]).join(" + ")}</span>
+          <span>${dauer} min Testdauer · ${auswahl.map((e) => NAMEN[e]).join(" + ")} · Faktor ${faktor.toFixed(2)}</span>
           ${abbruchzeile}
         </div>`;
       document.body.append(tafel);
@@ -178,7 +180,7 @@ export function erzeugeUebung2({ speicher, controls }) {
         raeumeAuf();
         if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
         await beiEnde(gewertet ? {
-          kennzahl: quote,
+          kennzahl: wertung,
           daten: {
             art: "multitasking",
             dauerMin: dauer,
@@ -189,6 +191,8 @@ export function erzeugeUebung2({ speicher, controls }) {
             kombitreffer: zustand.kombitreffer,
             punkte: wert,
             deckungsquote: quote,
+            faktor,
+            wertung,
           },
         } : null);
         await tuer.oeffne();

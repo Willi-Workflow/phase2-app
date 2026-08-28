@@ -160,6 +160,13 @@ export function deckungsquote(z) {
   return Math.round((summe / (z.testMs * z.auswahl.length)) * 100);
 }
 
+// Schwierigkeitsfaktor: ein Element zu halten ist deutlich leichter als
+// drei gleichzeitig, darum erreicht nur die volle Auswahl den Faktor 1,0.
+const ELEMENTFAKTOR = { 1: 0.6, 2: 0.85, 3: 1.0 };
+export function schwierigkeitsfaktor2(anzahlElemente) {
+  return ELEMENTFAKTOR[anzahlElemente] ?? 0.6;
+}
+
 export function pruefeAuswahl(auswahl) {
   return auswahl.length > 0 && auswahl.every((e) => ELEMENTE.includes(e));
 }

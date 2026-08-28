@@ -172,6 +172,14 @@ export const EREIGNIS_LUECKE_MAX = 20;
 // Original, schnellere Stufen erhöhen die Schwierigkeit. Das Tempo ist
 // zugleich das Antwortfenster: mit der nächsten Ansage ist es zu.
 export const TEMPOS = [2500, 2000, 1500, 1000];
+
+// Schwierigkeitsfaktor: ohne Letter-Task bleibt die Wertung gedeckelt, mit
+// Letter-Task steigt sie mit dem Sprechtempo; nur die schnellste Stufe
+// erreicht 1,0. So kommt eine leichte Einstellung nie auf 100 Prozent.
+const TEMPOFAKTOR = { 2500: 0.85, 2000: 0.9, 1500: 0.95, 1000: 1.0 };
+export function schwierigkeitsfaktor1(sla, tempo) {
+  return sla ? (TEMPOFAKTOR[tempo] ?? 0.85) : 0.75;
+}
 const FUELLER = "BCDEFGHKMNPRTUWXZ".split("");
 
 export function erzeugeBuchstabenreihe(dauerMin, rnd = Math.random, abstandMs = BUCHSTABEN_ABSTAND_MS) {

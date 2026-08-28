@@ -73,6 +73,24 @@ export function erzeugeUebung6({ speicher }) {
       </article>`).join("")}</div>`;
   }
 
+  // Nachschlagteil je Bereich: alle abgefragten Fragen mit ihrer Antwort
+  // (Willis Vorgabe vom 28.08.2026), die persönlichen Fragen bleiben
+  // draußen. Die Kartensicht liefert Frage, Bild und Antwort einheitlich.
+  function fragenNachschlag(bereich) {
+    const eintraege = bereich.fragen.filter((f) => f.form !== "reflexion").map((f) => {
+      const karte = karteVon(f);
+      const bild = karte.bild ? `<img class="fragenbild" src="${karte.bild}" alt="" loading="lazy">` : "";
+      const auch = karte.auch.length ? ` <span class="lexikonnamen">(auch: ${karte.auch.join(", ")})</span>` : "";
+      return `<div class="fragenzeile">${bild}<div>
+          <div class="fragetext">${karte.frage}</div>
+          <div class="antworttext">${karte.antwort}${auch}</div>
+        </div></div>`;
+    });
+    return eintraege.length
+      ? `<h3 class="lexikongruppe">ABGEFRAGT</h3><div class="fragenliste">${eintraege.join("")}</div>`
+      : "";
+  }
+
   function zeichneUnten(feld) {
     const abschnitte = [
       `<details class="lexikonklappe" open>
@@ -85,6 +103,7 @@ export function erzeugeUebung6({ speicher }) {
         return `<details class="lexikonklappe">
             <summary>${bereich.name.toUpperCase()}</summary>
             ${wissensLexikon(bereich)}
+            ${id === "persoenlich" ? "" : fragenNachschlag(bereich)}
           </details>`;
       }),
     ].join("");

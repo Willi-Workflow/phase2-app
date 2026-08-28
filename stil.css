@@ -848,3 +848,11 @@ main { position: relative; z-index: 1; }
 .kartenzeile.kartenzusatz { font-size: 18px; line-height: 1.3; color: #55555f; text-align: center; }
 .abfragestapel .kartenkopf { text-align: center; font-size: clamp(24px, 2.6vw, 32px); line-height: 1.3; padding: 0 8px 6px; }
 .antworten[hidden] { display: none; }
+
+/* Mission 6: Nachschlagteil ABGEFRAGT im Lexikon, je Frage eine Zeile mit
+   Antwort, bei Bildfragen mit kleiner Vorschau. */
+.fragenliste { display: grid; gap: 8px; margin-top: 10px; }
+.fragenzeile { display: flex; gap: 12px; align-items: center; background: #12160d; border: 1px solid #262e1c; border-radius: 8px; padding: 10px 12px; }
+.fragenbild { width: 46px; height: 66px; object-fit: contain; flex: none; }
+.fragetext { font-size: 12px; letter-spacing: 0.04em; color: var(--gedeckt); }
+.antworttext { margin-top: 2px; font-size: 13px; letter-spacing: 0.04em; color: var(--hell); }

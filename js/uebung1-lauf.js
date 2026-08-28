@@ -2,7 +2,7 @@
 // 3D-Szene. Die Logik rechnet in uebung1.js, hier laufen Achsenabfrage,
 // three.js-Zeichnung, Buchstabenausgabe und Tafeln.
 import {
-  TESTDAUERN, TEMPOS, erzeugeLaufzustand, takt, ergebnisWerte,
+  TESTDAUERN, TEMPOS, erzeugeLaufzustand, takt, ergebnisWerte, schwierigkeitsfaktor1,
   erzeugeBuchstabenreihe, erzeugeSlaZaehler,
 } from "./uebung1.js";
 import * as THREE from "./fremd/three.module.js";
@@ -538,7 +538,10 @@ export function erzeugeUebung1({ speicher, controls }) {
 
       const werte = ergebnisWerte(zustand);
       const slaWerte = zaehler?.auswertung();
+      const faktor = schwierigkeitsfaktor1(sla, tempo);
+      const wert = Math.round(werte.deckungsquote * faktor);
       const zeilen = [
+        `<span>Deckungsquote: ${werte.deckungsquote} %</span>`,
         `<span>Treffer: ${werte.treffer}</span>`,
         `<span>Zeit bis zum ersten Treffer: ${werte.ersterTrefferS == null ? "–" : `${werte.ersterTrefferS} s`}</span>`,
         `<span>Mittlere Zeit je Treffer: ${werte.mittelS == null ? "–" : `${werte.mittelS} s`}</span>`,
@@ -549,11 +552,11 @@ export function erzeugeUebung1({ speicher, controls }) {
       tafel.className = "ergebnisschicht";
       tafel.innerHTML = `
         <div class="frage">${gewertet ? "TEST BEENDET" : "TEST ABGEBROCHEN"}</div>
-        <div class="ergebnisgross">${werte.deckungsquote} %</div>
+        <div class="ergebnisgross">${wert} %</div>
         <div class="ergebniszeilen">${zeilen}</div>
         <button class="punkt" id="u1-fertig">ZURÜCK ZUR MISSION</button>
         <div class="ergebnisfuss">
-          <span>${dauer} min Testdauer${sla ? " · Letter-Task" : ""}</span>
+          <span>${dauer} min Testdauer${sla ? ` · Letter-Task ${(tempo / 1000).toLocaleString("de-DE", { minimumFractionDigits: 1 })} s` : ""} · Faktor ${faktor.toFixed(2)}</span>
           ${abbruchzeile}
         </div>`;
       document.body.append(tafel);
@@ -569,11 +572,13 @@ export function erzeugeUebung1({ speicher, controls }) {
         raeumeAuf();
         if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
         await beiEnde(gewertet ? {
-          kennzahl: werte.deckungsquote,
+          kennzahl: wert,
           daten: {
             art: "verfolgung",
             dauerMin: dauer,
             sla,
+            faktor,
+            wertung: wert,
             treffer: werte.treffer,
             deckungsquote: werte.deckungsquote,
             ersterTrefferS: werte.ersterTrefferS,
