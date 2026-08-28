@@ -179,7 +179,11 @@ export function erzeugeUebung6({ speicher }) {
       knopf.querySelector(".bildzaehler").textContent = `${naechste}/${anzahl}`;
     });
     addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && !schleier.hidden) schlage("deckel");
+      if (e.key !== "Escape" || schleier.hidden) return;
+      // Läuft gerade eine Mission (Vollbild-Overlay im DOM), gehört Esc dem
+      // Lauf und nicht dem Lexikon, sonst feuern beide Hörer (Q11).
+      if (document.querySelector(".laufschleier")) return;
+      schlage("deckel");
     });
   }
 

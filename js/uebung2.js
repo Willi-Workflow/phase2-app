@@ -25,7 +25,6 @@ const DRIFTWECHSEL_MIN_MS = 1500;
 const DRIFTWECHSEL_MAX_MS = 3000;
 
 const begrenze = (w, min, max) => Math.min(max, Math.max(min, w));
-const zufallAus = (feld, rnd) => feld[Math.floor(rnd() * feld.length)];
 
 function neueDrift(staerke, rnd) {
   return {
