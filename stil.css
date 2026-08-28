@@ -834,7 +834,10 @@ main { position: relative; z-index: 1; }
 
 /* Mission 6: die Abfrage als Karteikartenstapel. Vorn Frage oder Bild,
    nach dem Umdrehen Antwort samt Zusatz, darunter die Selbsteinschätzung. */
-.kartenstapel.abfragestapel { width: min(660px, 92vw); height: min(440px, 60vh); }
+/* Die gedrehten Karten und ihre Schatten ragen unter den Stapelkasten
+   hinaus, darum ein Abstand nach unten, sonst verdecken sie die
+   Einschätzungsknöpfe. */
+.kartenstapel.abfragestapel { width: min(660px, 92vw); height: min(440px, 60vh); margin-bottom: 26px; }
 .abfragestapel .karteikarte.oben { display: grid; }
 .kartenseite { display: grid; align-content: center; justify-items: center; gap: 10px; height: 100%; overflow: hidden; padding-bottom: 26px; }
 .kartenbild { width: 100%; display: grid; place-items: center; }
