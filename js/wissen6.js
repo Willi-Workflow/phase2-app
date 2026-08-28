@@ -13,6 +13,12 @@ export const WISSEN6 = {
     name: "Standorte und Verbände",
     wissen: [
       {
+        titel: "Die Luftwaffe in Zahlen",
+        absaetze: [
+          "Die Luftwaffe zählt rund <b>28.700</b> Soldatinnen und Soldaten sowie etwa <b>4.700</b> zivile Beschäftigte an über <b>50 Dienststellen</b> im In- und Ausland und ist damit die zweitgrößte Teilstreitkraft der Bundeswehr.",
+        ],
+      },
+      {
         titel: "Die Eurofighter-Geschwader",
         absaetze: [
           "Das Rückgrat der Luftwaffe bilden vier <b>Eurofighter</b>-Geschwader: das Taktische Luftwaffengeschwader 31 Boelcke in <b>Nörvenich</b>, das <b>TaktLwG 71 Richthofen</b> in <b>Wittmund</b>, das <b>TaktLwG 73 Steinhoff</b> in <b>Laage</b> und das <b>TaktLwG 74</b> in <b>Neuburg an der Donau</b>, das als einziges keinen Traditionsnamen führt. <b>Wittmund</b> und Neuburg stellen die <b>Alarmrotten Nord und Süd</b>: Dort stehen rund um die Uhr <b>Eurofighter</b> bereit, die nach der Alarmierung binnen 15 Minuten in der Luft sein müssen, um den deutschen Luftraum zu schützen.",
@@ -34,6 +40,12 @@ export const WISSEN6 = {
         ],
       },
       {
+        titel: "Hubschrauber der Luftwaffe",
+        absaetze: [
+          "Der einzige Hubschrauberverband der Luftwaffe ist das <b>Hubschraubergeschwader 64</b> mit den Standorten <b>Laupheim</b> und <b>Schönewalde/Holzdorf</b>. Es fliegt den schweren Transporthubschrauber <b>CH-53</b> und 15 <b>H145M</b> zur Unterstützung der Spezialkräfte. Als Nachfolger der CH-53 sind <b>60 CH-47F Chinook</b> bestellt: Die ersten Maschinen sollen im Herbst <b>2027</b> in Holzdorf eintreffen, bis <b>2032</b> soll die Flotte vollständig sein.",
+        ],
+      },
+      {
         titel: "Bodengebundene Luftverteidigung und Schutz",
         absaetze: [
           "Das <b>Flugabwehrraketengeschwader 1</b> in <b>Husum</b> ist seit <b>2013</b> das einzige seiner Art in der Luftwaffe, sein Hauptwaffensystem ist <b>Patriot</b>. Gegen ballistische Raketen steht seit Dezember <b>2025</b> die erste Arrow-3-Stellung in <b>Holzdorf</b> in der ersten Ausbaustufe bereit (Anfangsbefähigung); insgesamt sind drei Stellungen geplant, voll einsatzbereit soll das System <b>2030</b> sein.",
@@ -44,13 +56,21 @@ export const WISSEN6 = {
         titel: "Marineflieger in Nordholz",
         absaetze: [
           "Die fliegenden Verbände der Marine sind in <b>Nordholz</b> bei Cuxhaven zu Hause. Das <b>Marinefliegergeschwader 3 Graf Zeppelin</b> stellt die Seefernaufklärung und U-Boot-Jagd und fliegt seit November <b>2025</b> die <b>P-8A Poseidon</b> als Ablösung der <b>P-3C Orion</b>.",
+          "Daneben liegt in Nordholz das <b>Marinefliegergeschwader 5</b>: Es fliegt den Transport- und SAR-Hubschrauber <b>NH90 Sea Lion</b> und übernahm im Dezember <b>2025</b> den ersten von 31 <b>NH90 Sea Tiger</b>, den neuen Bordhubschrauber für U-Boot-Jagd und Seezielbekämpfung als Ablösung des <b>Sea Lynx</b>.",
         ],
       },
       {
         titel: "Führung und Schulen",
         absaetze: [
           "Geführt wird die Luftwaffe vom Kommando Luftwaffe in <b>Berlin-Gatow</b>, die fliegenden Verbände unterstehen dem Luftwaffentruppenkommando in <b>Köln-Wahn</b>. Die <b>Offizierschule der Luftwaffe</b> steht seit Oktober <b>2025</b> in <b>Roth bei Nürnberg</b>, die Unteroffizierschule verteilt sich auf Appen und Heide.",
+          "Die Planung und Führung von Luftoperationen liegt beim <b>Air Component Command</b> in <b>Kalkar</b>, das bis Ende <b>2024</b> Zentrum Luftoperationen hieß; im benachbarten <b>Uedem</b> überwacht der multinationale NATO-Gefechtsstand <b>CAOC Uedem</b> rund um die Uhr den NATO-Luftraum nördlich der Alpen. Ebenfalls in Uedem sitzt das <b>Weltraumkommando der Bundeswehr</b>: Es überwacht die Weltraumlage, schützt Satelliten und verfügt seit <b>2026</b> über sein erstes eigenes Weltraumteleskop, ein Weltraumradar soll <b>2028</b> folgen.",
           "Ein großer Teil der fliegerischen Ausbildung findet in den USA statt: die Jetausbildung <b>ENJJPT</b> in <b>Sheppard</b> (Texas), die fliegerische Grundschulung in <b>Goodyear</b> (Arizona) und die künftige <b>F-35</b>-Ausbildung in <b>Fort Smith</b> (Arkansas).",
+        ],
+      },
+      {
+        titel: "Übungsplätze",
+        absaetze: [
+          "Der Luft-/Bodenschießplatz <b>Nordhorn</b> in der Grafschaft Bentheim ist mit rund <b>2.200 Hektar</b> der größte von der Luftwaffe genutzte Schießplatz in Deutschland. Die fliegenden Verbände trainieren dort mit etwa <b>750 Einsätzen</b> im Jahr den Luft-Boden-Einsatz einschließlich Bombenabwurf, auch bei Nacht.",
         ],
       },
     ],
@@ -92,12 +112,34 @@ export const WISSEN6 = {
         richtig: "Ein komplettes Flugfeld aufbauen, betreiben und schützen",
         falsch: ["Nur Feldlager bewachen", "Flugabwehrraketen führen", "Fallschirmjägerangriffe führen"],
       },
+      { frage: "Wo sitzt das Air Component Command der Luftwaffe?", form: "eingabe", loesungen: ["Kalkar"] },
+      { frage: "Auf welchem Schießplatz trainieren die fliegenden Verbände den Luft-Boden-Einsatz?", form: "eingabe", loesungen: ["Nordhorn"] },
+      {
+        frage: "Was ist die Aufgabe des Weltraumkommandos der Bundeswehr in Uedem?", form: "auswahl",
+        richtig: "Die Weltraumlage überwachen und Satelliten schützen",
+        falsch: ["Raketenstarts der Bundeswehr durchführen", "Astronauten ausbilden", "Das Satellitenfernsehen der Truppe betreiben"],
+      },
+      {
+        frage: "Welcher Verband ist der einzige Hubschrauberverband der Luftwaffe?", form: "auswahl",
+        richtig: "Das Hubschraubergeschwader 64 in Laupheim und Holzdorf",
+        falsch: ["Das TaktLwG 74 in Neuburg", "Das LTG 62 in Wunstorf", "Das MFG 5 in Nordholz"],
+      },
+      {
+        frage: "Wie viele Soldatinnen und Soldaten dienen ungefähr in der Luftwaffe?", form: "auswahl",
+        richtig: "Rund 28.700", falsch: ["Rund 12.000", "Rund 60.000", "Rund 95.000"],
+      },
     ],
   },
   technik: {
     name: "Technik: F-35 und Eurofighter",
     wissen: [
       { zwischen: "Eurofighter" },
+      {
+        titel: "Programm und Hersteller",
+        absaetze: [
+          "Der <b>Eurofighter</b> ist ein Gemeinschaftsprogramm der vier Partnernationen <b>Deutschland, Großbritannien, Italien und Spanien</b>, gebaut von <b>Airbus</b>, <b>BAE Systems</b> und <b>Leonardo</b>. Die deutschen Maschinen werden bei Airbus in <b>Manching</b> endmontiert, am <b>EJ200</b>-Triebwerk ist der deutsche Hersteller <b>MTU Aero Engines</b> beteiligt.",
+        ],
+      },
       {
         titel: "Aufbau und Antrieb",
         absaetze: [
@@ -112,6 +154,12 @@ export const WISSEN6 = {
         ],
       },
       {
+        titel: "Radar und Sensorik",
+        absaetze: [
+          "Die Bestandsflotte fliegt noch mit dem mechanisch schwenkenden Radar <b>Captor-M</b> des Euroradar-Konsortiums. Die Tranche-4-Maschinen erhalten dagegen das elektronisch schwenkende <b>AESA</b>-Radar <b>ECRS Mk1</b> von <b>Hensoldt</b> und Indra, das zusätzlich in rund <b>110</b> Eurofighter der Tranchen 2 und 3 nachgerüstet werden soll.",
+        ],
+      },
+      {
         titel: "Bestand, Bestellungen und Stationierung",
         absaetze: [
           "Die Luftwaffe hat <b>138 Eurofighter</b> im Bestand, mit allen Bestellungen wächst die Flotte auf <b>163</b>. Aus dem Projekt <b>Quadriga</b> (Tranche 4) kommen <b>38 Maschinen</b> mit Auslieferung bis <b>2030</b>, im Oktober 2025 wurden <b>20 weitere</b> der Tranche 5 für <b>rund 3,75 Milliarden Euro</b> bestellt, geliefert wird <b>2031 bis 2034</b>. Dazu werden <b>15 Maschinen</b> zum <b>Eurofighter EK</b> für den Elektronischen Kampf umgerüstet.",
@@ -119,6 +167,12 @@ export const WISSEN6 = {
         ],
       },
       { zwischen: "F-35" },
+      {
+        titel: "Programm und Partnernationen",
+        absaetze: [
+          "Die <b>F-35</b> wird von <b>Lockheed Martin</b> gebaut und ist das größte westliche Kampfflugzeugprogramm: Rund <b>20 Staaten</b> haben sie bestellt oder fliegen sie bereits, über <b>1.300</b> Maschinen sind ausgeliefert. Endmontiert wird sie neben <b>Fort Worth</b> auch in Cameri in Italien und Nagoya in Japan.",
+        ],
+      },
       {
         titel: "Aufbau und Antrieb",
         absaetze: [
@@ -131,6 +185,7 @@ export const WISSEN6 = {
         absaetze: [
           "Ihre Hauptbewaffnung trägt die F-35 im <b>internen Waffenschacht</b>, damit die Tarnwirkung erhalten bleibt. Wenn Tarnung nicht gefragt ist, lädt sie im <b>Beast Mode</b> auf <b>vier internen und sechs externen Stationen</b> deutlich mehr. Fest eingebaut ist die vierläufige 25-mm-Kanone <b>GAU-22/A</b>, die nur die A-Version intern führt.",
           "Ihre eigentliche Stärke ist die <b>Sensorfusion</b>: Radar, elektrooptische Sensoren und das <b>Distributed Aperture System</b> verschmelzen zu einem Lagebild direkt im Helm, der Pilot blickt damit durch die eigene Zelle hindurch. Der Erstflug war <b>2006</b>.",
+          "Ihr Radar ist das <b>AESA</b>-Radar <b>AN/APG-81</b> von Northrop Grumman, der elektrooptische Zielsensor heißt <b>EOTS</b>. Als erster Kampfjet seit rund 50 Jahren hat die F-35 kein <b>Head-up-Display</b> mehr: Alle Fluginformationen erscheinen direkt auf dem Visier des für jeden Piloten individuell angefertigten Helms.",
         ],
       },
       {
@@ -144,6 +199,7 @@ export const WISSEN6 = {
         titel: "Der Direktvergleich",
         absaetze: [
           "Die Rollen ergänzen sich: Der <b>Eurofighter</b> ist der Luftüberlegenheitsjäger, schneller und höher steigend, mit <b>Mach 2</b> und <b>Supercruise</b>. Die <b>F-35A</b> ist der tarnkappengestützte Mehrzweckjet und übernimmt die <b>nukleare Teilhabe</b>. Zwei <b>EJ200</b> stehen einem <b>F135</b> gegenüber, <b>13 äußere Stationen</b> dem internen Schacht mit <b>Beast Mode</b>. Beide fliegen <b>+9 g</b>; der eine ist der Athlet, die andere sieht alles und bleibt dabei unentdeckt.",
+          "Den <b>Eurofighter</b> gibt es auch als Doppelsitzer für die Ausbildung, die <b>F-35</b> dagegen ausschließlich als Einsitzer: Die Umschulung läuft komplett im <b>Full-Mission-Simulator</b>, schon der erste echte Flug findet allein statt. Beim Kraftstoff liegt die F-35A vorn: Mit <b>rund 8,3 Tonnen</b> intern trägt sie gut anderthalbmal so viel wie der Eurofighter mit rund fünf Tonnen und kommt ohne Zusatztanks über <b>2.200 Kilometer</b> weit, während der Eurofighter für große Reichweiten auf Außentanks angewiesen ist.",
         ],
       },
     ],
@@ -208,6 +264,27 @@ export const WISSEN6 = {
         richtig: "Rund 11 Tonnen",
         falsch: ["Rund 6 Tonnen", "Rund 16 Tonnen", "Rund 23 Tonnen"],
       },
+      { frage: "Wer baut die F-35?", form: "eingabe", loesungen: ["Lockheed Martin", "Lockheed"] },
+      {
+        frage: "Welche vier Nationen tragen das Eurofighter-Programm?", form: "auswahl",
+        richtig: "Deutschland, Großbritannien, Italien und Spanien",
+        falsch: ["Deutschland, Frankreich, Italien und Spanien", "Deutschland, Großbritannien, Frankreich und Schweden", "Deutschland, Italien, Spanien und die USA"],
+      },
+      {
+        frage: "Welches Radar erhalten die Eurofighter der Tranche 4?", form: "auswahl",
+        richtig: "Das elektronisch schwenkende AESA-Radar ECRS Mk1",
+        falsch: ["Das mechanisch schwenkende Captor-M", "Das AN/APG-81 der F-35", "Ein passives Infrarot-Suchsystem"],
+      },
+      {
+        frage: "Was ersetzt bei der F-35 das klassische Head-up-Display?", form: "auswahl",
+        richtig: "Das Visier des individuell angefertigten Pilotenhelms",
+        falsch: ["Ein größeres Head-up-Display", "Eine reine Sprachausgabe", "Ein zweiter Bildschirm über dem Hauptdisplay"],
+      },
+      {
+        frage: "Wie läuft die Umschulung auf die F-35 ohne Doppelsitzer?", form: "auswahl",
+        richtig: "Komplett im Full-Mission-Simulator, der erste echte Flug findet allein statt",
+        falsch: ["Mit Fluglehrer im zweiten Cockpit", "Auf einer zweisitzigen Trainerversion", "Zuerst auf dem Eurofighter-Doppelsitzer"],
+      },
     ],
   },
   ausbildung: {
@@ -216,8 +293,8 @@ export const WISSEN6 = {
       {
         titel: "Das Auswahlverfahren",
         absaetze: [
-          "Der Weg beginnt bei der Karriereberatung und führt zur Offizier-Eignungsfeststellung am <b>Assessmentcenter für Führungskräfte der Bundeswehr</b> in Köln, zwei Tage plus Anreisetag. Wer besteht, geht in Phase II ans <b>Zentrum für Luft- und Raumfahrtmedizin</b> der Luftwaffe: fliegerärztliche Untersuchungen und fliegerpsychologische Tests zu Rechenfähigkeit, Merkfähigkeit, Koordination und Belastbarkeit entscheiden über die <b>Wehrfliegerverwendungsfähigkeit</b>, also die Tauglichkeit fürs Militärcockpit.",
-          "Den Abschluss bildet Phase III, eine simulatorgestützte Lern- und Arbeitsprobe (für Flächenflugzeuge das System <b>FPS/F</b>). Bewertet wird sie von Fliegerpsychologen, Simulatorlehrern und einem Prüfstabsoffizier.",
+          "Der Weg beginnt bei der Karriereberatung und führt zur Offizier-Eignungsfeststellung am <b>Assessmentcenter für Führungskräfte der Bundeswehr</b> in Köln, zwei Tage plus Anreisetag. Wer besteht, geht in Phase II ans <b>Zentrum für Luft- und Raumfahrtmedizin</b> der Luftwaffe in <b>Köln</b>: fliegerärztliche Untersuchungen und fliegerpsychologische Tests zu Rechenfähigkeit, Merkfähigkeit, Koordination und Belastbarkeit entscheiden über die <b>Wehrfliegerverwendungsfähigkeit</b>, also die Tauglichkeit fürs Militärcockpit.",
+          "Den Abschluss bildet Phase III, eine simulatorgestützte Lern- und Arbeitsprobe (für Flächenflugzeuge das System <b>FPS/F</b>). Sie dauert eine Woche mit höchstens sechs Bewerbern und verbindet Theorieunterricht zu Aerodynamik und Navigation mit vier aufeinander aufbauenden Simulatormissionen. Bewertet wird sie von Fliegerpsychologen, Simulatorlehrern und einem Prüfstabsoffizier, das Ergebnis reicht von <b>A</b> (besonders geeignet) bis <b>D</b> (bei Bedarf geeignet) oder <b>U</b> (nicht geeignet). Es ist <b>zwei Jahre</b> gültig und kann nur ein einziges Mal wiederholt werden.",
         ],
       },
       {
@@ -230,7 +307,13 @@ export const WISSEN6 = {
       {
         titel: "Die Offizierausbildung",
         absaetze: [
-          "Die <b>Offizierschule der Luftwaffe</b> steht seit Oktober <b>2025</b> in <b>Roth bei Nürnberg</b>, vorher war sie jahrzehntelang in Fürstenfeldbruck. Offizieranwärter durchlaufen dort im Schnitt rund acht Monate, bevor Studium oder fliegerische Ausbildung beginnen.",
+          "Am Anfang steht die dreimonatige allgemeine Grundausbildung. Danach folgt die <b>Offizierschule der Luftwaffe</b>, die seit Oktober <b>2025</b> in <b>Roth bei Nürnberg</b> steht, vorher war sie jahrzehntelang in Fürstenfeldbruck. Offizieranwärter durchlaufen dort im Schnitt rund acht Monate, bevor Studium oder fliegerische Ausbildung beginnen.",
+        ],
+      },
+      {
+        titel: "Vorbereitende Lehrgänge",
+        absaetze: [
+          "Vor dem Abflug in die USA stehen ein Englisch-Sprachkurs und die flugphysiologische Ausbildung in <b>Königsbrück</b>: In der <b>Humanzentrifuge</b> müssen künftige Eurofighter-Piloten <b>9 g über 15 Sekunden</b> aushalten, dazu kommt die Höhen-Klima-Simulationsanlage; Kampfpiloten wiederholen dieses Training alle vier Jahre. Dazu gehört außerdem der einwöchige Grundlehrgang <b>Überleben auf See</b> bei der Marine, der mit einer Rettungsübung in der offenen Nordsee endet.",
         ],
       },
       {
@@ -244,6 +327,7 @@ export const WISSEN6 = {
         titel: "Die Waffensystemausbildung",
         absaetze: [
           "Mit den Schwingen geht es an das eigentliche Muster. Die <b>Eurofighter</b>-Ausbildung übernimmt das <b>TaktLwG 73 Steinhoff</b> in <b>Laage</b>, beginnend mit <b>285 Stunden Theorie</b>; planmäßig ist schon der siebte Flug der erste Alleinflug im einsitzigen <b>Eurofighter</b>. Die <b>F-35</b>-Ausbildung läuft ab Herbst <b>2026</b> auf der <b>Ebbing Air National Guard Base</b> in <b>Fort Smith</b> in Arkansas, mit acht dauerhaft dort stationierten deutschen Maschinen.",
+          "Mit der Waffensystemausbildung ist der Weg nicht abgeschlossen: Im Einsatzgeschwader folgt die taktische Ausbildung, und erst mit dem dort erworbenen Status <b>Combat Ready</b> gilt der Kampfpilot als einsatzbereit.",
         ],
       },
       {
@@ -296,6 +380,22 @@ export const WISSEN6 = {
         frage: "Wie lange dauert es vom Diensteintritt bis zum einsatzbereiten Kampfpiloten?", form: "auswahl",
         richtig: "Je nach Weg fünf bis zehn Jahre", falsch: ["Zwei bis drei Jahre", "Genau vier Jahre", "Mindestens zwölf Jahre"],
       },
+      { frage: "Wo findet die flugphysiologische Ausbildung mit der Humanzentrifuge statt?", form: "eingabe", loesungen: ["Königsbrück", "Koenigsbrueck"] },
+      {
+        frage: "Wie lange ist das Ergebnis der fliegerpsychologischen Eignungsfeststellung gültig?", form: "auswahl",
+        richtig: "Zwei Jahre, danach ist genau eine Wiederholung möglich",
+        falsch: ["Ein Jahr ohne Wiederholung", "Fünf Jahre mit beliebigen Wiederholungen", "Unbegrenzt"],
+      },
+      {
+        frage: "Was müssen künftige Eurofighter-Piloten in der Humanzentrifuge aushalten?", form: "auswahl",
+        richtig: "9 g über 15 Sekunden",
+        falsch: ["6 g über 30 Sekunden", "12 g über 5 Sekunden", "9 g über 60 Sekunden"],
+      },
+      {
+        frage: "Wann gilt ein Kampfpilot als einsatzbereit?", form: "auswahl",
+        richtig: "Mit dem Status Combat Ready nach der taktischen Ausbildung im Einsatzgeschwader",
+        falsch: ["Mit dem Erhalt der Schwingen in Sheppard", "Nach dem ersten Alleinflug im Eurofighter", "Mit dem Abschluss der Offizierschule"],
+      },
     ],
   },
   dienstgrade: {
@@ -318,7 +418,15 @@ export const WISSEN6 = {
         titel: "Die Offizierlaufbahn",
         absaetze: [
           "Die Offiziere steigen vom Leutnant über Oberleutnant, Hauptmann und Stabshauptmann zu den Stabsoffizieren Major, Oberstleutnant und Oberst auf, darüber folgen Brigadegeneral, Generalmajor, Generalleutnant und General. Stabsoffiziere tragen das geflochtene silberne Schulterstück, mit einem Stern beim Major, zwei beim Oberstleutnant und drei beim Oberst.",
-          "Die Reihenfolge der Generale wirkt auf den ersten Blick unlogisch, weil der Generalmajor über dem Brigadegeneral steht. Sie ist NATO-üblich und folgt der Geschichte der Titel, nicht der Logik der Truppendienstgrade.",
+          "Die Reihenfolge der Generale wirkt auf den ersten Blick unlogisch, weil der Generalmajor über dem Brigadegeneral steht. Sie ist NATO-üblich und folgt der Geschichte der Titel, nicht der Logik der Truppendienstgrade. Der Viersternedienstgrad General ist wenigen Spitzenverwendungen vorbehalten, ranghöchster Soldat ist der Generalinspekteur.",
+          "Zum Leutnant wird frühestens nach <b>36 Monaten</b> Dienstzeit befördert, zum Hauptmann frühestens fünf und zum Major frühestens neun Jahre nach der Ernennung zum Leutnant; für fliegendes Personal verkürzen sich die letzten beiden Fristen auf viereinhalb und achteinhalb Jahre.",
+        ],
+      },
+      {
+        titel: "Besoldung und fliegerischer Dienst",
+        absaetze: [
+          "Die Besoldung hängt am Dienstgrad: Die Besoldungsordnung A reicht vom Rekruten in <b>A3</b> bis zum Oberst in <b>A16</b>, der Leutnant beginnt in <b>A9</b>, der Hauptmann liegt in A11 bis A12, Generale werden nach Besoldungsordnung B besoldet. Ein lediger Leutnant kommt nach der Musterrechnung der Bundeswehr auf rund <b>2.900 Euro</b> netto im Monat, fliegendes Personal erhält zusätzlich eine monatliche Zulage von mehreren hundert Euro.",
+          "Kampfpiloten gehören zur Offizierlaufbahn mit einer Regelverpflichtungszeit von <b>16 Jahren</b>; im Cockpit fliegen sie typischerweise in den Dienstgraden <b>Hauptmann bis Oberstleutnant</b>.",
         ],
       },
       {
@@ -330,7 +438,13 @@ export const WISSEN6 = {
       {
         titel: "Anwärter und NATO-Codes",
         absaetze: [
-          "Offizieranwärter durchlaufen die Stufen <b>Fahnenjunker, Fähnrich und Oberfähnrich</b>, wobei der Fähnrich auf der Ebene des Feldwebels steht. International gelten die <b>NATO-Rangcodes</b>: OR für Mannschaften und Unteroffiziere, OF für Offiziere. Leutnant und Oberleutnant teilen sich OF-1, der Hauptmann trägt OF-2, der Major OF-3, der Oberst OF-5 und der General OF-9.",
+          "Offizieranwärter durchlaufen die Stufen <b>Fahnenjunker, Fähnrich und Oberfähnrich</b>, wobei der Fähnrich auf der Ebene des Feldwebels steht. International gelten die <b>NATO-Rangcodes</b>: OR für Mannschaften und Unteroffiziere, OF für Offiziere. Leutnant und Oberleutnant teilen sich OF-1, der Hauptmann trägt OF-2, der Major OF-3, der Oberstleutnant OF-4 und der Oberst OF-5; die Generale reichen von OF-6 (Brigadegeneral) bis OF-9 (General), die Mannschaften und Unteroffiziere von OR-1 (Flieger) bis OR-9 (Oberstabsfeldwebel).",
+        ],
+      },
+      {
+        titel: "Anrede und militärische Formen",
+        absaetze: [
+          "Angeredet werden Soldaten mit Herr oder Frau und dem Dienstgrad; eigene weibliche Dienstgradformen gibt es nicht, eine Offizierin ist also <b>Frau Hauptmann</b>. Generale und Admirale werden unabhängig von der Sternezahl verkürzt mit <b>Herr General</b> beziehungsweise <b>Herr Admiral</b> angesprochen.",
         ],
       },
     ],
@@ -387,6 +501,23 @@ export const WISSEN6 = {
         frage: "Welchen Dienstgrad trägt der Generalinspekteur der Bundeswehr?", form: "auswahl",
         richtig: "General (bei einem Marineoffizier Admiral)", falsch: ["Generalleutnant", "Generalmajor", "Brigadegeneral"],
       },
+      { frage: "Welcher NATO-Code gehört zum Oberstleutnant?", form: "eingabe", loesungen: ["OF-4", "OF4"] },
+      {
+        frage: "Wie wird eine Offizierin im Dienstgrad Hauptmann angeredet?", form: "auswahl",
+        richtig: "Frau Hauptmann", falsch: ["Frau Hauptmännin", "Frau Hauptfrau", "Frau Kapitänin"],
+      },
+      {
+        frage: "Wie wird ein Generalleutnant verkürzt angeredet?", form: "auswahl",
+        richtig: "Herr General", falsch: ["Herr Generalleutnant", "Herr Leutnant", "Herr Kommandeur"],
+      },
+      {
+        frage: "In welcher Besoldungsgruppe beginnt der Leutnant?", form: "auswahl",
+        richtig: "A9", falsch: ["A3", "A13", "B3"],
+      },
+      {
+        frage: "In welchen Dienstgraden fliegen Kampfpiloten typischerweise im Cockpit?", form: "auswahl",
+        richtig: "Hauptmann bis Oberstleutnant", falsch: ["Leutnant bis Hauptmann", "Major bis Oberst", "Feldwebel bis Leutnant"],
+      },
     ],
   },
   aufbau: {
@@ -396,6 +527,21 @@ export const WISSEN6 = {
         titel: "Vier Teilstreitkräfte",
         absaetze: [
           "Seit dem 1. Mai <b>2024</b> hat die Bundeswehr vier Teilstreitkräfte: Heer, Luftwaffe, Marine und den <b>Cyber- und Informationsraum</b>, der seit <b>2017</b> als Organisationsbereich bestand und mit der Reform zur vierten Teilstreitkraft wurde. Grundlage ist der <b>Osnabrücker Erlass</b> vom 30. April <b>2024</b>, der den Dresdner Erlass ablöste. Die Reform unter dem Titel <b>Bundeswehr der Zeitenwende</b> zielt auf Kriegstüchtigkeit, weniger Schnittstellen und schnellere Entscheidungen.",
+          "Jede Teilstreitkraft hat einen klaren Kernauftrag: Das Heer trägt die Hauptlast der Landes- und Bündnisverteidigung am Boden, die Luftwaffe sichert den deutschen Luftraum rund um die Uhr und schützt den Luftraum der Verbündeten (<b>Air Policing</b>), die Marine sichert die Seewege mit Schwerpunkt Nord- und Ostsee, und der <b>Cyber- und Informationsraum</b> schützt die IT-Netze der Bundeswehr und führt Aufklärung und elektronische Kampfführung.",
+          "Die Führungskommandos sitzen an vier Orten: das Kommando Heer in <b>Strausberg</b>, das Kommando Luftwaffe in <b>Berlin-Gatow</b>, das Marinekommando in <b>Rostock</b> und das Kommando Cyber- und Informationsraum in <b>Bonn</b>. Das Verteidigungsministerium hat seinen ersten Dienstsitz auf der Bonner <b>Hardthöhe</b> und einen zweiten im Berliner <b>Bendlerblock</b>.",
+        ],
+      },
+      {
+        titel: "Parlamentsarmee und zivile Führung",
+        absaetze: [
+          "Die Bundeswehr ist eine <b>Parlamentsarmee</b>: Jeder bewaffnete Auslandseinsatz braucht die vorherige Zustimmung des Bundestages, festgeschrieben durch das Bundesverfassungsgericht <b>1994</b> und geregelt im <b>Parlamentsbeteiligungsgesetz</b> von 2005. Der Bundestag bewilligt auch den Verteidigungshaushalt, und als sein Hilfsorgan wacht der <b>Wehrbeauftragte</b> über die Rechte der Soldaten, seit Mai <b>2025</b> ist das <b>Henning Otte</b>.",
+          "Der Auftrag der Streitkräfte steht in <b>Artikel 87a</b> Grundgesetz. Die <b>Befehls- und Kommandogewalt</b> liegt im Frieden beim Bundesverteidigungsminister (Artikel 65a), im Verteidigungsfall geht sie auf den Bundeskanzler über (Artikel 115b): Die Streitkräfte stehen damit immer unter ziviler politischer Führung.",
+        ],
+      },
+      {
+        titel: "Innere Führung",
+        absaetze: [
+          "Die Führungsphilosophie der Bundeswehr ist die <b>Innere Führung</b> mit dem Leitbild des <b>Staatsbürgers in Uniform</b>: Der Soldat bleibt Bürger mit Grundrechten, handelt aus Einsicht statt aus blindem Gehorsam und darf rechtswidrige Befehle nicht befolgen. Das Konzept geht auf <b>Wolf Graf von Baudissin</b> zurück und wird vom Zentrum Innere Führung in <b>Koblenz</b> gelehrt.",
         ],
       },
       {
@@ -413,7 +559,7 @@ export const WISSEN6 = {
       {
         titel: "Die Spitzengliederung",
         absaetze: [
-          "An der Spitze steht Verteidigungsminister <b>Boris Pistorius</b>, im Amt seit Januar <b>2023</b>. Ranghöchster Soldat und militärischer Berater der Bundesregierung ist Generalinspekteur General <b>Carsten Breuer</b>, seit März <b>2023</b> im Amt und Anfang <b>2026</b> für den Vorsitz des NATO-Militärausschusses nominiert. Die Luftwaffe führt seit Mai <b>2025</b> Generalleutnant <b>Holger Neumann</b> als Nachfolger von Ingo Gerhartz, das Heer Generalleutnant <b>Christian Freuding</b>, die Marine Vizeadmiral <b>Jan Christian Kaack</b>.",
+          "An der Spitze steht Verteidigungsminister <b>Boris Pistorius</b>, im Amt seit Januar <b>2023</b>. Ranghöchster Soldat und militärischer Berater der Bundesregierung ist Generalinspekteur General <b>Carsten Breuer</b>, seit März <b>2023</b> im Amt und Anfang <b>2026</b> für den Vorsitz des NATO-Militärausschusses nominiert. Die Luftwaffe führt seit Mai <b>2025</b> Generalleutnant <b>Holger Neumann</b> als Nachfolger von Ingo Gerhartz, das Heer Generalleutnant <b>Christian Freuding</b>, die Marine Vizeadmiral <b>Jan Christian Kaack</b>, den Cyber- und Informationsraum Vizeadmiral <b>Thomas Daum</b>.",
         ],
       },
       {
@@ -425,7 +571,7 @@ export const WISSEN6 = {
       {
         titel: "Der neue Wehrdienst",
         absaetze: [
-          "Seit dem 1. Januar <b>2026</b> gilt das <b>Wehrdienst-Modernisierungsgesetz</b>. Der neue Wehrdienst ist grundsätzlich freiwillig, dauert mindestens sechs Monate und läuft ab zwölf Monaten als Soldat auf Zeit. Alle 18-Jährigen erhalten einen Fragebogen, den Männer ab Jahrgang <b>2008</b> beantworten müssen; für sie beginnt am 1. Juli <b>2027</b> die verpflichtende Musterung. Verpflichtende Dienstelemente gäbe es nur durch einen eigenen Bundestagsbeschluss, eine Wehrpflicht für Frauen bräuchte eine Grundgesetzänderung. Die <b>Heimatschutzdivision</b> ist seit April <b>2025</b> die vierte Division des Heeres.",
+          "Seit dem 1. Januar <b>2026</b> gilt das <b>Wehrdienst-Modernisierungsgesetz</b>. Der neue Wehrdienst ist grundsätzlich freiwillig, dauert mindestens sechs Monate und läuft ab zwölf Monaten als Soldat auf Zeit. Alle 18-Jährigen erhalten einen Fragebogen, den Männer ab Jahrgang <b>2008</b> beantworten müssen; für sie beginnt am 1. Juli <b>2027</b> die verpflichtende Musterung. Als letztes Mittel ist im Gesetz eine <b>Bedarfswehrpflicht mit Losverfahren</b> angelegt, aktiviert würde sie nur durch einen eigenen Bundestagsbeschluss; eine Wehrpflicht für Frauen bräuchte eine Grundgesetzänderung. Die <b>Heimatschutzdivision</b> ist seit April <b>2025</b> die vierte Division des Heeres.",
         ],
       },
     ],
@@ -472,6 +618,23 @@ export const WISSEN6 = {
         frage: "Wer müsste über verpflichtende Wehrdienst-Elemente entscheiden?", form: "auswahl",
         richtig: "Der Bundestag per Gesetz", falsch: ["Der Verteidigungsminister allein", "Der Generalinspekteur", "Die NATO"],
       },
+      { frage: "Wer ist seit Mai 2025 Wehrbeauftragter des Bundestages?", form: "eingabe", loesungen: ["Otte", "Henning Otte"] },
+      { frage: "In welcher Stadt sitzt das Marinekommando?", form: "eingabe", loesungen: ["Rostock"] },
+      {
+        frage: "Bei wem liegt die Befehls- und Kommandogewalt im Frieden?", form: "auswahl",
+        richtig: "Beim Bundesverteidigungsminister",
+        falsch: ["Beim Bundeskanzler", "Beim Bundespräsidenten", "Beim Generalinspekteur"],
+      },
+      {
+        frage: "Warum heißt die Bundeswehr Parlamentsarmee?", form: "auswahl",
+        richtig: "Jeder bewaffnete Auslandseinsatz braucht die vorherige Zustimmung des Bundestages",
+        falsch: ["Weil Abgeordnete Reserveoffiziere sind", "Weil sie das Parlament bewacht", "Weil der Bundestag die Generale ernennt"],
+      },
+      {
+        frage: "Was besagt das Leitbild des Staatsbürgers in Uniform?", form: "auswahl",
+        richtig: "Der Soldat bleibt Bürger mit Grundrechten und darf rechtswidrige Befehle nicht befolgen",
+        falsch: ["Soldaten geben ihre Grundrechte am Kasernentor ab", "Jeder Bürger muss Reservist werden", "Uniformen dürfen auch privat getragen werden"],
+      },
     ],
   },
   themen: {
@@ -488,6 +651,7 @@ export const WISSEN6 = {
         absaetze: [
           "Auf dem Gipfel von Den Haag im Juni <b>2025</b> beschloss die NATO das Ziel von <b>5 Prozent</b> des Bruttoinlandsprodukts bis <b>2035</b>, davon mindestens <b>3,5 Prozent</b> für klassische Verteidigung und bis zu <b>1,5 Prozent</b> für verteidigungsrelevante Ausgaben. Aus den neuen Fähigkeitszielen leitet Deutschland einen Bedarf von insgesamt rund <b>460.000</b> aktiven Soldaten und Reservisten ab.",
           "Der Verteidigungshaushalt <b>2026</b> umfasst mit Einzelplan 14 und Sondervermögen <b>108,2 Milliarden Euro</b>, ein Rekordwert; geplant ist der Anstieg auf <b>3,5 Prozent</b> des Bruttoinlandsprodukts bis <b>2029</b>.",
+          "Der NATO-Gipfel im Juli <b>2026</b> in <b>Ankara</b> stand im Zeichen der Lastenteilung: Die Europäer und Kanada übernehmen mehr Verantwortung, weil sich die USA stärker auf den Indopazifik konzentrieren. Die Verbündeten sagten der Ukraine für 2026 Militärhilfe von <b>70 Milliarden Euro</b> zu, Deutschland vereinbarte mit der Ukraine die gemeinsame Produktion weitreichender Kampfdrohnen, und Generalsekretär Rutte lobte: <b>Germany leads, and Germany delivers</b>. Am 1. Juli 2026 beschloss das Bundeskabinett zudem das <b>Reservestärkungsgesetz</b> mit dem Ziel von <b>200.000</b> einsatzbereiten Reservisten sowie ein Gesetz zum schnelleren Bau von Unterkünften und Depots.",
         ],
       },
       {
@@ -513,12 +677,13 @@ export const WISSEN6 = {
         titel: "Die Ukraine-Unterstützung",
         absaetze: [
           "Deutschland ist mit <b>rund 55 Milliarden Euro</b> seit <b>2022</b> der größte Unterstützer der Ukraine in Europa, für <b>2026</b> sind <b>11,5 Milliarden Euro</b> eingeplant. Der Schwerpunkt liegt auf der Luftverteidigung, unter anderem mit <b>Patriot</b>-Lenkflugkörpern und 36 <b>IRIS-T</b>-Startgeräten aus dem Paket vom April <b>2026</b>; fünf eigene <b>Patriot</b>-Systeme hat Deutschland abgegeben.",
+          "Der Krieg dauert im August <b>2026</b> als <b>Abnutzungskrieg</b> mit weitgehend festgefahrener Front an: Die von den USA vermittelten Verhandlungen brachten Gefangenenaustausche und kurze Feuerpausen, aber keinen dauerhaften Waffenstillstand. Russland fordert weiterhin zusätzliche Gebiete und den Verzicht der Ukraine auf einen NATO-Beitritt.",
         ],
       },
       {
         titel: "Projekte und Übungen",
         absaetze: [
-          "Das Kampfjet-Projekt <b>FCAS</b> mit Frankreich und Spanien wurde im Juni <b>2026</b> für gescheitert erklärt, vor allem am Führungsstreit zwischen Dassault und Airbus; Teile der Vernetzungsarbeit laufen weiter. Geübt wird derweil groß: <b>Ramstein Flag 2026</b> brachte als NATO-Luftwaffenübung <b>18 Nationen</b> und über <b>200 Flugzeuge</b> zusammen, erstmals als Doppelmanöver Nord und Süd, und die Bundeswehr übt seit <b>2023</b> jährlich in der Serie <b>Quadriga</b>, <b>2026</b> verzahnt mit <b>Steadfast Dart</b>.",
+          "Das Kampfjet-Projekt <b>FCAS</b> mit Frankreich und Spanien wurde im Juni <b>2026</b> für gescheitert erklärt, vor allem am Führungsstreit zwischen Dassault und Airbus; Teile der Vernetzungsarbeit laufen weiter. Als Antwort setzt Deutschland vorerst auf den Eurofighter, sichtbar an der Bestellung der Tranche 5 im Oktober 2025. Geübt wird derweil groß: <b>Ramstein Flag 2026</b> brachte als NATO-Luftwaffenübung <b>18 Nationen</b> und über <b>200 Flugzeuge</b> zusammen, erstmals als Doppelmanöver Nord und Süd, und die Bundeswehr übt seit <b>2023</b> jährlich in der Serie <b>Quadriga</b>, <b>2026</b> verzahnt mit <b>Steadfast Dart</b>.",
         ],
       },
     ],
@@ -567,15 +732,37 @@ export const WISSEN6 = {
         richtig: "Die Bundespolizei führt die Drohnenabwehr an Flughäfen, die Bundeswehr kann im Eilverfahren Amtshilfe leisten",
         falsch: ["Die Luftwaffe darf Drohnen über Städten abschießen", "Private dürfen Störsender betreiben", "Flughäfen müssen eigene Abfangdrohnen kaufen"],
       },
+      {
+        frage: "Wofür stand der NATO-Gipfel 2026 in Ankara?", form: "auswahl",
+        richtig: "Lastenteilung: Europa und Kanada übernehmen mehr Verantwortung, die USA konzentrieren sich auf den Indopazifik",
+        falsch: ["Die Aufnahme der Ukraine in die NATO", "Die Auflösung der Ostflanken-Missionen", "Einen Friedensvertrag mit Russland"],
+      },
+      {
+        frage: "Welches Ziel setzt das Reservestärkungsgesetz vom Juli 2026?", form: "auswahl",
+        richtig: "200.000 einsatzbereite Reservisten",
+        falsch: ["50.000 einsatzbereite Reservisten", "500.000 einsatzbereite Reservisten", "Die Abschaffung der Reserve"],
+      },
+      {
+        frage: "Wie ist die Lage im Ukraine-Krieg im Sommer 2026?", form: "auswahl",
+        richtig: "Abnutzungskrieg mit festgefahrener Front, Verhandlungen ohne dauerhaften Waffenstillstand",
+        falsch: ["Ein Friedensvertrag ist unterzeichnet", "Die Kampfhandlungen sind beendet", "Die Front bewegt sich täglich um hunderte Kilometer"],
+      },
     ],
   },
   beschaffung: {
     name: "Beschaffungen und Bestände",
     wissen: [
       {
+        titel: "Der Gesamtbestand",
+        absaetze: [
+          "Die Luftwaffe betreibt insgesamt rund <b>430 Luftfahrzeuge</b>: <b>231 Kampfflugzeuge</b> (138 Eurofighter und 93 Tornado), 73 Transport- und Tankflugzeuge, 84 Hubschrauber, gut 40 Schulflugzeuge in den USA sowie fünf Drohnen Heron TP.",
+        ],
+      },
+      {
         titel: "Der Eurofighter-Bestand wächst",
         absaetze: [
           "Die Luftwaffe fliegt 138 <b>Eurofighter</b>, mit allen Bestellungen wächst die Flotte auf 163. Aus dem Projekt <b>Quadriga</b> (Tranche 4) kommen <b>38 Maschinen</b>, bestellt <b>2020</b>; der erste flog im Juli <b>2026</b>, ausgeliefert wird bis <b>2030</b>. Im Oktober <b>2025</b> folgte die Tranche 5 mit 20 weiteren Jets für <b>rund 3,75 Milliarden Euro</b>, geliefert <b>2031</b> bis <b>2034</b>. Dazu werden <b>15 Maschinen</b> mit Arexis-Sensorik und AARGM zum <b>Eurofighter EK</b> umgerüstet, der bis <b>2030</b> vom <b>Tornado ECR</b> die Aufgabe übernimmt, gegnerische Flugabwehr auszuschalten.",
+          "Für die Bewaffnung ist der modernisierte Marschflugkörper <b>Taurus Neo</b> auf dem Weg: Ende <b>2025</b> wurde die Vorbereitung der Serienfertigung beauftragt, geplant sind rund <b>600 Stück</b> für etwa 2,1 Milliarden Euro. Integriert wird er auf dem Eurofighter, weil der bisherige Träger Tornado bis 2030 ausscheidet.",
         ],
       },
       {
@@ -592,15 +779,23 @@ export const WISSEN6 = {
         ],
       },
       {
+        titel: "Hubschrauber",
+        absaetze: [
+          "Als Ersatz für die 66 alternden <b>CH-53G</b> hat Deutschland <b>60 CH-47F Chinook</b> für rund sieben Milliarden Euro bestellt: Der erste kommt Ende <b>2027</b>, der letzte <b>2032</b>, stationiert beim Hubschraubergeschwader 64 in <b>Holzdorf</b> und <b>Laupheim</b>. Der Chinook bringt der Luftwaffe erstmals luftbetankbare Hubschrauber. Daneben fliegen 15 leichte <b>H145M</b> für die Spezialkräfte.",
+        ],
+      },
+      {
         titel: "Aufklärung",
         absaetze: [
           "Für die Seefernaufklärung sind acht <b>P-8A Poseidon</b> für <b>rund 3,1 Milliarden Euro</b> bestellt; Mitte <b>2026</b> standen drei in <b>Nordholz</b>, der Rest folgt bis <b>2029</b>. In <b>Jagel</b> fliegen fünf geleaste <b>Heron TP</b>, drei weitere sind bestellt. Die Signalaufklärung übernimmt künftig <b>Pegasus</b> auf drei Bombardier <b>Global 6000</b>, die ab <b>2027</b> ebenfalls nach <b>Jagel</b> kommen.",
+          "Als Nachfolger der geleasten Heron TP entsteht die <b>Eurodrohne</b> unter deutscher Führung bei Airbus in Manching: Deutschland plant sieben Systeme mit 21 Fluggeräten, der Erstflug ist für <b>2027</b> vorgesehen, die Auslieferung ab etwa <b>2030</b>. Frankreich stieg im April 2026 aus dem Programm aus, Deutschland, Italien und Spanien führen es fort.",
         ],
       },
       {
         titel: "Bodengebundene Luftverteidigung",
         absaetze: [
           "<b>Arrow 3</b> fängt seit Dezember <b>2025</b> von <b>Holzdorf</b> aus ballistische Raketen außerhalb der Atmosphäre ab, voll einsatzbereit soll es <b>2030</b> sein. Bei <b>IRIS-T SLM</b> sind sechs Feuereinheiten bestellt und 14 weitere für <b>3,18 Milliarden Euro</b> beauftragt, Zielbestand 20. Bei <b>Patriot</b> hat Deutschland fünf Feuereinheiten an die Ukraine abgegeben und sieben behalten; acht neue sind bestellt und kommen ab Ende <b>2026</b>, am Ende sollen es 15 sein.",
+          "Den mobilen Nahbereichsschutz übernimmt nicht die Luftwaffe, sondern die neu aufgestellte <b>Heeresflugabwehrtruppe</b> mit dem Flugabwehrpanzer <b>Skyranger 30</b> auf Boxer: 19 Systeme sind bestellt, die Serienauslieferung beginnt Ende <b>2027</b>. Die Luftwaffe bleibt für Patriot, IRIS-T SLM und Arrow 3 zuständig.",
         ],
       },
     ],
@@ -641,6 +836,26 @@ export const WISSEN6 = {
         frage: "Was leistet Arrow 3?", form: "auswahl",
         richtig: "Es fängt ballistische Raketen außerhalb der Atmosphäre ab",
         falsch: ["Es bekämpft Drohnen im Tiefflug", "Es ersetzt IRIS-T SLM", "Es schützt nur Flugplätze im Einsatzland"],
+      },
+      { frage: "Wie viele CH-47F Chinook sind als CH-53-Nachfolger bestellt?", form: "eingabe", loesungen: ["60", "sechzig"] },
+      {
+        frage: "Wie viele Luftfahrzeuge betreibt die Luftwaffe insgesamt ungefähr?", form: "auswahl",
+        richtig: "Rund 430", falsch: ["Rund 200", "Rund 650", "Rund 1.000"],
+      },
+      {
+        frage: "Was ist die Eurodrohne?", form: "auswahl",
+        richtig: "Der geplante Heron-TP-Nachfolger, entwickelt unter deutscher Führung mit Italien und Spanien",
+        falsch: ["Eine Kamikazedrohne des Heeres", "Ein Zukauf aus den USA", "Das Aufklärungsmodul des Eurofighter EK"],
+      },
+      {
+        frage: "Warum wird der Taurus Neo auf dem Eurofighter integriert?", form: "auswahl",
+        richtig: "Der bisherige Träger Tornado scheidet bis 2030 aus",
+        falsch: ["Die F-35 darf keine deutschen Waffen tragen", "Der Eurofighter fliegt weiter als der Tornado", "Die NATO schreibt es vor"],
+      },
+      {
+        frage: "Wer stellt mit dem Skyranger 30 den mobilen Nahbereichsschutz?", form: "auswahl",
+        richtig: "Die neu aufgestellte Heeresflugabwehrtruppe des Heeres",
+        falsch: ["Die Luftwaffe", "Die Marine", "Die Bundespolizei"],
       },
     ],
   },
