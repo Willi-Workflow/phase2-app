@@ -122,7 +122,7 @@ export function erzeugeUebung6({ speicher }) {
             <span class="kapitelnummer">Kapitel ${i + 1}</span>
             <span class="kapiteltitel">${k.name.toUpperCase()}</span>
           </div>
-          ${k.inhalt}
+          <div class="seiteninhalt">${k.inhalt}</div>
           <div class="seitenfuss">${vor}${blaettern("inhalt", "Inhalt")}${zurueck}</div>
         </div>`;
     }).join("");
@@ -139,13 +139,13 @@ export function erzeugeUebung6({ speicher }) {
               <span class="kapitelnummer">Inhalt</span>
               <span class="kapiteltitel">WISSENSBEREICHE</span>
             </div>
-            <ol class="inhaltsliste">${kapitel.map((k, i) => `
+            <div class="seiteninhalt"><ol class="inhaltsliste">${kapitel.map((k, i) => `
               <li><span class="inhaltseintrag" data-ziel="${k.id}">
                 <span class="inhaltstitel">${k.name}</span>
                 <span class="punktlinie"></span>
                 <span class="inhaltsnummer">${i + 1}</span>
               </span></li>`).join("")}
-            </ol>
+            </ol></div>
             <div class="seitenfuss">${blaettern("deckel", "◂ Zuklappen")}<span></span>${blaettern(kapitel[0].id, "Kapitel 1 ▸")}</div>
           </div>
           ${seiten}
