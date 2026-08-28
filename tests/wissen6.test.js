@@ -22,6 +22,7 @@ test("jeder Wissensbereich ist wohlgeformt und jedes Fragebild existiert", () =>
     assert.ok(bereich, `Bereich ${id} fehlt`);
     assert.ok(bereich.name.length > 0, `${id}: ohne Namen`);
     for (const w of bereich.wissen) {
+      if (w.zwischen) { assert.ok(w.zwischen.length > 0, `${id}: leerer Zwischentitel`); continue; }
       assert.ok(w.titel.length > 0 && w.absaetze.length >= 1, `${id}: leerer Wissensabschnitt`);
     }
     for (const f of bereich.fragen) {

@@ -66,7 +66,9 @@ export function erzeugeUebung6({ speicher }) {
   // Kapitelinhalt der Wissensbereiche: Buchsatz mit Teilüberschriften und
   // Absätzen in Fließtext statt Kartenkästen (Willis Vorgabe vom 28.08.2026).
   function wissensLexikon(bereich) {
-    return `<div class="wissenstext">${bereich.wissen.map((w) => `
+    return `<div class="wissenstext">${bereich.wissen.map((w) => w.zwischen
+      ? `<h3 class="zwischentitel">${w.zwischen}</h3>`
+      : `
       <h4 class="abschnittstitel">${w.titel}</h4>
       ${w.absaetze.map((a) => `<p class="absatz">${a}</p>`).join("")}`).join("")}</div>`;
   }

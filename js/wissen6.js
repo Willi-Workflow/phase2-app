@@ -97,37 +97,53 @@ export const WISSEN6 = {
   technik: {
     name: "Technik: F-35 und Eurofighter",
     wissen: [
+      { zwischen: "Eurofighter" },
       {
-        titel: "Der Eurofighter: Zelle und Antrieb",
+        titel: "Zelle und Antrieb",
         absaetze: [
           "Der <b>Eurofighter</b> ist ein <b>Deltaflügler mit Canards</b> und absichtlich instabil ausgelegt: Erst die <b>Fly-by-wire-Steuerung</b> macht ihn fliegbar, genau das verschafft ihm seine Wendigkeit. Die Zelle misst <b>15,96 Meter</b> Länge bei <b>10,95 Metern</b> Spannweite, wiegt leer rund elf Tonnen und startet mit höchstens <b>rund 23,5 Tonnen</b>.",
           "Zwei Eurojet-<b>EJ200</b>-Triebwerke liefern je <b>rund 60 Kilonewton</b> Trockenschub und <b>rund 90 Kilonewton</b> mit Nachbrenner. Damit erreicht der Jet <b>Mach 2,0</b> und eine Dienstgipfelhöhe von <b>rund 16.800 Metern</b> (<b>55.000 Fuß</b>), steigt in etwa zweieinhalb Minuten auf über <b>10.000 Meter</b> und ist für <b>+9 g</b> zugelassen. Als eine von wenigen Maschinen beherrscht er <b>Supercruise</b>, also anhaltenden Überschallflug ohne Nachbrenner.",
         ],
       },
       {
-        titel: "Der Eurofighter: Bewaffnung",
+        titel: "Bewaffnung",
         absaetze: [
-          "Fest eingebaut ist die 27-mm-Bordkanone <b>Mauser BK-27</b>, dazu kommen <b>13 Außenlaststationen</b>. In der Luft-Luft-Rolle trägt der <b>Eurofighter</b> <b>IRIS-T</b>, <b>AMRAAM</b> und den Langstreckenflugkörper <b>Meteor</b>, gegen Bodenziele je nach Rüststand Präzisionsbomben und den Marschflugkörper <b>Taurus</b>. Sein Erstflug war <b>1994</b>, bei der Luftwaffe fliegt er seit <b>2004</b>.",
+          "Fest eingebaut ist die 27-mm-Bordkanone <b>Mauser BK-27</b>, dazu kommen <b>13 Außenlaststationen</b>. In der Luft-Luft-Rolle trägt der Jet <b>IRIS-T</b>, <b>AMRAAM</b> und den Langstreckenflugkörper <b>Meteor</b>, gegen Bodenziele je nach Rüststand Präzisionsbomben und den Marschflugkörper <b>Taurus</b>. Sein Erstflug war <b>1994</b>, bei der Luftwaffe fliegt er seit <b>2004</b>.",
         ],
       },
       {
-        titel: "Die F-35A: Zelle und Antrieb",
+        titel: "Bestand, Bestellungen und Stationierung",
         absaetze: [
-          "Die <b>F-35A Lightning II</b> ist ein einstrahliger Tarnkappenjet der fünften Generation. Sie ist mit <b>15,7 Metern</b> Länge und <b>10,7 Metern</b> Spannweite ähnlich groß wie der <b>Eurofighter</b>, aber deutlich schwerer: <b>rund 13 Tonnen</b> leer, bis zu <b>31,8 Tonnen</b> beim Start.",
-          "Ihr einzelnes Pratt-und-Whitney-<b>F135</b>-Triebwerk ist mit <b>rund 125 Kilonewton</b> Trockenschub und <b>rund 190 Kilonewton</b> mit Nachbrenner das stärkste Kampfjettriebwerk im Truppendienst. Die <b>F-35A</b> erreicht <b>Mach 1,6</b> und <b>rund 15.000 Meter</b> Dienstgipfelhöhe (<b>50.000 Fuß</b>), fliegt <b>+9 g</b> und hat einen Kampfradius von <b>rund 1.100 Kilometern</b>.",
+          "Die Luftwaffe hat <b>138 Eurofighter</b> im Bestand, nach Zulauf aller Bestellungen wächst die Flotte auf <b>163</b>. Aus dem Projekt <b>Quadriga</b> (Tranche 4) kommen <b>38 Maschinen</b> mit Auslieferung bis <b>2030</b>, im Oktober 2025 wurden <b>20 weitere</b> der Tranche 5 für <b>rund 3,75 Milliarden Euro</b> bestellt, Zulauf <b>2031 bis 2034</b>. Dazu werden <b>15 Maschinen</b> zum <b>Eurofighter EK</b> für den Elektronischen Kampf umgerüstet.",
+          "Stationiert ist der Eurofighter bei vier Geschwadern: <b>TaktLwG 31 Boelcke</b> in <b>Nörvenich</b>, <b>TaktLwG 71 Richthofen</b> in <b>Wittmund</b> (Alarmrotte Nord), <b>TaktLwG 73 Steinhoff</b> in <b>Laage</b> (Ausbildung aller Eurofighter-Piloten) und <b>TaktLwG 74</b> in <b>Neuburg</b> (Alarmrotte Süd); die Eurofighter EK gehen nach <b>Jagel</b>.",
+        ],
+      },
+      { zwischen: "F-35" },
+      {
+        titel: "Zelle und Antrieb",
+        absaetze: [
+          "Die <b>F-35A Lightning II</b> ist ein einstrahliger Tarnkappenjet der <b>fünften Generation</b>. Sie ist mit <b>15,7 Metern</b> Länge und <b>10,7 Metern</b> Spannweite ähnlich groß wie der Eurofighter, aber deutlich schwerer: <b>rund 13 Tonnen</b> leer, bis zu <b>31,8 Tonnen</b> beim Start.",
+          "Ihr einzelnes Pratt-und-Whitney-<b>F135</b>-Triebwerk ist mit <b>rund 125 Kilonewton</b> Trockenschub und <b>rund 190 Kilonewton</b> mit Nachbrenner das stärkste Kampfjettriebwerk im Truppendienst. Die F-35A erreicht <b>Mach 1,6</b> und <b>rund 15.000 Meter</b> Dienstgipfelhöhe (<b>50.000 Fuß</b>), fliegt <b>+9 g</b> und hat einen Kampfradius von <b>rund 1.100 Kilometern</b>.",
         ],
       },
       {
-        titel: "Die F-35A: Bewaffnung und Besonderheiten",
+        titel: "Bewaffnung und Besonderheiten",
         absaetze: [
-          "Ihre Hauptbewaffnung trägt die <b>F-35</b> im internen Waffenschacht, damit die Tarnwirkung erhalten bleibt. Wenn Tarnung nicht gefragt ist, lädt sie im sogenannten <b>Beast Mode</b> auf vier internen und sechs externen Stationen deutlich mehr. Fest eingebaut ist die vierläufige 25-mm-Kanone <b>GAU-22/A</b>, die nur die A-Version intern führt.",
-          "Ihre eigentliche Stärke ist die <b>Sensorfusion</b>: Radar, elektrooptische Sensoren und das <b>Distributed Aperture System</b> verschmelzen zu einem Lagebild direkt im Helm, der Pilot blickt damit durch die eigene Zelle hindurch. Der Erstflug war <b>2006</b>; Deutschland erhält <b>35 Maschinen</b> im Rüststand Block 4.",
+          "Ihre Hauptbewaffnung trägt die F-35 im <b>internen Waffenschacht</b>, damit die Tarnwirkung erhalten bleibt. Wenn Tarnung nicht gefragt ist, lädt sie im <b>Beast Mode</b> auf <b>vier internen und sechs externen Stationen</b> deutlich mehr. Fest eingebaut ist die vierläufige 25-mm-Kanone <b>GAU-22/A</b>, die nur die A-Version intern führt.",
+          "Ihre eigentliche Stärke ist die <b>Sensorfusion</b>: Radar, elektrooptische Sensoren und das <b>Distributed Aperture System</b> verschmelzen zu einem Lagebild direkt im Helm, der Pilot blickt damit durch die eigene Zelle hindurch. Der Erstflug war <b>2006</b>.",
+        ],
+      },
+      {
+        titel: "Bestand, Bestellungen und Stationierung",
+        absaetze: [
+          "Deutschland hat <b>35 F-35A</b> im Rüststand <b>Block 4</b> bestellt, das Gesamtpaket kostet <b>knapp zehn Milliarden Euro</b>. Die erste Maschine mit der Kennung <b>35+01</b> verlässt im <b>September 2026</b> das Werk in Fort Worth; die ersten <b>acht</b> gehen zur Ausbildung nach <b>Fort Smith</b> in Arkansas und bleiben dauerhaft dort.",
+          "Ab <b>Ende 2027</b> beginnt die Stationierung beim <b>TaktLwG 33</b> in <b>Büchel</b>, die Anfangsbefähigung ist für <b>2029</b> geplant, und ab <b>2030</b> übernimmt die F-35A vom Tornado die <b>nukleare Teilhabe</b>. An Bewaffnung laufen bis zu <b>400</b> Flugkörper <b>AIM-120D-3 AMRAAM</b> und die Abstandswaffe <b>Joint Strike Missile</b> zu.",
         ],
       },
       {
         titel: "Der Direktvergleich",
         absaetze: [
-          "Die Rollen ergänzen sich: Der <b>Eurofighter</b> ist der Luftüberlegenheitsjäger, schneller und höher steigend, mit <b>Mach 2</b> und <b>Supercruise</b>. Die <b>F-35A</b> ist der tarnkappengestützte Mehrzweckjet und übernimmt die <b>nukleare Teilhabe</b>. Zwei <b>EJ200</b> stehen einem <b>F135</b> gegenüber, 13 äußere Stationen dem internen Schacht mit <b>Beast Mode</b>. Beide fliegen <b>+9 g</b>; der eine ist der Athlet, die andere sieht alles und bleibt dabei unentdeckt.",
+          "Die Rollen ergänzen sich: Der <b>Eurofighter</b> ist der Luftüberlegenheitsjäger, schneller und höher steigend, mit <b>Mach 2</b> und <b>Supercruise</b>. Die <b>F-35A</b> ist der tarnkappengestützte Mehrzweckjet und übernimmt die <b>nukleare Teilhabe</b>. Zwei <b>EJ200</b> stehen einem <b>F135</b> gegenüber, <b>13 äußere Stationen</b> dem internen Schacht mit <b>Beast Mode</b>. Beide fliegen <b>+9 g</b>; der eine ist der Athlet, die andere sieht alles und bleibt dabei unentdeckt.",
         ],
       },
     ],
