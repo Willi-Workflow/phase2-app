@@ -818,9 +818,10 @@ main { position: relative; z-index: 1; }
 /* Wissensabschnitte im Buchsatz: Teilüberschriften und Blocksatz mit
    Silbentrennung, kein Kartenraster. */
 .wissenstext { max-width: 62ch; margin: 0 auto; }
-.abschnittstitel { margin: 24px 0 10px; font-family: Georgia, serif; font-size: 19px; font-weight: 700; letter-spacing: 0.04em; font-variant: small-caps; color: #3a3320; border-bottom: 1px solid rgba(70, 58, 34, 0.35); padding-bottom: 4px; }
+.abschnittstitel { margin: 24px 0 10px; font-family: Georgia, serif; font-size: 19px; font-weight: 700; letter-spacing: 0.04em; font-variant: small-caps; color: #1f1e1a; border-bottom: 1px solid rgba(0, 0, 0, 0.3); padding-bottom: 4px; }
 .wissenstext .abschnittstitel:first-child { margin-top: 0; }
-.absatz { margin: 0 0 12px; font-size: 15.5px; line-height: 1.65; text-align: justify; hyphens: auto; color: #33291c; }
+.absatz { margin: 0 0 12px; font-size: 15.5px; line-height: 1.65; text-align: justify; hyphens: auto; color: #2c2b27; }
+.absatz b { color: #0f0e0c; }
 .quizbild.hochkant { width: auto; }
 .quizbild.hochkant img { max-height: 38vh; width: auto; margin: 0 auto; background: transparent; box-shadow: none; }
 .antworten.wissensantworten { grid-template-columns: repeat(2, minmax(220px, 340px)); }
@@ -878,42 +879,42 @@ main { position: relative; z-index: 1; }
    verschwommene Missionsseite. Der Kapitelinhalt rollt innen. */
 .buchschleier { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 3vh 16px; background: rgba(8, 10, 6, 0.5); backdrop-filter: blur(9px); -webkit-backdrop-filter: blur(9px); }
 .buchschleier[hidden] { display: none; }
-.buchseite { position: relative; width: min(70vh, 780px, 94vw); aspect-ratio: 3 / 4; max-height: 94vh; display: flex; flex-direction: column; overflow: hidden; background: url("bilder/lexikon/papier.jpg") center / cover no-repeat; border-radius: 4px 10px 10px 4px; padding: 30px clamp(22px, 3vw, 44px) 22px; color: #2e2a20; font-family: Georgia, "Times New Roman", serif; box-shadow: 2px 2px 0 #d6cbaa, 4px 4px 0 #cabf9e, 6px 6px 0 #bdb192, 0 18px 40px rgba(0, 0, 0, 0.55); }
-.seiteninhalt { flex: 1; min-height: 0; overflow-y: auto; padding-right: 10px; scrollbar-width: thin; scrollbar-color: rgba(70, 58, 34, 0.4) transparent; }
+.buchseite { position: relative; width: min(70vh, 780px, 94vw); aspect-ratio: 3 / 4; max-height: 94vh; display: flex; flex-direction: column; overflow: hidden; background: #ffffff; border-radius: 4px 10px 10px 4px; padding: 30px clamp(22px, 3vw, 44px) 22px; color: #262521; font-family: Georgia, "Times New Roman", serif; box-shadow: 2px 2px 0 #e3e3df, 4px 4px 0 #d5d5d0, 6px 6px 0 #c7c7c1, 0 18px 40px rgba(0, 0, 0, 0.55); }
+.seiteninhalt { flex: 1; min-height: 0; overflow-y: auto; padding-right: 10px; scrollbar-width: thin; scrollbar-color: rgba(0, 0, 0, 0.3) transparent; }
 .seiteninhalt::-webkit-scrollbar { width: 8px; }
-.seiteninhalt::-webkit-scrollbar-thumb { background: rgba(70, 58, 34, 0.35); border-radius: 4px; }
+.seiteninhalt::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.25); border-radius: 4px; }
 .seiteninhalt::-webkit-scrollbar-track { background: transparent; }
-.buchseite::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(90deg, rgba(60, 45, 20, 0.16), rgba(60, 45, 20, 0.04) 46px, transparent 90px); pointer-events: none; }
+.buchseite::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(90deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.02) 46px, transparent 90px); pointer-events: none; }
 .buchseite > * { position: relative; }
 
 /* Kapitelkopf und Inhaltsverzeichnis im Buchsatz */
-.kapitelkopf { display: grid; gap: 4px; justify-items: center; text-align: center; margin-bottom: 18px; padding-bottom: 10px; border-bottom: 2px solid rgba(70, 58, 34, 0.4); }
-.kapitelnummer { font-style: italic; font-size: 15px; color: #6b6046; }
-.kapiteltitel { font-family: "Black Ops One", Georgia, serif; font-size: clamp(20px, 2.4vw, 30px); letter-spacing: 0.16em; color: #34301f; }
+.kapitelkopf { display: grid; gap: 4px; justify-items: center; text-align: center; margin-bottom: 18px; padding-bottom: 10px; border-bottom: 2px solid rgba(0, 0, 0, 0.35); }
+.kapitelnummer { font-style: italic; font-size: 15px; color: #71706a; }
+.kapiteltitel { font-family: "Black Ops One", Georgia, serif; font-size: clamp(20px, 2.4vw, 30px); letter-spacing: 0.16em; color: #23221d; }
 .inhaltsliste { list-style: none; max-width: 640px; margin: 8px auto 30px; display: grid; gap: 16px; }
-.inhaltseintrag { display: flex; align-items: baseline; gap: 10px; font-size: 19px; color: #2e2a20; cursor: pointer; }
+.inhaltseintrag { display: flex; align-items: baseline; gap: 10px; font-size: 19px; color: #23221d; cursor: pointer; }
 .inhaltseintrag:hover .inhaltstitel { text-decoration: underline; text-underline-offset: 4px; }
-.punktlinie { flex: 1; border-bottom: 2px dotted rgba(70, 58, 34, 0.55); transform: translateY(-4px); }
-.inhaltsnummer { font-style: italic; color: #6b6046; }
-.seitenfuss { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(70, 58, 34, 0.3); }
-.blaettern { font-style: italic; font-size: 15px; color: #5b5138; cursor: pointer; }
-.blaettern:hover { color: #2e2a20; text-decoration: underline; text-underline-offset: 4px; }
+.punktlinie { flex: 1; border-bottom: 2px dotted rgba(0, 0, 0, 0.4); transform: translateY(-4px); }
+.inhaltsnummer { font-style: italic; color: #71706a; }
+.seitenfuss { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(0, 0, 0, 0.2); }
+.blaettern { font-style: italic; font-size: 15px; color: #5a5952; cursor: pointer; }
+.blaettern:hover { color: #171612; text-decoration: underline; text-underline-offset: 4px; }
 
 /* Kapitelinhalte auf Papier: dunkle Tinte statt heller Schrift, Linien
    statt dunkler Kästen. Die Fotos der Muster und Abzeichen bleiben. */
-.buchseite .lexikongruppe { color: #4a4028; border-bottom: 1px solid rgba(70, 58, 34, 0.4); font-family: Georgia, serif; font-weight: 700; letter-spacing: 0.18em; }
-.buchseite .lexikonkarte { background: rgba(255, 252, 240, 0.42); border: 1px solid rgba(70, 58, 34, 0.32); }
-.buchseite .lexikonname { color: #2e2a20; }
-.buchseite .lexikonname .lexikonnamen, .buchseite .lexikonnamen { color: #6b6046; }
-.buchseite .lexikontext { color: #4a4335; }
-.buchseite .lexikonbild.leer { color: #6b6046; background: rgba(70, 58, 34, 0.12); }
+.buchseite .lexikongruppe { color: #454440; border-bottom: 1px solid rgba(0, 0, 0, 0.25); font-family: Georgia, serif; font-weight: 700; letter-spacing: 0.18em; }
+.buchseite .lexikonkarte { background: #f6f6f3; border: 1px solid rgba(0, 0, 0, 0.14); }
+.buchseite .lexikonname { color: #23221d; }
+.buchseite .lexikonname .lexikonnamen, .buchseite .lexikonnamen { color: #6d6c66; }
+.buchseite .lexikontext { color: #45443f; }
+.buchseite .lexikonbild.leer { color: #6d6c66; background: rgba(0, 0, 0, 0.07); }
 .buchseite .bildzaehler { color: #f2e9d3; }
 .buchseite .fragenliste { max-width: 62ch; margin: 6px auto 0; }
-.buchseite .fragenzeile { background: none; border: 0; border-bottom: 1px solid rgba(70, 58, 34, 0.25); border-radius: 0; padding: 10px 2px; }
+.buchseite .fragenzeile { background: none; border: 0; border-bottom: 1px solid rgba(0, 0, 0, 0.15); border-radius: 0; padding: 10px 2px; }
 .buchseite .fragenzeile:last-child { border-bottom: 0; }
 .buchseite .fragetext { font-style: italic; }
-.buchseite .fragetext { color: #6b6046; }
-.buchseite .antworttext { color: #2e2a20; }
+.buchseite .fragetext { color: #6d6c66; }
+.buchseite .antworttext { color: #23221d; }
 
 /* Missionen ohne Auswertung (etwa das psychologische Gespräch): das
    Missionsfeld steht allein und mittig statt im Zweierraster. */

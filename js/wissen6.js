@@ -15,42 +15,42 @@ export const WISSEN6 = {
       {
         titel: "Die Eurofighter-Geschwader",
         absaetze: [
-          "Das Rückgrat der Luftwaffe bilden vier Eurofighter-Geschwader: das Taktische Luftwaffengeschwader 31 Boelcke in Nörvenich, das TaktLwG 71 Richthofen in Wittmund, das TaktLwG 73 Steinhoff in Laage und das TaktLwG 74 in Neuburg an der Donau, das als einziges keinen Traditionsnamen führt. Wittmund und Neuburg stellen die Alarmrotten Nord und Süd: Dort stehen rund um die Uhr Eurofighter bereit, die nach der Alarmierung binnen 15 Minuten in der Luft sein müssen, um den deutschen Luftraum zu schützen.",
-          "Eine Sonderrolle hat Laage bei Rostock: Mit rund 35 Maschinen bildet das Geschwader alle Eurofighter-Piloten der Luftwaffe aus, dazu die des österreichischen Bundesheeres.",
+          "Das Rückgrat der Luftwaffe bilden vier <b>Eurofighter</b>-Geschwader: das Taktische Luftwaffengeschwader 31 Boelcke in <b>Nörvenich</b>, das <b>TaktLwG 71 Richthofen</b> in <b>Wittmund</b>, das <b>TaktLwG 73 Steinhoff</b> in <b>Laage</b> und das <b>TaktLwG 74</b> in <b>Neuburg an der Donau</b>, das als einziges keinen Traditionsnamen führt. <b>Wittmund</b> und Neuburg stellen die <b>Alarmrotten Nord und Süd</b>: Dort stehen rund um die Uhr <b>Eurofighter</b> bereit, die nach der Alarmierung binnen 15 Minuten in der Luft sein müssen, um den deutschen Luftraum zu schützen.",
+          "Eine Sonderrolle hat <b>Laage</b> bei Rostock: Mit rund <b>35 Maschinen</b> bildet das Geschwader alle <b>Eurofighter</b>-Piloten der Luftwaffe aus, dazu die des österreichischen Bundesheeres.",
         ],
       },
       {
         titel: "Die Tornado-Geschwader",
         absaetze: [
-          "Das TaktLwG 33 in Büchel in der Eifel stellt den deutschen Beitrag zur nuklearen Teilhabe der NATO. Nach rund vier Jahren Ausweichbetrieb in Nörvenich und einer Bahnsanierung für etwa 260 Millionen Euro kehrten die Tornados im Juni 2026 nach Büchel zurück. Ab Ende 2027 wird der Fliegerhorst zur Heimat der F-35A, der neue F-35-Campus soll ab November 2026 bezugsfertig sein.",
-          "Das TaktLwG 51 Immelmann in Schleswig-Jagel fliegt Tornado IDS und ECR sowie die Drohnen Heron 1 und Heron TP. Seine Aufträge sind die taktische Luftaufklärung und die Niederhaltung gegnerischer Flugabwehr; künftig werden dort der Eurofighter EK und die Pegasus-Signalaufklärer stationiert.",
+          "Das <b>TaktLwG 33</b> in <b>Büchel</b> in der Eifel stellt den deutschen Beitrag zur <b>nuklearen Teilhabe</b> der NATO. Nach rund vier Jahren Ausweichbetrieb in <b>Nörvenich</b> und einer Bahnsanierung für etwa <b>260 Millionen Euro</b> kehrten die <b>Tornado</b>s im Juni <b>2026</b> nach <b>Büchel</b> zurück. Ab Ende <b>2027</b> wird der Fliegerhorst zur Heimat der <b>F-35A</b>, der neue <b>F-35</b>-Campus soll ab November <b>2026</b> bezugsfertig sein.",
+          "Das <b>TaktLwG 51 Immelmann</b> in <b>Schleswig-Jagel</b> fliegt <b>Tornado IDS und ECR</b> sowie die Drohnen <b>Heron 1</b> und <b>Heron TP</b>. Seine Aufträge sind die taktische Luftaufklärung und die Niederhaltung gegnerischer Flugabwehr; künftig werden dort der <b>Eurofighter EK</b> und die <b>Pegasus</b>-Signalaufklärer stationiert.",
         ],
       },
       {
         titel: "Transport und Flugbereitschaft",
         absaetze: [
-          "Das Lufttransportgeschwader 62 in Wunstorf ist das einzige Lufttransportgeschwader der Luftwaffe und fliegt den A400M; am 17. April 2026 landete dort die 53. und letzte Maschine. Mit Frankreich betreibt die Luftwaffe außerdem eine gemeinsame C-130J-Staffel im französischen Évreux.",
-          "Die Flugbereitschaft BMVg hat ihren Hauptsitz in Köln-Wahn, der politische Flugbetrieb läuft ab Berlin. Zur Flotte gehören unter anderem drei A350-900, zwei A321neo LR für die medizinische Evakuierung und drei Global 6000.",
+          "Das <b>Lufttransportgeschwader 62</b> in <b>Wunstorf</b> ist das einzige Lufttransportgeschwader der Luftwaffe und fliegt den <b>A400M</b>; am 17. April <b>2026</b> landete dort die 53. und letzte Maschine. Mit Frankreich betreibt die Luftwaffe außerdem eine gemeinsame <b>C-130J</b>-Staffel im französischen <b>Évreux</b>.",
+          "Die <b>Flugbereitschaft BMVg</b> hat ihren Hauptsitz in <b>Köln-Wahn</b>, der politische Flugbetrieb läuft ab Berlin. Zur Flotte gehören unter anderem drei <b>A350-900</b>, zwei <b>A321neo LR</b> für die medizinische Evakuierung und drei <b>Global 6000</b>.",
         ],
       },
       {
         titel: "Bodengebundene Luftverteidigung und Schutz",
         absaetze: [
-          "Das Flugabwehrraketengeschwader 1 in Husum ist seit 2013 das einzige seiner Art in der Luftwaffe, sein Hauptwaffensystem ist Patriot. Gegen ballistische Raketen steht seit Dezember 2025 die erste Arrow-3-Stellung in Holzdorf mit Anfangsbefähigung bereit; insgesamt sind drei Stellungen geplant, die Vollbefähigung soll 2030 erreicht sein.",
-          "Das Objektschutzregiment der Luftwaffe Friesland in Schortens kann mit seinen Infanteriekräften im Einsatzgebiet ein komplettes Flugfeld aufbauen, betreiben und schützen.",
+          "Das <b>Flugabwehrraketengeschwader 1</b> in <b>Husum</b> ist seit <b>2013</b> das einzige seiner Art in der Luftwaffe, sein Hauptwaffensystem ist <b>Patriot</b>. Gegen ballistische Raketen steht seit Dezember <b>2025</b> die erste Arrow-3-Stellung in <b>Holzdorf</b> mit Anfangsbefähigung bereit; insgesamt sind drei Stellungen geplant, die Vollbefähigung soll <b>2030</b> erreicht sein.",
+          "Das <b>Objektschutzregiment der Luftwaffe Friesland</b> in Schortens kann mit seinen Infanteriekräften im Einsatzgebiet ein komplettes Flugfeld aufbauen, betreiben und schützen.",
         ],
       },
       {
         titel: "Marineflieger in Nordholz",
         absaetze: [
-          "Die fliegenden Verbände der Marine sind in Nordholz bei Cuxhaven zu Hause. Das Marinefliegergeschwader 3 Graf Zeppelin stellt die Seefernaufklärung und U-Boot-Jagd und fliegt seit November 2025 die P-8A Poseidon als Ablösung der P-3C Orion.",
+          "Die fliegenden Verbände der Marine sind in <b>Nordholz</b> bei Cuxhaven zu Hause. Das <b>Marinefliegergeschwader 3 Graf Zeppelin</b> stellt die Seefernaufklärung und U-Boot-Jagd und fliegt seit November <b>2025</b> die <b>P-8A Poseidon</b> als Ablösung der <b>P-3C Orion</b>.",
         ],
       },
       {
         titel: "Führung und Schulen",
         absaetze: [
-          "Geführt wird die Luftwaffe vom Kommando Luftwaffe in Berlin-Gatow, die fliegenden Verbände unterstehen dem Luftwaffentruppenkommando in Köln-Wahn. Die Offizierschule der Luftwaffe steht seit Oktober 2025 in Roth bei Nürnberg, die Unteroffizierschule verteilt sich auf Appen und Heide.",
-          "Ein großer Teil der fliegerischen Ausbildung findet in den USA statt: die Jetausbildung ENJJPT in Sheppard (Texas), die fliegerische Grundschulung in Goodyear (Arizona) und die künftige F-35-Ausbildung in Fort Smith (Arkansas).",
+          "Geführt wird die Luftwaffe vom Kommando Luftwaffe in <b>Berlin-Gatow</b>, die fliegenden Verbände unterstehen dem Luftwaffentruppenkommando in <b>Köln-Wahn</b>. Die <b>Offizierschule der Luftwaffe</b> steht seit Oktober <b>2025</b> in <b>Roth bei Nürnberg</b>, die Unteroffizierschule verteilt sich auf Appen und Heide.",
+          "Ein großer Teil der fliegerischen Ausbildung findet in den USA statt: die Jetausbildung <b>ENJJPT</b> in <b>Sheppard</b> (Texas), die fliegerische Grundschulung in <b>Goodyear</b> (Arizona) und die künftige <b>F-35</b>-Ausbildung in <b>Fort Smith</b> (Arkansas).",
         ],
       },
     ],
@@ -100,34 +100,34 @@ export const WISSEN6 = {
       {
         titel: "Der Eurofighter: Zelle und Antrieb",
         absaetze: [
-          "Der Eurofighter ist ein Deltaflügler mit Canards und absichtlich instabil ausgelegt: Erst die Fly-by-wire-Steuerung macht ihn fliegbar, genau das verschafft ihm seine Wendigkeit. Die Zelle misst 15,96 Meter Länge bei 10,95 Metern Spannweite, wiegt leer rund elf Tonnen und startet mit höchstens rund 23,5 Tonnen.",
-          "Zwei Eurojet-EJ200-Triebwerke liefern je rund 60 Kilonewton Trockenschub und rund 90 Kilonewton mit Nachbrenner. Damit erreicht der Jet Mach 2,0 und eine Dienstgipfelhöhe von rund 16.800 Metern (55.000 Fuß), steigt in etwa zweieinhalb Minuten auf über 10.000 Meter und ist für +9 g zugelassen. Als eine von wenigen Maschinen beherrscht er Supercruise, also anhaltenden Überschallflug ohne Nachbrenner.",
+          "Der <b>Eurofighter</b> ist ein <b>Deltaflügler mit Canards</b> und absichtlich instabil ausgelegt: Erst die <b>Fly-by-wire-Steuerung</b> macht ihn fliegbar, genau das verschafft ihm seine Wendigkeit. Die Zelle misst <b>15,96 Meter</b> Länge bei <b>10,95 Metern</b> Spannweite, wiegt leer rund elf Tonnen und startet mit höchstens <b>rund 23,5 Tonnen</b>.",
+          "Zwei Eurojet-<b>EJ200</b>-Triebwerke liefern je <b>rund 60 Kilonewton</b> Trockenschub und <b>rund 90 Kilonewton</b> mit Nachbrenner. Damit erreicht der Jet <b>Mach 2,0</b> und eine Dienstgipfelhöhe von <b>rund 16.800 Metern</b> (<b>55.000 Fuß</b>), steigt in etwa zweieinhalb Minuten auf über <b>10.000 Meter</b> und ist für <b>+9 g</b> zugelassen. Als eine von wenigen Maschinen beherrscht er <b>Supercruise</b>, also anhaltenden Überschallflug ohne Nachbrenner.",
         ],
       },
       {
         titel: "Der Eurofighter: Bewaffnung",
         absaetze: [
-          "Fest eingebaut ist die 27-mm-Bordkanone Mauser BK-27, dazu kommen 13 Außenlaststationen. In der Luft-Luft-Rolle trägt der Eurofighter IRIS-T, AMRAAM und den Langstreckenflugkörper Meteor, gegen Bodenziele je nach Rüststand Präzisionsbomben und den Marschflugkörper Taurus. Sein Erstflug war 1994, bei der Luftwaffe fliegt er seit 2004.",
+          "Fest eingebaut ist die 27-mm-Bordkanone <b>Mauser BK-27</b>, dazu kommen <b>13 Außenlaststationen</b>. In der Luft-Luft-Rolle trägt der <b>Eurofighter</b> <b>IRIS-T</b>, <b>AMRAAM</b> und den Langstreckenflugkörper <b>Meteor</b>, gegen Bodenziele je nach Rüststand Präzisionsbomben und den Marschflugkörper <b>Taurus</b>. Sein Erstflug war <b>1994</b>, bei der Luftwaffe fliegt er seit <b>2004</b>.",
         ],
       },
       {
         titel: "Die F-35A: Zelle und Antrieb",
         absaetze: [
-          "Die F-35A Lightning II ist ein einstrahliger Tarnkappenjet der fünften Generation. Sie ist mit 15,7 Metern Länge und 10,7 Metern Spannweite ähnlich groß wie der Eurofighter, aber deutlich schwerer: rund 13 Tonnen leer, bis zu 31,8 Tonnen beim Start.",
-          "Ihr einzelnes Pratt-und-Whitney-F135-Triebwerk ist mit rund 125 Kilonewton Trockenschub und rund 190 Kilonewton mit Nachbrenner das stärkste Kampfjettriebwerk im Truppendienst. Die F-35A erreicht Mach 1,6 und rund 15.000 Meter Dienstgipfelhöhe (50.000 Fuß), fliegt +9 g und hat einen Kampfradius von rund 1.100 Kilometern.",
+          "Die <b>F-35A Lightning II</b> ist ein einstrahliger Tarnkappenjet der fünften Generation. Sie ist mit <b>15,7 Metern</b> Länge und <b>10,7 Metern</b> Spannweite ähnlich groß wie der <b>Eurofighter</b>, aber deutlich schwerer: <b>rund 13 Tonnen</b> leer, bis zu <b>31,8 Tonnen</b> beim Start.",
+          "Ihr einzelnes Pratt-und-Whitney-<b>F135</b>-Triebwerk ist mit <b>rund 125 Kilonewton</b> Trockenschub und <b>rund 190 Kilonewton</b> mit Nachbrenner das stärkste Kampfjettriebwerk im Truppendienst. Die <b>F-35A</b> erreicht <b>Mach 1,6</b> und <b>rund 15.000 Meter</b> Dienstgipfelhöhe (<b>50.000 Fuß</b>), fliegt <b>+9 g</b> und hat einen Kampfradius von <b>rund 1.100 Kilometern</b>.",
         ],
       },
       {
         titel: "Die F-35A: Bewaffnung und Besonderheiten",
         absaetze: [
-          "Ihre Hauptbewaffnung trägt die F-35 im internen Waffenschacht, damit die Tarnwirkung erhalten bleibt. Wenn Tarnung nicht gefragt ist, lädt sie im sogenannten Beast Mode auf vier internen und sechs externen Stationen deutlich mehr. Fest eingebaut ist die vierläufige 25-mm-Kanone GAU-22/A, die nur die A-Version intern führt.",
-          "Ihre eigentliche Stärke ist die Sensorfusion: Radar, elektrooptische Sensoren und das Distributed Aperture System verschmelzen zu einem Lagebild direkt im Helm, der Pilot blickt damit durch die eigene Zelle hindurch. Der Erstflug war 2006; Deutschland erhält 35 Maschinen im Rüststand Block 4.",
+          "Ihre Hauptbewaffnung trägt die <b>F-35</b> im internen Waffenschacht, damit die Tarnwirkung erhalten bleibt. Wenn Tarnung nicht gefragt ist, lädt sie im sogenannten <b>Beast Mode</b> auf vier internen und sechs externen Stationen deutlich mehr. Fest eingebaut ist die vierläufige 25-mm-Kanone <b>GAU-22/A</b>, die nur die A-Version intern führt.",
+          "Ihre eigentliche Stärke ist die <b>Sensorfusion</b>: Radar, elektrooptische Sensoren und das <b>Distributed Aperture System</b> verschmelzen zu einem Lagebild direkt im Helm, der Pilot blickt damit durch die eigene Zelle hindurch. Der Erstflug war <b>2006</b>; Deutschland erhält <b>35 Maschinen</b> im Rüststand Block 4.",
         ],
       },
       {
         titel: "Der Direktvergleich",
         absaetze: [
-          "Die Rollen ergänzen sich: Der Eurofighter ist der Luftüberlegenheitsjäger, schneller und höher steigend, mit Mach 2 und Supercruise. Die F-35A ist der tarnkappengestützte Mehrzweckjet und übernimmt die nukleare Teilhabe. Zwei EJ200 stehen einem F135 gegenüber, 13 äußere Stationen dem internen Schacht mit Beast Mode. Beide fliegen +9 g; der eine ist der Athlet, die andere sieht alles und bleibt dabei unentdeckt.",
+          "Die Rollen ergänzen sich: Der <b>Eurofighter</b> ist der Luftüberlegenheitsjäger, schneller und höher steigend, mit <b>Mach 2</b> und <b>Supercruise</b>. Die <b>F-35A</b> ist der tarnkappengestützte Mehrzweckjet und übernimmt die <b>nukleare Teilhabe</b>. Zwei <b>EJ200</b> stehen einem <b>F135</b> gegenüber, 13 äußere Stationen dem internen Schacht mit <b>Beast Mode</b>. Beide fliegen <b>+9 g</b>; der eine ist der Athlet, die andere sieht alles und bleibt dabei unentdeckt.",
         ],
       },
     ],
@@ -200,34 +200,34 @@ export const WISSEN6 = {
       {
         titel: "Das Auswahlverfahren",
         absaetze: [
-          "Der Weg beginnt bei der Karriereberatung und führt zur Offizier-Eignungsfeststellung am Assessmentcenter für Führungskräfte der Bundeswehr in Köln, zwei Tage plus Anreisetag. Wer besteht, geht in Phase II ans Zentrum für Luft- und Raumfahrtmedizin der Luftwaffe: fliegerärztliche Untersuchungen und fliegerpsychologische Tests zu Rechenfähigkeit, Merkfähigkeit, Koordination und Belastbarkeit entscheiden über die Wehrfliegerverwendungsfähigkeit.",
-          "Den Abschluss bildet Phase III, eine simulatorgestützte Lern- und Arbeitsprobe (für Flächenflugzeuge das System FPS/F). Bewertet wird sie von Fliegerpsychologen, Simulatorlehrern und einem Prüfstabsoffizier.",
+          "Der Weg beginnt bei der Karriereberatung und führt zur Offizier-Eignungsfeststellung am <b>Assessmentcenter für Führungskräfte der Bundeswehr</b> in Köln, zwei Tage plus Anreisetag. Wer besteht, geht in Phase II ans <b>Zentrum für Luft- und Raumfahrtmedizin</b> der Luftwaffe: fliegerärztliche Untersuchungen und fliegerpsychologische Tests zu Rechenfähigkeit, Merkfähigkeit, Koordination und Belastbarkeit entscheiden über die <b>Wehrfliegerverwendungsfähigkeit</b>.",
+          "Den Abschluss bildet Phase III, eine simulatorgestützte Lern- und Arbeitsprobe (für Flächenflugzeuge das System <b>FPS/F</b>). Bewertet wird sie von Fliegerpsychologen, Simulatorlehrern und einem Prüfstabsoffizier.",
         ],
       },
       {
         titel: "Drei Wege ins Cockpit",
         absaetze: [
-          "Ins Kampfjetcockpit führen drei Wege: direkt ohne Studium in die fliegerische Ausbildung, über den dualen Studiengang Aeronautical Engineering oder erst über ein volles Studium. Ein Studium ist im fliegerischen Dienst keine Pflicht, auch mit mittlerer Reife ist die Laufbahn möglich.",
-          "Aeronautical Engineering läuft seit 2015 an der Universität der Bundeswehr München: rund zwei Jahre Theorie, dann die fliegerische Ausbildung. Dieser Weg führt in etwa sieben Jahren zum einsatzbereiten Kampfpiloten mit Bachelorabschluss.",
+          "Ins Kampfjetcockpit führen drei Wege: direkt ohne Studium in die fliegerische Ausbildung, über den dualen Studiengang <b>Aeronautical Engineering</b> oder erst über ein volles Studium. Ein Studium ist im fliegerischen Dienst keine Pflicht, auch mit mittlerer Reife ist die Laufbahn möglich.",
+          "<b>Aeronautical Engineering</b> läuft seit <b>2015</b> an der <b>Universität der Bundeswehr München</b>: rund zwei Jahre Theorie, dann die fliegerische Ausbildung. Dieser Weg führt in etwa sieben Jahren zum einsatzbereiten Kampfpiloten mit Bachelorabschluss.",
         ],
       },
       {
         titel: "Die Offizierausbildung",
         absaetze: [
-          "Die Offizierschule der Luftwaffe steht seit Oktober 2025 in Roth bei Nürnberg, vorher war sie jahrzehntelang in Fürstenfeldbruck. Offizieranwärter durchlaufen dort im Schnitt rund acht Monate, bevor Studium oder fliegerische Ausbildung beginnen.",
+          "Die <b>Offizierschule der Luftwaffe</b> steht seit Oktober <b>2025</b> in <b>Roth bei Nürnberg</b>, vorher war sie jahrzehntelang in Fürstenfeldbruck. Offizieranwärter durchlaufen dort im Schnitt rund acht Monate, bevor Studium oder fliegerische Ausbildung beginnen.",
         ],
       },
       {
         titel: "Die fliegerische Ausbildung in den USA",
         absaetze: [
-          "Fliegen lernen die Jetpilotenanwärter in den USA. Den Anfang macht die Grundschulung bei der 3. Deutschen Luftwaffenausbildungsstaffel in Goodyear in Arizona: drei bis vier Monate auf der kunstflugtauglichen Grob G 120TP.",
-          "Danach folgt das Euro-NATO Joint Jet Pilot Training in Sheppard in Texas, das seit 1981 besteht und über 2600 deutsche Jetpiloten hervorgebracht hat. Das Undergraduate Pilot Training dauert 55 Wochen mit rund 200 Flugstunden auf der T-6A Texan II und der T-38C Talon, jährlich beginnen dort etwa 24 deutsche Flugschüler. Künftige Kampfpiloten hängen den rund zehnwöchigen Kurs Introduction to Fighter Fundamentals auf der T-38C an, insgesamt stehen damit etwa 15 Monate Texas im Plan.",
+          "Fliegen lernen die Jetpilotenanwärter in den USA. Den Anfang macht die Grundschulung bei der 3. Deutschen Luftwaffenausbildungsstaffel in <b>Goodyear</b> in Arizona: drei bis vier Monate auf der kunstflugtauglichen <b>Grob G 120TP</b>.",
+          "Danach folgt das <b>Euro-NATO Joint Jet Pilot Training</b> in <b>Sheppard</b> in Texas, das seit <b>1981</b> besteht und über 2600 deutsche Jetpiloten hervorgebracht hat. Das <b>Undergraduate Pilot Training</b> dauert <b>55 Wochen</b> mit <b>rund 200 Flugstunden</b> auf der <b>T-6A Texan II</b> und der <b>T-38C Talon</b>, jährlich beginnen dort etwa 24 deutsche Flugschüler. Künftige Kampfpiloten hängen den rund zehnwöchigen Kurs <b>Introduction to Fighter Fundamentals</b> auf der <b>T-38C</b> an, insgesamt stehen damit etwa 15 Monate Texas im Plan.",
         ],
       },
       {
         titel: "Die Waffensystemausbildung",
         absaetze: [
-          "Mit den Schwingen geht es an das eigentliche Muster. Die Eurofighter-Ausbildung übernimmt das TaktLwG 73 Steinhoff in Laage, beginnend mit 285 Stunden Theorie; planmäßig ist schon der siebte Flug der erste Alleinflug im einsitzigen Eurofighter. Die F-35-Ausbildung läuft ab Herbst 2026 auf der Ebbing Air National Guard Base in Fort Smith in Arkansas, mit acht dauerhaft dort stationierten deutschen Maschinen.",
+          "Mit den Schwingen geht es an das eigentliche Muster. Die <b>Eurofighter</b>-Ausbildung übernimmt das <b>TaktLwG 73 Steinhoff</b> in <b>Laage</b>, beginnend mit <b>285 Stunden Theorie</b>; planmäßig ist schon der siebte Flug der erste Alleinflug im einsitzigen <b>Eurofighter</b>. Die <b>F-35</b>-Ausbildung läuft ab Herbst <b>2026</b> auf der <b>Ebbing Air National Guard Base</b> in <b>Fort Smith</b> in Arkansas, mit acht dauerhaft dort stationierten deutschen Maschinen.",
         ],
       },
       {
@@ -288,14 +288,14 @@ export const WISSEN6 = {
       {
         titel: "Das System der Dienstgradgruppen",
         absaetze: [
-          "Die Bundeswehr ordnet ihre Dienstgrade in sieben Gruppen, aufsteigend: Mannschaften, Unteroffiziere ohne Portepee, Unteroffiziere mit Portepee, Leutnante, Hauptleute, Stabsoffiziere und Generale. Das Portepee war einst die Trageschlaufe am Seitengewehr und ist heute ein Statusmerkmal: Alle Feldwebel tragen es, Unteroffizier und Stabsunteroffizier nicht.",
+          "Die Bundeswehr ordnet ihre Dienstgrade in sieben Gruppen, aufsteigend: Mannschaften, Unteroffiziere ohne <b>Portepee</b>, Unteroffiziere mit <b>Portepee</b>, Leutnante, Hauptleute, Stabsoffiziere und Generale. Das <b>Portepee</b> war einst die Trageschlaufe am Seitengewehr und ist heute ein Statusmerkmal: Alle Feldwebel tragen es, Unteroffizier und Stabsunteroffizier nicht.",
         ],
       },
       {
         titel: "Mannschaften und Unteroffiziere",
         absaetze: [
           "Die Mannschaftslaufbahn beginnt beim Soldaten mit Tätigkeitsbezeichnung, in der Luftwaffe also beim Flieger, und steigt über Gefreiter, Obergefreiter, Hauptgefreiter und Stabsgefreiter zum Oberstabsgefreiten. Neu eingeschoben sind Korporal und Stabskorporal als Spitzendienstgrade der Mannschaften.",
-          "Bei den Unteroffizieren ohne Portepee gibt es nur zwei Dienstgrade, Unteroffizier und Stabsunteroffizier, erkennbar an der silbernen Tresse um die Schulterklappe. Darüber folgt die Feldwebelreihe: Feldwebel, Oberfeldwebel, Hauptfeldwebel, Stabsfeldwebel und Oberstabsfeldwebel.",
+          "Bei den Unteroffizieren ohne <b>Portepee</b> gibt es nur zwei Dienstgrade, Unteroffizier und Stabsunteroffizier, erkennbar an der <b>silbernen Tresse</b> um die Schulterklappe. Darüber folgt die <b>Feldwebelreihe</b>: Feldwebel, Oberfeldwebel, Hauptfeldwebel, Stabsfeldwebel und Oberstabsfeldwebel.",
         ],
       },
       {
@@ -308,13 +308,13 @@ export const WISSEN6 = {
       {
         titel: "Die Marine-Entsprechungen",
         absaetze: [
-          "Die Marine führt eigene Bezeichnungen, die sich sauber zuordnen lassen: Der Leutnant zur See entspricht dem Leutnant, der Kapitänleutnant dem Hauptmann, der Korvettenkapitän dem Major, der Fregattenkapitän dem Oberstleutnant und der Kapitän zur See dem Oberst. Die Admirale steigen vom Flottillenadmiral über Konteradmiral und Vizeadmiral zum Admiral auf.",
+          "Die Marine führt eigene Bezeichnungen, die sich sauber zuordnen lassen: Der Leutnant zur See entspricht dem Leutnant, der <b>Kapitänleutnant</b> dem Hauptmann, der <b>Korvettenkapitän</b> dem Major, der <b>Fregattenkapitän</b> dem Oberstleutnant und der <b>Kapitän zur See</b> dem Oberst. Die Admirale steigen vom Flottillenadmiral über Konteradmiral und Vizeadmiral zum Admiral auf.",
         ],
       },
       {
         titel: "Anwärter und NATO-Codes",
         absaetze: [
-          "Offizieranwärter durchlaufen die Stufen Fahnenjunker, Fähnrich und Oberfähnrich, wobei der Fähnrich auf der Ebene des Feldwebels steht. International gelten die NATO-Rangcodes: OR für Mannschaften und Unteroffiziere, OF für Offiziere. Leutnant und Oberleutnant teilen sich OF-1, der Hauptmann trägt OF-2, der Major OF-3, der Oberst OF-5 und der General OF-9.",
+          "Offizieranwärter durchlaufen die Stufen <b>Fahnenjunker, Fähnrich und Oberfähnrich</b>, wobei der Fähnrich auf der Ebene des Feldwebels steht. International gelten die <b>NATO-Rangcodes</b>: OR für Mannschaften und Unteroffiziere, OF für Offiziere. Leutnant und Oberleutnant teilen sich OF-1, der Hauptmann trägt OF-2, der Major OF-3, der Oberst OF-5 und der General OF-9.",
         ],
       },
     ],
@@ -379,37 +379,37 @@ export const WISSEN6 = {
       {
         titel: "Vier Teilstreitkräfte",
         absaetze: [
-          "Seit dem 1. Mai 2024 hat die Bundeswehr vier Teilstreitkräfte: Heer, Luftwaffe, Marine und den Cyber- und Informationsraum, der seit 2017 als Organisationsbereich bestand und mit der Reform zur vierten Teilstreitkraft wurde. Grundlage ist der Osnabrücker Erlass vom 30. April 2024, der den Dresdner Erlass ablöste. Die Reform unter dem Titel Bundeswehr der Zeitenwende zielt auf Kriegstüchtigkeit, weniger Schnittstellen und schnellere Entscheidungen.",
+          "Seit dem 1. Mai <b>2024</b> hat die Bundeswehr vier Teilstreitkräfte: Heer, Luftwaffe, Marine und den <b>Cyber- und Informationsraum</b>, der seit <b>2017</b> als Organisationsbereich bestand und mit der Reform zur vierten Teilstreitkraft wurde. Grundlage ist der <b>Osnabrücker Erlass</b> vom 30. April <b>2024</b>, der den Dresdner Erlass ablöste. Die Reform unter dem Titel <b>Bundeswehr der Zeitenwende</b> zielt auf Kriegstüchtigkeit, weniger Schnittstellen und schnellere Entscheidungen.",
         ],
       },
       {
         titel: "Der Unterstützungsbereich",
         absaetze: [
-          "Streitkräftebasis und Zentraler Sanitätsdienst wurden zum 1. Oktober 2025 aufgelöst und gingen im neuen Unterstützungsbereich auf, mit rund 55.000 Angehörigen der zweitgrößte militärische Bereich. Geführt wird er vom Unterstützungskommando der Bundeswehr in Bonn; den Sanitätsdienst führt das Kommando Gesundheitsversorgung in Koblenz. Gebündelt sind dort Logistik, ABC-Abwehr, Feldjäger, die zivil-militärische Zusammenarbeit und die Gesundheitsversorgung.",
+          "Streitkräftebasis und Zentraler Sanitätsdienst wurden zum 1. Oktober <b>2025</b> aufgelöst und gingen im neuen <b>Unterstützungsbereich</b> auf, mit rund <b>55.000</b> Angehörigen der zweitgrößte militärische Bereich. Geführt wird er vom <b>Unterstützungskommando der Bundeswehr</b> in Bonn; den Sanitätsdienst führt das <b>Kommando Gesundheitsversorgung</b> in Koblenz. Gebündelt sind dort Logistik, ABC-Abwehr, Feldjäger, die zivil-militärische Zusammenarbeit und die Gesundheitsversorgung.",
         ],
       },
       {
         titel: "Das Operative Führungskommando",
         absaetze: [
-          "Zum 1. Oktober 2024 entstand aus dem Einsatzführungskommando in Schwielowsee und dem Territorialen Führungskommando in Berlin das Operative Führungskommando der Bundeswehr, in Dienst gestellt am 1. April 2025. Es plant und führt alle Operationen aus einer Hand: Landes- und Bündnisverteidigung, Krisenmanagement, Evakuierungen sowie Amts- und Katastrophenhilfe. Befehlshaber ist Generalleutnant Alexander Sollfrank.",
+          "Zum 1. Oktober <b>2024</b> entstand aus dem Einsatzführungskommando in Schwielowsee und dem Territorialen Führungskommando in Berlin das <b>Operative Führungskommando der Bundeswehr</b>, in Dienst gestellt am 1. April <b>2025</b>. Es plant und führt alle Operationen aus einer Hand: Landes- und Bündnisverteidigung, Krisenmanagement, Evakuierungen sowie Amts- und Katastrophenhilfe. Befehlshaber ist Generalleutnant <b>Alexander Sollfrank</b>.",
         ],
       },
       {
         titel: "Die Spitzengliederung",
         absaetze: [
-          "An der Spitze steht Verteidigungsminister Boris Pistorius, im Amt seit Januar 2023. Ranghöchster Soldat und militärischer Berater der Bundesregierung ist Generalinspekteur General Carsten Breuer, seit März 2023 im Amt und Anfang 2026 für den Vorsitz des NATO-Militärausschusses nominiert. Die Luftwaffe führt seit Mai 2025 Generalleutnant Holger Neumann als Nachfolger von Ingo Gerhartz, das Heer Generalleutnant Christian Freuding, die Marine Vizeadmiral Jan Christian Kaack.",
+          "An der Spitze steht Verteidigungsminister <b>Boris Pistorius</b>, im Amt seit Januar <b>2023</b>. Ranghöchster Soldat und militärischer Berater der Bundesregierung ist Generalinspekteur General <b>Carsten Breuer</b>, seit März <b>2023</b> im Amt und Anfang <b>2026</b> für den Vorsitz des NATO-Militärausschusses nominiert. Die Luftwaffe führt seit Mai <b>2025</b> Generalleutnant <b>Holger Neumann</b> als Nachfolger von Ingo Gerhartz, das Heer Generalleutnant <b>Christian Freuding</b>, die Marine Vizeadmiral <b>Jan Christian Kaack</b>.",
         ],
       },
       {
         titel: "Personal und Aufwuchs",
         absaetze: [
-          "Im Sommer 2026 dienen rund 186.700 aktive Soldatinnen und Soldaten, dazu kommen rund 81.000 zivile Beschäftigte, der höchste Stand seit 2013. Bis Mitte der 2030er Jahre soll die aktive Truppe auf rund 260.000 Soldaten wachsen, ergänzt um rund 200.000 Reservisten, zusammen etwa 460.000 Kräfte. Der Bedarf leitet sich aus den NATO-Fähigkeitszielen ab.",
+          "Im Sommer <b>2026</b> dienen rund <b>186.700</b> aktive Soldatinnen und Soldaten, dazu kommen rund <b>81.000</b> zivile Beschäftigte, der höchste Stand seit <b>2013</b>. Bis Mitte der 2030er Jahre soll die aktive Truppe auf rund <b>260.000 Soldaten</b> wachsen, ergänzt um rund <b>200.000</b> Reservisten, zusammen etwa <b>460.000</b> Kräfte. Der Bedarf leitet sich aus den NATO-Fähigkeitszielen ab.",
         ],
       },
       {
         titel: "Der neue Wehrdienst",
         absaetze: [
-          "Seit dem 1. Januar 2026 gilt das Wehrdienst-Modernisierungsgesetz. Der neue Wehrdienst ist grundsätzlich freiwillig, dauert mindestens sechs Monate und läuft ab zwölf Monaten als Soldat auf Zeit. Alle 18-Jährigen erhalten einen Fragebogen, den Männer ab Jahrgang 2008 beantworten müssen; für sie beginnt am 1. Juli 2027 die verpflichtende Musterung. Verpflichtende Dienstelemente gäbe es nur durch einen eigenen Bundestagsbeschluss, eine Wehrpflicht für Frauen bräuchte eine Grundgesetzänderung. Die Heimatschutzdivision ist seit April 2025 die vierte Division des Heeres.",
+          "Seit dem 1. Januar <b>2026</b> gilt das <b>Wehrdienst-Modernisierungsgesetz</b>. Der neue Wehrdienst ist grundsätzlich freiwillig, dauert mindestens sechs Monate und läuft ab zwölf Monaten als Soldat auf Zeit. Alle 18-Jährigen erhalten einen Fragebogen, den Männer ab Jahrgang <b>2008</b> beantworten müssen; für sie beginnt am 1. Juli <b>2027</b> die verpflichtende Musterung. Verpflichtende Dienstelemente gäbe es nur durch einen eigenen Bundestagsbeschluss, eine Wehrpflicht für Frauen bräuchte eine Grundgesetzänderung. Die <b>Heimatschutzdivision</b> ist seit April <b>2025</b> die vierte Division des Heeres.",
         ],
       },
     ],
@@ -464,45 +464,45 @@ export const WISSEN6 = {
       {
         titel: "Die Brigade Litauen",
         absaetze: [
-          "Die Panzerbrigade 45 Litauen ist seit dem 1. April 2025 in Dienst und der erste dauerhaft im Ausland stationierte Großverband der Bundeswehr, mit den Standorten Rūdninkai bei Vilnius und Rukla. Anfang 2026 standen rund 1.800 Brigadeangehörige vor Ort, unterstellt sind unter anderem das Panzerbataillon 203, das Panzergrenadierbataillon 122 und die multinationale NATO-Battlegroup. Bis 2027 soll die Brigade mit rund 5.000 Soldaten und zivilen Beschäftigten voll einsatzbereit sein.",
+          "Die <b>Panzerbrigade 45 Litauen</b> ist seit dem 1. April <b>2025</b> in Dienst und der erste dauerhaft im Ausland stationierte Großverband der Bundeswehr, mit den Standorten <b>Rūdninkai</b> bei Vilnius und <b>Rukla</b>. Anfang <b>2026</b> standen rund <b>1.800</b> Brigadeangehörige vor Ort, unterstellt sind unter anderem das Panzerbataillon 203, das Panzergrenadierbataillon 122 und die multinationale NATO-Battlegroup. Bis <b>2027</b> soll die Brigade mit rund <b>5.000 Soldaten</b> und zivilen Beschäftigten voll einsatzbereit sein.",
         ],
       },
       {
         titel: "NATO-Ziele und Verteidigungshaushalt",
         absaetze: [
-          "Auf dem Gipfel von Den Haag im Juni 2025 beschloss die NATO das Ziel von 5 Prozent des Bruttoinlandsprodukts bis 2035, davon mindestens 3,5 Prozent für klassische Verteidigung und bis zu 1,5 Prozent für verteidigungsrelevante Ausgaben. Aus den neuen Fähigkeitszielen leitet Deutschland einen Bedarf von insgesamt rund 460.000 aktiven Soldaten und Reservisten ab.",
-          "Der Verteidigungshaushalt 2026 umfasst mit Einzelplan 14 und Sondervermögen 108,2 Milliarden Euro, ein Rekordwert; geplant ist der Anstieg auf 3,5 Prozent des Bruttoinlandsprodukts bis 2029.",
+          "Auf dem Gipfel von Den Haag im Juni <b>2025</b> beschloss die NATO das Ziel von <b>5 Prozent</b> des Bruttoinlandsprodukts bis <b>2035</b>, davon mindestens <b>3,5 Prozent</b> für klassische Verteidigung und bis zu <b>1,5 Prozent</b> für verteidigungsrelevante Ausgaben. Aus den neuen Fähigkeitszielen leitet Deutschland einen Bedarf von insgesamt rund <b>460.000</b> aktiven Soldaten und Reservisten ab.",
+          "Der Verteidigungshaushalt <b>2026</b> umfasst mit Einzelplan 14 und Sondervermögen <b>108,2 Milliarden Euro</b>, ein Rekordwert; geplant ist der Anstieg auf <b>3,5 Prozent</b> des Bruttoinlandsprodukts bis <b>2029</b>.",
         ],
       },
       {
         titel: "Einsätze und Missionen",
         absaetze: [
-          "Mitte 2026 standen rund 700 Soldaten in mandatierten Auslandseinsätzen, das größte Kontingent bei KFOR im Kosovo. UNIFIL im Libanon endet nach rund 20 Jahren deutscher Beteiligung, das Mandat wurde letztmalig verlängert. Daneben laufen Aspides zum Schutz der Schifffahrt im Roten Meer, Irini zur Überwachung des Libyen-Embargos, NSATU zur Koordinierung der Ukraine-Unterstützung und seit Januar 2025 Baltic Sentry zum Schutz der Unterwasser-Infrastruktur in der Ostsee.",
+          "Mitte <b>2026</b> standen rund <b>700 Soldaten</b> in mandatierten Auslandseinsätzen, das größte Kontingent bei <b>KFOR</b> im Kosovo. <b>UNIFIL</b> im Libanon endet nach rund 20 Jahren deutscher Beteiligung, das Mandat wurde letztmalig verlängert. Daneben laufen <b>Aspides</b> zum Schutz der Schifffahrt im Roten Meer, <b>Irini</b> zur Überwachung des Libyen-Embargos, <b>NSATU</b> zur Koordinierung der Ukraine-Unterstützung und seit Januar <b>2025</b> <b>Baltic Sentry</b> zum Schutz der Unterwasser-Infrastruktur in der Ostsee.",
         ],
       },
       {
         titel: "Der Luftraum an der Ostflanke",
         absaetze: [
-          "Seit 2005 sichert die NATO mit dem Air Policing Baltikum den Luftraum von Estland, Lettland und Litauen, die keine eigenen Kampfjets besitzen; die Kontingente umfassen bis zu sechs Eurofighter.",
-          "Im September 2025 spitzte sich die Lage zu: 19 russische Drohnen drangen in den polnischen Luftraum ein, NATO-Jets schossen mehrere ab, der erste Waffeneinsatz des Bündnisses über eigenem Gebiet. Kurz darauf verletzten drei MiG-31 den estnischen Luftraum. Die Antwort ist die Operation Eastern Sentry entlang der gesamten Ostflanke; Deutschland verlegte dafür fünf Eurofighter aus Nörvenich nach Polen.",
+          "Seit <b>2005</b> sichert die NATO mit dem <b>Air Policing Baltikum</b> den Luftraum von Estland, Lettland und Litauen, die keine eigenen Kampfjets besitzen; die Kontingente umfassen bis zu sechs <b>Eurofighter</b>.",
+          "Im September <b>2025</b> spitzte sich die Lage zu: 19 russische Drohnen drangen in den polnischen Luftraum ein, NATO-Jets schossen mehrere ab, der erste Waffeneinsatz des Bündnisses über eigenem Gebiet. Kurz darauf verletzten drei MiG-31 den estnischen Luftraum. Die Antwort ist die Operation <b>Eastern Sentry</b> entlang der gesamten Ostflanke; Deutschland verlegte dafür fünf <b>Eurofighter</b> aus <b>Nörvenich</b> nach Polen.",
         ],
       },
       {
         titel: "Drohnen über Deutschland",
         absaetze: [
-          "Auch im Inland häufen sich Drohnenvorfälle: Im Oktober 2025 stellte der Flughafen München wegen Sichtungen zeitweise den Betrieb ein, hinter vielen Fällen werden staatliche Akteure vermutet. Seit März 2026 gilt das novellierte Luftsicherheitsgesetz: Die Bundespolizei führt die Drohnenabwehr an Flughäfen, die Länder können die Bundeswehr im Eilverfahren zur Amtshilfe anfordern. Im August 2026 folgten eine Sprengstoffdrohne am Flughafen Leipzig/Halle und Überflüge über eine Kaserne in Mechernich.",
+          "Auch im Inland häufen sich Drohnenvorfälle: Im Oktober <b>2025</b> stellte der Flughafen München wegen Sichtungen zeitweise den Betrieb ein, hinter vielen Fällen werden staatliche Akteure vermutet. Seit März <b>2026</b> gilt das novellierte <b>Luftsicherheitsgesetz</b>: Die Bundespolizei führt die Drohnenabwehr an Flughäfen, die Länder können die Bundeswehr im Eilverfahren zur Amtshilfe anfordern. Im August <b>2026</b> folgten eine Sprengstoffdrohne am Flughafen Leipzig/Halle und Überflüge über eine Kaserne in Mechernich.",
         ],
       },
       {
         titel: "Die Ukraine-Unterstützung",
         absaetze: [
-          "Deutschland ist mit rund 55 Milliarden Euro seit 2022 der größte Unterstützer der Ukraine in Europa, für 2026 sind 11,5 Milliarden Euro eingeplant. Der Schwerpunkt liegt auf der Luftverteidigung, unter anderem mit Patriot-Lenkflugkörpern und 36 IRIS-T-Startgeräten aus dem Paket vom April 2026; fünf eigene Patriot-Systeme hat Deutschland abgegeben.",
+          "Deutschland ist mit <b>rund 55 Milliarden Euro</b> seit <b>2022</b> der größte Unterstützer der Ukraine in Europa, für <b>2026</b> sind <b>11,5 Milliarden Euro</b> eingeplant. Der Schwerpunkt liegt auf der Luftverteidigung, unter anderem mit <b>Patriot</b>-Lenkflugkörpern und 36 <b>IRIS-T</b>-Startgeräten aus dem Paket vom April <b>2026</b>; fünf eigene <b>Patriot</b>-Systeme hat Deutschland abgegeben.",
         ],
       },
       {
         titel: "Projekte und Übungen",
         absaetze: [
-          "Das Kampfjet-Projekt FCAS mit Frankreich und Spanien wurde im Juni 2026 für gescheitert erklärt, vor allem am Führungsstreit zwischen Dassault und Airbus; Teile der Vernetzungsarbeit laufen weiter. Geübt wird derweil groß: Ramstein Flag 2026 brachte als NATO-Luftwaffenübung 18 Nationen und über 200 Flugzeuge zusammen, erstmals als Doppelmanöver Nord und Süd, und die Bundeswehr übt seit 2023 jährlich in der Serie Quadriga, 2026 verzahnt mit Steadfast Dart.",
+          "Das Kampfjet-Projekt <b>FCAS</b> mit Frankreich und Spanien wurde im Juni <b>2026</b> für gescheitert erklärt, vor allem am Führungsstreit zwischen Dassault und Airbus; Teile der Vernetzungsarbeit laufen weiter. Geübt wird derweil groß: <b>Ramstein Flag 2026</b> brachte als NATO-Luftwaffenübung <b>18 Nationen</b> und über <b>200 Flugzeuge</b> zusammen, erstmals als Doppelmanöver Nord und Süd, und die Bundeswehr übt seit <b>2023</b> jährlich in der Serie <b>Quadriga</b>, <b>2026</b> verzahnt mit <b>Steadfast Dart</b>.",
         ],
       },
     ],
@@ -559,32 +559,32 @@ export const WISSEN6 = {
       {
         titel: "Der Eurofighter-Bestand wächst",
         absaetze: [
-          "Die Luftwaffe fliegt 138 Eurofighter, nach Zulauf aller Bestellungen wächst die Flotte auf 163. Aus dem Projekt Quadriga (Tranche 4) kommen 38 Maschinen, bestellt 2020, mit Erstflug im Juli 2026 und Auslieferung bis 2030. Im Oktober 2025 folgte die Tranche 5 mit 20 weiteren Jets für rund 3,75 Milliarden Euro, Zulauf 2031 bis 2034. Dazu werden 15 Maschinen mit Arexis-Sensorik und AARGM zum Eurofighter EK für den Elektronischen Kampf umgerüstet, der bis 2030 die SEAD-Rolle vom Tornado ECR übernimmt.",
+          "Die Luftwaffe fliegt 138 <b>Eurofighter</b>, nach Zulauf aller Bestellungen wächst die Flotte auf 163. Aus dem Projekt <b>Quadriga</b> (Tranche 4) kommen <b>38 Maschinen</b>, bestellt <b>2020</b>, mit Erstflug im Juli <b>2026</b> und Auslieferung bis <b>2030</b>. Im Oktober <b>2025</b> folgte die Tranche 5 mit 20 weiteren Jets für <b>rund 3,75 Milliarden Euro</b>, Zulauf <b>2031</b> bis <b>2034</b>. Dazu werden <b>15 Maschinen</b> mit Arexis-Sensorik und AARGM zum <b>Eurofighter EK</b> für den Elektronischen Kampf umgerüstet, der bis <b>2030</b> die SEAD-Rolle vom <b>Tornado ECR</b> übernimmt.",
         ],
       },
       {
         titel: "Vom Tornado zur F-35A",
         absaetze: [
-          "Noch fliegen rund 93 Tornado IDS und ECR, bis 2030 werden alle ausgemustert. Die Nachfolge ist geteilt: Die F-35A übernimmt die IDS-Rolle samt nuklearer Teilhabe, der Eurofighter EK die ECR-Rolle.",
-          "35 F-35A sind bestellt, das Gesamtpaket kostet knapp zehn Milliarden Euro. Die erste Maschine mit der Kennung 35+01 verlässt im September 2026 das Werk, die ersten acht bleiben zur Ausbildung in Fort Smith, ab Ende 2027 beginnt die Stationierung in Büchel, die Anfangsbefähigung ist für 2029 geplant. An Bewaffnung laufen bis zu 400 Luft-Luft-Flugkörper AIM-120D-3 AMRAAM und die Abstandswaffe Joint Strike Missile zu.",
+          "Noch fliegen rund 93 <b>Tornado IDS und ECR</b>, bis <b>2030</b> werden alle ausgemustert. Die Nachfolge ist geteilt: Die <b>F-35A</b> übernimmt die IDS-Rolle samt nuklearer Teilhabe, der <b>Eurofighter EK</b> die ECR-Rolle.",
+          "35 <b>F-35A</b> sind bestellt, das Gesamtpaket kostet knapp zehn Milliarden Euro. Die erste Maschine mit der Kennung 35+01 verlässt im September <b>2026</b> das Werk, die ersten acht bleiben zur Ausbildung in <b>Fort Smith</b>, ab Ende <b>2027</b> beginnt die Stationierung in <b>Büchel</b>, die Anfangsbefähigung ist für <b>2029</b> geplant. An Bewaffnung laufen bis zu 400 Luft-Luft-Flugkörper <b>AIM-120D-3 AMRAAM</b> und die Abstandswaffe <b>Joint Strike Missile</b> zu.",
         ],
       },
       {
         titel: "Transport und Tanker",
         absaetze: [
-          "Die A400M-Flotte ist mit 53 Maschinen komplett, die letzte landete im April 2026 in Wunstorf, es ist die größte A400M-Flotte der Welt. Sechs C-130J fliegen in der binationalen Staffel mit Frankreich. Die multinationale A330-MRTT-Flotte wächst bis 2029 auf zwölf Maschinen; Deutschland hält 62 Prozent der Anteile, erhält rund 5500 Flugstunden im Jahr, und eine Maschine steht in Köln ständig für die medizinische Evakuierung bereit.",
+          "Die <b>A400M</b>-Flotte ist mit <b>53 Maschinen</b> komplett, die letzte landete im April <b>2026</b> in <b>Wunstorf</b>, es ist die größte <b>A400M</b>-Flotte der Welt. Sechs <b>C-130J</b> fliegen in der binationalen Staffel mit Frankreich. Die multinationale A330-MRTT-Flotte wächst bis <b>2029</b> auf zwölf Maschinen; Deutschland hält <b>62 Prozent</b> der Anteile, erhält <b>rund 5500 Flugstunden</b> im Jahr, und eine Maschine steht in Köln ständig für die medizinische Evakuierung bereit.",
         ],
       },
       {
         titel: "Aufklärung",
         absaetze: [
-          "Für die Seefernaufklärung sind acht P-8A Poseidon für rund 3,1 Milliarden Euro bestellt; Mitte 2026 standen drei in Nordholz, der Rest folgt bis 2029. In Jagel fliegen fünf geleaste Heron TP, drei weitere sind bestellt. Die Signalaufklärung übernimmt künftig Pegasus auf drei Bombardier Global 6000, mit Zulauf ab 2027 ebenfalls nach Jagel.",
+          "Für die Seefernaufklärung sind acht <b>P-8A Poseidon</b> für <b>rund 3,1 Milliarden Euro</b> bestellt; Mitte <b>2026</b> standen drei in <b>Nordholz</b>, der Rest folgt bis <b>2029</b>. In <b>Jagel</b> fliegen fünf geleaste <b>Heron TP</b>, drei weitere sind bestellt. Die Signalaufklärung übernimmt künftig <b>Pegasus</b> auf drei Bombardier <b>Global 6000</b>, mit Zulauf ab <b>2027</b> ebenfalls nach <b>Jagel</b>.",
         ],
       },
       {
         titel: "Bodengebundene Luftverteidigung",
         absaetze: [
-          "Arrow 3 fängt seit Dezember 2025 von Holzdorf aus ballistische Raketen außerhalb der Atmosphäre ab, die Vollbefähigung ist für 2030 geplant. Bei IRIS-T SLM sind sechs Feuereinheiten bestellt und 14 weitere für 3,18 Milliarden Euro beauftragt, Zielbestand 20. Bei Patriot hat Deutschland fünf Feuereinheiten an die Ukraine abgegeben und sieben behalten; acht neue sind bestellt, der Zulauf beginnt Ende 2026, der Zielbestand liegt bei 15.",
+          "<b>Arrow 3</b> fängt seit Dezember <b>2025</b> von <b>Holzdorf</b> aus ballistische Raketen außerhalb der Atmosphäre ab, die Vollbefähigung ist für <b>2030</b> geplant. Bei <b>IRIS-T SLM</b> sind sechs Feuereinheiten bestellt und 14 weitere für <b>3,18 Milliarden Euro</b> beauftragt, Zielbestand 20. Bei <b>Patriot</b> hat Deutschland fünf Feuereinheiten an die Ukraine abgegeben und sieben behalten; acht neue sind bestellt, der Zulauf beginnt Ende <b>2026</b>, der Zielbestand liegt bei 15.",
         ],
       },
     ],
