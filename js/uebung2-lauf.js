@@ -178,7 +178,7 @@ export function erzeugeUebung2({ speicher, controls }) {
         raeumeAuf();
         if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
         await beiEnde(gewertet ? {
-          kennzahl: wert,
+          kennzahl: quote,
           daten: {
             art: "multitasking",
             dauerMin: dauer,

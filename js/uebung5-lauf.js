@@ -23,7 +23,7 @@ export function erzeugeUebung5({ speicher }) {
   const hinweis = "Rechenaufgaben zu Weg, Zeit, Geschwindigkeit und Sink- oder Steigrate am Stück, "
     + "bis die eingestellte Testdauer um ist, je Aufgabe 20 Sekunden, im Cockpit. Manche Aufgaben "
     + "nennen keinen Wert, sondern verweisen aufs Ablesen am Instrumentenpanel. Geantwortet wird "
-    + "per Auswahl oder Zahleneingabe. Punkte gibt es für richtige und schnelle Antworten, die "
+    + "per Auswahl oder Zahleneingabe. Die Wertung in Prozent belohnt richtige und schnelle Antworten, die "
     + "Formeln stehen auf den Karteikarten darunter.";
 
   async function ladeEinstellung() {
@@ -260,9 +260,9 @@ export function erzeugeUebung5({ speicher }) {
       tafel.className = "ergebnisschicht";
       tafel.innerHTML = `
         <div class="frage">${gewertet ? "TEST BEENDET" : "TEST ABGEBROCHEN"}</div>
-        <div class="ergebnisgross">${quote} %</div>
+        <div class="ergebnisgross">${wert} %</div>
         <div class="ergebniszeilen">
-          <span class="trefferzeile">${richtig} von ${gestellt} Aufgaben richtig</span>
+          <span class="trefferzeile">${richtig} von ${gestellt} Aufgaben richtig (${quote} %)</span>
         </div>
         <button class="punkt" id="u5-fertig">ZURÜCK ZUR MISSION</button>
         <div class="ergebnisfuss">

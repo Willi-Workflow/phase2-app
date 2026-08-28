@@ -152,7 +152,8 @@ export function punkte(z, dauerMin) {
 
 // Deckungsquote: Anteil der Testzeit in Deckung, über die gewählten Elemente
 // gemittelt und in Prozent gerundet. Nah am Original, das die Zeit auf dem
-// Ziel misst; die gespeicherte Kennzahl bleibt die Punktrechnung.
+// Ziel misst; seit 28.08.2026 die gespeicherte Kennzahl (Willis Vorgabe:
+// überall Prozent), die Treffer je Minute bleiben als Detail in den Daten.
 export function deckungsquote(z) {
   if (!z.testMs || z.auswahl.length === 0) return 0;
   const summe = z.auswahl.reduce((s, e) => s + z.deckungMs[e], 0);
