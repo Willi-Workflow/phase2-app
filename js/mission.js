@@ -156,7 +156,11 @@ function verdrahteWerkzeugtipp(flaeche, reihen, maxAnzahl, plaetze, xVon, gesamt
   const verberge = () => { kreuz.style.display = "none"; tipp.hidden = true; };
 
   svg.addEventListener("pointermove", (e) => {
-    const einheit = (e.offsetX / flaeche.clientWidth) * gesamtBreite;
+    // clientX gegen die tatsächliche SVG-Box statt offsetX: offsetX ist beim
+    // Überfahren eines Datenpunkts relativ zum Kindelement (circle/text) und
+    // ließ Fadenkreuz und Tipp auf Lauf 1 zurückspringen (Q5).
+    const kasten = svg.getBoundingClientRect();
+    const einheit = ((e.clientX - kasten.left) / kasten.width) * gesamtBreite;
     const stelle = (einheit - DIAGRAMM.rand) / (gesamtBreite - 2 * DIAGRAMM.rand);
     index = Math.min(Math.max(Math.round(stelle * (plaetze - 1)), 0), maxAnzahl - 1);
     zeige();

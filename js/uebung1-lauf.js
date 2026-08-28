@@ -367,6 +367,7 @@ export function erzeugeUebung1({ speicher, controls }) {
       // Pfad am Modul verankert, damit auch die Probeseite unter entwurf/
       // dieselbe Datei findet (der Lader löst sonst an der Seitenadresse auf).
       new THREE.TextureLoader().load(new URL("../bilder/stadt.jpg", import.meta.url).href, (t) => {
+        if (beendet) { t.dispose?.(); return; } // Lauf schon beendet: nichts mehr anfassen (Q4)
         t.wrapS = THREE.RepeatWrapping;
         t.wrapT = THREE.RepeatWrapping;
         t.repeat.set(48, 48);
@@ -393,6 +394,7 @@ export function erzeugeUebung1({ speicher, controls }) {
       flugzeug.add(rumpf, flaecheOben, flaecheUnten, leitwerk, seitenflosse);
       kamera.add(flugzeug);
       new GLTFLoader().load(new URL("../modelle/flugzeug.glb", import.meta.url).href, (gltf) => {
+        if (beendet) return; // Lauf schon beendet: die Szene nicht mehr umbauen (Q4)
         // Nase des Netzes zeigt in Richtung -x; die Drehung bringt sie nach -z,
         // also von der Kamera weg. Danach auf Spannweite 22 bringen und mittig
         // setzen, damit die Kurvenneigung um die Flugzeugmitte dreht.
@@ -415,7 +417,11 @@ export function erzeugeUebung1({ speicher, controls }) {
       drei = null; // ohne WebGL läuft der Test nicht, der Start wird abgebrochen
     }
     if (!drei) {
+      // Fehlstart nicht stumm im Vollbild hängen lassen: Vollbild verlassen,
+      // kurz melden, zurück zur Mission (Q10).
       schleier.remove();
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      alert("Die 3D-Ansicht ließ sich nicht starten. Bitte in einem Browser mit WebGL erneut versuchen.");
       tuer.oeffne().then(() => beiEnde(null));
       return;
     }
@@ -441,6 +447,17 @@ export function erzeugeUebung1({ speicher, controls }) {
       speechSynthesis?.cancel?.();
       document.removeEventListener("fullscreenchange", beiVollbildwechsel);
       document.removeEventListener("visibilitychange", beiSichtwechsel);
+      removeEventListener("resize", passeGroesseAn);
+      // GPU-Speicher freigeben: Geometrien, Materialien und Texturen der Szene
+      // einzeln entsorgen, dann den WebGL-Kontext hart schließen. Nur
+      // renderer.dispose() ließ sonst über viele Läufe die Kontexte anwachsen,
+      // bis Chrome sie verwarf (Q4).
+      drei.szene.traverse((k) => {
+        k.geometry?.dispose?.();
+        const stoffe = Array.isArray(k.material) ? k.material : (k.material ? [k.material] : []);
+        for (const m of stoffe) { m.map?.dispose?.(); m.dispose?.(); }
+      });
+      drei.renderer.forceContextLoss?.();
       drei.renderer.dispose();
       schleier.remove();
     };

@@ -21,6 +21,7 @@ export function erzeugeControls(speicher) {
   let schussPadAlt = false;
   let schussPadFreiSeit = 0;  // seit wann der Geräteknopf sauber frei ist
   let fangKnopf = false;
+  let schussFangGen = 0;     // entwertet ältere Fang-Schleifen (Q12)
   const tasten = new Set();
   let schubTastatur = 0.45;
 
@@ -116,10 +117,14 @@ export function erzeugeControls(speicher) {
     // Anlernen wie beim Achsen-Fang: der nächste neu gedrückte Knopf eines
     // Geräts wird die Schusstaste und landet in den Einstellungen.
     starteSchussFang(beiTreffer) {
+      // Eine zweite Fangschleife ohne vorherigen Abbruch liefe sonst neben der
+      // ersten weiter und beide könnten denselben Knopfdruck melden. Die neue
+      // Generation entwertet jede ältere Schleife (Q12).
+      const meineGeneration = ++schussFangGen;
       const basis = pads().map((p) => ({ geraet: p.id, knoepfe: p.buttons.map((k) => k.pressed) }));
       fangKnopf = true;
       const pruefe = () => {
-        if (!fangKnopf) return;
+        if (!fangKnopf || meineGeneration !== schussFangGen) return;
         for (const p of pads()) {
           const alt = basis.find((b) => b.geraet === p.id);
           for (let k = 0; k < p.buttons.length; k++) {
