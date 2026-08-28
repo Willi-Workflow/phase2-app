@@ -36,13 +36,6 @@ export const WISSEN6 = {
         ],
       },
       {
-        titel: "Hubschrauber",
-        zeilen: [
-          "Das Hubschraubergeschwader 64 der Luftwaffe fliegt CH-53 und H145M, mit Laupheim und der Lufttransportgruppe in Holzdorf.",
-          "Die bestellten CH-47F Chinook kommen ab Ende 2027: Hauptstandort wird Holzdorf, Laupheim erhält zwölf Maschinen und einen Anteil Spezialkräfte Luft.",
-        ],
-      },
-      {
         titel: "Bodengebundene Luftverteidigung und Schutz",
         zeilen: [
           "Das Flugabwehrraketengeschwader 1 in Husum ist seit 2013 das einzige der Luftwaffe, Hauptwaffensystem Patriot.",
@@ -54,7 +47,6 @@ export const WISSEN6 = {
         titel: "Marineflieger in Nordholz",
         zeilen: [
           "MFG 3 Graf Zeppelin: Seefernaufklärung und U-Boot-Jagd, seit November 2025 mit der P-8A Poseidon als Ablösung der P-3C Orion.",
-          "MFG 5: 18 NH90 Sea Lion für den Such- und Rettungsdienst über Nord- und Ostsee, dazu seit Dezember 2025 der erste Bordhubschrauber NH90 Sea Tiger.",
         ],
       },
       {
@@ -96,10 +88,6 @@ export const WISSEN6 = {
         richtig: "Holzdorf", falsch: ["Husum", "Büchel", "Laage"],
       },
       {
-        frage: "Wohin geht der Hauptanteil der bestellten CH-47F Chinook?", form: "auswahl",
-        richtig: "Holzdorf", falsch: ["Laupheim", "Wunstorf", "Bückeburg"],
-      },
-      {
         frage: "Wo werden die deutschen F-35-Piloten in den USA ausgebildet?", form: "auswahl",
         richtig: "Fort Smith in Arkansas (Ebbing Air National Guard Base)", falsch: ["Sheppard in Texas", "Goodyear in Arizona", "Eglin in Florida"],
       },
@@ -107,6 +95,114 @@ export const WISSEN6 = {
         frage: "Was kann das Objektschutzregiment der Luftwaffe Friesland im Einsatzgebiet leisten?", form: "auswahl",
         richtig: "Ein komplettes Flugfeld aufbauen, betreiben und schützen",
         falsch: ["Nur Feldlager bewachen", "Flugabwehrraketen führen", "Fallschirmjägerangriffe führen"],
+      },
+    ],
+  },
+  technik: {
+    name: "Technik: F-35 und Eurofighter",
+    wissen: [
+      {
+        titel: "Eurofighter: Zelle und Antrieb",
+        zeilen: [
+          "Deltaflügel mit Canards, absichtlich instabil ausgelegt und nur per Fly-by-wire fliegbar; Länge 15,96 m, Spannweite 10,95 m, Leergewicht rund 11 t, maximale Startmasse rund 23,5 t.",
+          "Zwei Eurojet-EJ200-Triebwerke mit je rund 60 kN Trockenschub und rund 90 kN mit Nachbrenner; Supercruise, also Überschall ohne Nachbrenner, ist möglich.",
+          "Höchstgeschwindigkeit Mach 2,0, Dienstgipfelhöhe rund 16.800 m (55.000 Fuß), Belastungsgrenze +9 g, in rund zweieinhalb Minuten auf über 10.000 m.",
+        ],
+      },
+      {
+        titel: "Eurofighter: Bewaffnung",
+        zeilen: [
+          "Fest eingebaute 27-mm-Bordkanone Mauser BK-27 und 13 Außenlaststationen.",
+          "Luft-Luft mit IRIS-T, AMRAAM und Meteor, Luft-Boden je nach Rüststand mit Präzisionsbomben und Marschflugkörper Taurus.",
+          "Erstflug 1994, bei der Luftwaffe seit 2004 im Dienst.",
+        ],
+      },
+      {
+        titel: "F-35A: Zelle und Antrieb",
+        zeilen: [
+          "Einstrahliger Tarnkappenjet der fünften Generation; Länge 15,7 m, Spannweite 10,7 m, Leergewicht rund 13 t, maximale Startmasse rund 31,8 t.",
+          "Ein Pratt-und-Whitney-F135-Triebwerk mit rund 125 kN Trockenschub und rund 190 kN mit Nachbrenner, das stärkste Kampfjettriebwerk im Truppendienst.",
+          "Höchstgeschwindigkeit Mach 1,6, Dienstgipfelhöhe rund 15.000 m (50.000 Fuß), Belastungsgrenze +9 g, Kampfradius rund 1.100 km.",
+        ],
+      },
+      {
+        titel: "F-35A: Bewaffnung und Besonderheiten",
+        zeilen: [
+          "Hauptbewaffnung im internen Waffenschacht, damit die Tarnung erhalten bleibt; mit vier internen und sechs externen Stationen (Beast Mode) trägt sie deutlich mehr, verzichtet dann aber auf die Tarnwirkung.",
+          "Fest eingebaute vierläufige 25-mm-Kanone GAU-22/A, nur die A-Version trägt sie intern.",
+          "Sensorfusion: Radar, elektrooptische Sensoren und das Distributed Aperture System speisen ein Lagebild direkt in den Helm, der Pilot blickt durch die Zelle hindurch.",
+          "Erstflug 2006; Deutschland erhält 35 Stück im Rüststand Block 4.",
+        ],
+      },
+      {
+        titel: "Direktvergleich",
+        zeilen: [
+          "Rollen: Der Eurofighter ist der Luftüberlegenheitsjäger mit Mach 2 und Supercruise, die F-35A der tarnkappengestützte Mehrzweckjet und Träger der nuklearen Teilhabe.",
+          "Antrieb: zwei EJ200 gegen ein F135; Bewaffnung: 13 äußere Stationen gegen internen Schacht plus Beast Mode.",
+          "Beide fliegen +9 g; der Eurofighter ist schneller und steigt höher, die F-35 sieht mehr und bleibt unentdeckt.",
+        ],
+      },
+    ],
+    fragen: [
+      { frage: "Wie viele Triebwerke hat der Eurofighter, und wie heißen sie?", form: "eingabe", loesungen: ["Zwei Eurojet EJ200", "2 EJ200", "zwei EJ200", "EJ200"] },
+      { frage: "Welches Triebwerk treibt die F-35A an?", form: "eingabe", loesungen: ["Pratt und Whitney F135", "F135", "Pratt & Whitney F135"] },
+      { frage: "Welche Höchstgeschwindigkeit erreicht der Eurofighter?", form: "eingabe", loesungen: ["Mach 2,0", "Mach 2"] },
+      { frage: "Welche Höchstgeschwindigkeit erreicht die F-35A?", form: "eingabe", loesungen: ["Mach 1,6", "Mach 1.6"] },
+      { frage: "Welche Bordkanone trägt der Eurofighter?", form: "eingabe", loesungen: ["27-mm-Mauser BK-27", "BK-27", "BK27", "Mauser BK-27"] },
+      { frage: "Welche Bordkanone trägt die F-35A?", form: "eingabe", loesungen: ["25-mm-GAU-22/A, vierläufig und intern", "GAU-22", "GAU22", "GAU-22/A"] },
+      { frage: "Wie hoch liegt die Dienstgipfelhöhe des Eurofighters?", form: "eingabe", loesungen: ["Rund 16.800 Meter (55.000 Fuß)", "16800", "55000 Fuß", "16.800 m"] },
+      { frage: "Wie viele Außenlaststationen hat der Eurofighter?", form: "eingabe", loesungen: ["13", "dreizehn"] },
+      { frage: "In welchem Jahr flog der Eurofighter zum ersten Mal?", form: "eingabe", loesungen: ["1994"] },
+      { frage: "In welchem Jahr flog die F-35 zum ersten Mal?", form: "eingabe", loesungen: ["2006"] },
+      {
+        frage: "Was bedeutet Supercruise, das der Eurofighter beherrscht?", form: "auswahl",
+        richtig: "Überschallflug ohne Nachbrenner",
+        falsch: ["Automatischer Tiefflug", "Gekoppelter Formationsflug", "Sparsamer Reiseflug mit einem Triebwerk"],
+      },
+      {
+        frage: "Warum trägt die F-35 ihre Hauptbewaffnung im internen Schacht?", form: "auswahl",
+        richtig: "Damit die Tarnwirkung erhalten bleibt",
+        falsch: ["Weil die Flügel keine Lasten tragen können", "Zum Schutz vor Vereisung", "Um Treibstoff zu sparen"],
+      },
+      {
+        frage: "Welche Bauweise kennzeichnet den Eurofighter?", form: "auswahl",
+        richtig: "Deltaflügel mit Canards, instabil ausgelegt, Fly-by-wire",
+        falsch: ["Schwenkflügel mit Doppelleitwerk", "Nurflügel ohne Leitwerk", "Pfeilflügel mit T-Leitwerk"],
+      },
+      {
+        frage: "Welcher Generation wird die F-35 zugerechnet?", form: "auswahl",
+        richtig: "Der fünften Generation",
+        falsch: ["Der vierten Generation", "Der Generation 4,5", "Der sechsten Generation"],
+      },
+      {
+        frage: "Wie viele Waffenstationen nutzt die F-35 im Beast Mode?", form: "auswahl",
+        richtig: "Zehn: vier interne und sechs externe",
+        falsch: ["Vier, alle intern", "Sechs, alle extern", "Dreizehn wie der Eurofighter"],
+      },
+      {
+        frage: "Welche Belastungsgrenze fliegen Eurofighter und F-35A?", form: "auswahl",
+        richtig: "+9 g",
+        falsch: ["+6 g", "+7,5 g", "+12 g"],
+      },
+      {
+        frage: "Wie groß ist der Kampfradius der F-35A ungefähr?", form: "auswahl",
+        richtig: "Rund 1.100 Kilometer",
+        falsch: ["Rund 400 Kilometer", "Rund 700 Kilometer", "Rund 2.500 Kilometer"],
+      },
+      {
+        frage: "Was leistet das F135-Triebwerk mit Nachbrenner ungefähr?", form: "auswahl",
+        richtig: "Rund 190 Kilonewton",
+        falsch: ["Rund 90 Kilonewton", "Rund 120 Kilonewton", "Rund 260 Kilonewton"],
+      },
+      {
+        frage: "Was zeigt das Distributed Aperture System der F-35 dem Piloten?", form: "auswahl",
+        richtig: "Ein Rundumbild direkt im Helm, auch durch die Zelle hindurch",
+        falsch: ["Nur das Radarbild", "Die Triebwerkswerte", "Das Wetterradar der Umgebung"],
+      },
+      {
+        frage: "Wie schwer ist der Eurofighter leer ungefähr?", form: "auswahl",
+        richtig: "Rund 11 Tonnen",
+        falsch: ["Rund 6 Tonnen", "Rund 16 Tonnen", "Rund 23 Tonnen"],
       },
     ],
   },
@@ -192,7 +288,7 @@ export const WISSEN6 = {
       {
         frage: "Was folgt in Sheppard nach dem Erhalt der Schwingen für künftige Kampfpiloten?", form: "auswahl",
         richtig: "Der Kurs Introduction to Fighter Fundamentals auf der T-38C",
-        falsch: ["Die direkte Verlegung nach Laage", "Ein Hubschrauberlehrgang", "Die F-35-Ausbildung in Eglin"],
+        falsch: ["Die direkte Verlegung nach Laage", "Ein Transportfliegerlehrgang", "Die F-35-Ausbildung in Eglin"],
       },
       {
         frage: "Wie viele deutsche Flugschüler beginnen jährlich am ENJJPT?", form: "auswahl",
@@ -537,13 +633,6 @@ export const WISSEN6 = {
         ],
       },
       {
-        titel: "Hubschrauber",
-        zeilen: [
-          "CH-47F Chinook: 60 bestellt, Zulauf viertes Quartal 2027 bis 2032, 47 nach Holzdorf, zwölf nach Laupheim, einer nach Manching; sie ersetzen die CH-53, von der noch 66 fliegen.",
-          "H145M: 82 fest bestellt (Option über 20 im Dezember 2025 eingelöst), 72 fürs Heer, zehn für die Luftwaffe.",
-        ],
-      },
-      {
         titel: "Aufklärung",
         zeilen: [
           "P-8A Poseidon: acht bestellt für rund 3,1 Milliarden Euro, Mitte 2026 drei in Nordholz, Rest bis 2029.",
@@ -564,7 +653,6 @@ export const WISSEN6 = {
       { frage: "Wie viele Eurofighter hat die Luftwaffe im Bestand?", form: "eingabe", loesungen: ["138"] },
       { frage: "Wie viele F-35A hat Deutschland bestellt?", form: "eingabe", loesungen: ["35"] },
       { frage: "Wie viele A400M umfasst die fertige Flotte?", form: "eingabe", loesungen: ["53"] },
-      { frage: "Wie viele CH-47F Chinook sind bestellt?", form: "eingabe", loesungen: ["60"] },
       { frage: "Wie viele P-8A Poseidon sind bestellt?", form: "eingabe", loesungen: ["8", "acht"] },
       { frage: "Wie viele Eurofighter der Tranche 5 wurden im Oktober 2025 bestellt?", form: "eingabe", loesungen: ["20", "zwanzig"] },
       { frage: "Wie viele Eurofighter werden zum Eurofighter EK umgerüstet?", form: "eingabe", loesungen: ["15", "fünfzehn", "fuenfzehn"] },
@@ -598,10 +686,6 @@ export const WISSEN6 = {
         frage: "Was leistet Arrow 3?", form: "auswahl",
         richtig: "Es fängt ballistische Raketen außerhalb der Atmosphäre ab",
         falsch: ["Es bekämpft Drohnen im Tiefflug", "Es ersetzt IRIS-T SLM", "Es schützt nur Flugplätze im Einsatzland"],
-      },
-      {
-        frage: "Wie verteilen sich die 82 bestellten H145M?", form: "auswahl",
-        richtig: "72 fürs Heer, zehn für die Luftwaffe", falsch: ["Alle 82 für die Luftwaffe", "41 je Teilstreitkraft", "62 fürs Heer, 20 für die Marine"],
       },
     ],
   },
@@ -735,4 +819,4 @@ export const WISSEN6 = {
 
 // Reihenfolge der Bereiche in Auswahl und Lexikon; die Flugzeugmuster
 // stehen als eigener Bereich davor (siehe uebung6.js).
-export const WISSEN6_REIHE = ["standorte", "ausbildung", "dienstgrade", "aufbau", "themen", "beschaffung", "persoenlich"];
+export const WISSEN6_REIHE = ["technik", "standorte", "ausbildung", "dienstgrade", "aufbau", "themen", "beschaffung", "persoenlich"];
