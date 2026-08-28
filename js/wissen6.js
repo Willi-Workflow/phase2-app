@@ -99,7 +99,7 @@ export const WISSEN6 = {
     wissen: [
       { zwischen: "Eurofighter" },
       {
-        titel: "Zelle und Antrieb",
+        titel: "Aufbau und Antrieb",
         absaetze: [
           "Der <b>Eurofighter</b> ist ein <b>Deltaflügler mit Canards</b> und absichtlich instabil ausgelegt: Erst die <b>Fly-by-wire-Steuerung</b> macht ihn fliegbar, genau das verschafft ihm seine Wendigkeit. Die Zelle misst <b>15,96 Meter</b> Länge bei <b>10,95 Metern</b> Spannweite, wiegt leer rund elf Tonnen und startet mit höchstens <b>rund 23,5 Tonnen</b>.",
           "Zwei Eurojet-<b>EJ200</b>-Triebwerke liefern je <b>rund 60 Kilonewton</b> Trockenschub und <b>rund 90 Kilonewton</b> mit Nachbrenner. Damit erreicht der Jet <b>Mach 2,0</b> und eine Dienstgipfelhöhe von <b>rund 16.800 Metern</b> (<b>55.000 Fuß</b>), steigt in etwa zweieinhalb Minuten auf über <b>10.000 Meter</b> und ist für <b>+9 g</b> zugelassen. Als eine von wenigen Maschinen beherrscht er <b>Supercruise</b>, also anhaltenden Überschallflug ohne Nachbrenner.",
@@ -120,7 +120,7 @@ export const WISSEN6 = {
       },
       { zwischen: "F-35" },
       {
-        titel: "Zelle und Antrieb",
+        titel: "Aufbau und Antrieb",
         absaetze: [
           "Die <b>F-35A Lightning II</b> ist ein einstrahliger Tarnkappenjet der <b>fünften Generation</b>. Sie ist mit <b>15,7 Metern</b> Länge und <b>10,7 Metern</b> Spannweite ähnlich groß wie der Eurofighter, aber deutlich schwerer: <b>rund 13 Tonnen</b> leer, bis zu <b>31,8 Tonnen</b> beim Start.",
           "Ihr einzelnes Pratt-und-Whitney-<b>F135</b>-Triebwerk ist mit <b>rund 125 Kilonewton</b> Trockenschub und <b>rund 190 Kilonewton</b> mit Nachbrenner das stärkste Kampfjettriebwerk im Truppendienst. Die F-35A erreicht <b>Mach 1,6</b> und <b>rund 15.000 Meter</b> Dienstgipfelhöhe (<b>50.000 Fuß</b>), fliegt <b>+9 g</b> und hat einen Kampfradius von <b>rund 1.100 Kilometern</b>.",
