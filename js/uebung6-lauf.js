@@ -1,28 +1,22 @@
-// Ablauf Mission 6 (Wissensabfrage) im Vollbild. Vier Frageformen:
-// Musterbild mit Texteingabe, Wissensfrage mit Texteingabe (wahlweise mit
-// Bild, etwa Dienstgradabzeichen), Auswahlfrage mit vier Knöpfen und
-// Reflexionsfrage fürs Gespräch mit Hinweisen und Selbsteinschätzung.
-// Die Prüfung der Eingaben ist großzügig (Spitznamen zählen, Schreibweise
-// egal, siehe muster6.js). Ohne Zeitdruck: Es geht ums Erkennen und ums
-// Formulieren, nicht ums Tempo. Der Wissensbereich darunter ist ein
-// Lexikon: je Bereich ein aufklappbarer Abschnitt, die Flugzeugmuster
-// mit Bildkarten, die übrigen Bereiche mit Wissenskarten.
-import { GRUPPEN, MUSTER, istRichtig, anzeigenamen, bildpfad } from "./muster6.js";
+// Ablauf Mission 6 (Wissensabfrage) im Vollbild, als Karteikartenabfrage
+// (Willis Vorgabe vom 28.08.2026): vorn die Frage, bei Bildfragen das Foto
+// oder Abzeichen, ein Klick dreht die Karte um, hinten steht die Antwort,
+// danach die Selbsteinschätzung GEWUSST oder MUSS ICH ÜBEN. Nur der
+// Bereich Persönliches bleibt in Textform: Gesprächsfrage, Hinweise
+// aufdecken, selbst einschätzen. Ohne Zeitdruck, die Kennzahl ist der
+// selbst eingeschätzte Übungsstand in Prozent. Der Wissensbereich darunter
+// ist ein Lexikon: je Bereich ein aufklappbarer Abschnitt.
+import { GRUPPEN, MUSTER, anzeigenamen, bildpfad } from "./muster6.js";
 import { WISSEN6, WISSEN6_REIHE } from "./wissen6.js";
-import { BEREICHE, FRAGENZAHLEN, erzeugeFragen, pruefeEingabe6, kennzahl } from "./uebung6.js";
+import { BEREICHE, FRAGENZAHLEN, erzeugeFragen, karteVon, kennzahl } from "./uebung6.js";
 import { ANSICHTEN } from "./muster6-ansichten.js";
-
-// Nach richtigen Antworten geht es zügig weiter, nach falschen bleibt Zeit,
-// die richtige Antwort zu lesen. Ein Klick überspringt die Wartezeit.
-const RUECKMELDEDAUER_RICHTIG = 900;
-const RUECKMELDEDAUER_FALSCH = 2600;
 
 export function erzeugeUebung6({ speicher }) {
   let einstellung = { bereich: "flugzeugmuster", fragen: 20 };
-  const hinweis = "Wissensabfrage fürs psychologische Gespräch: Bereich wählen, dann kommen "
-    + "Bild-, Eingabe- und Auswahlfragen ohne Zeitdruck; bei Persönliches sind es Gesprächsfragen "
-    + "mit Hinweisen und Selbsteinschätzung. Eingaben werden großzügig geprüft, Spitznamen zählen, "
-    + "Schreibweise ist egal. Das Lexikon darunter enthält das Wissen aller Bereiche zum Nachlesen.";
+  const hinweis = "Wissensabfrage fürs psychologische Gespräch als Karteikarten: Bereich wählen, "
+    + "je Karte die Frage (oder das Bild) ansehen, im Kopf antworten, Karte anklicken zum Umdrehen "
+    + "und selbst einschätzen: gewusst oder üben. Nur Persönliches läuft als Gesprächsfragen in "
+    + "Textform mit Hinweisen. Das Lexikon darunter enthält das Wissen aller Bereiche zum Nachlesen.";
 
   async function ladeEinstellung() {
     const gespeichert = await speicher.ladeEinstellung("uebung6-einstellung", {});
@@ -131,12 +125,8 @@ export function erzeugeUebung6({ speicher }) {
     let nummer = 0;
     let gestellt = 0;
     let richtig = 0;
-    const zeitgeber = new Set();
-    const spaeter = (fn, ms) => { const t = setTimeout(() => { zeitgeber.delete(t); fn(); }, ms); zeitgeber.add(t); return t; };
-
     const raeumeAuf = () => {
       beendet = true;
-      for (const t of zeitgeber) clearTimeout(t);
       document.removeEventListener("fullscreenchange", beiVollbildwechsel);
       document.removeEventListener("visibilitychange", beiSichtwechsel);
       schleier.remove();
@@ -150,82 +140,65 @@ export function erzeugeUebung6({ speicher }) {
     document.addEventListener("visibilitychange", beiSichtwechsel);
     registriereAbbruch(() => verlasse?.());
 
-    // Gemeinsamer Abschluss einer Frage: zählen, Rückmeldung zeigen, nach
-    // der Wartezeit (oder auf Klick) weiter zur nächsten Frage.
-    const schliesseFrage = ({ getroffen, meldung }) => {
+    // Selbsteinschätzung zählt wie eine Antwort, danach geht es ohne
+    // Wartezeit zur nächsten Karte, das ist das Karteikartentempo.
+    const bewerte = (getroffen) => {
       gestellt += 1;
       if (getroffen) richtig += 1;
-      const rueck = mitte.querySelector(".rueckmeldung");
-      rueck.textContent = meldung;
-      rueck.classList.add(getroffen ? "gut" : "schlecht");
-      let weitergegangen = false;
-      const weiter = () => {
-        if (weitergegangen || beendet) return;
-        weitergegangen = true;
-        schleier.removeEventListener("click", weiter);
-        stelle();
-      };
-      spaeter(weiter, getroffen ? RUECKMELDEDAUER_RICHTIG : RUECKMELDEDAUER_FALSCH);
-      schleier.addEventListener("click", weiter);
+      stelle();
     };
 
-    const eingabefrage = (frage) => {
-      const bild = frage.bild ?? null;
-      const richtigText = frage.form === "muster" ? frage.muster.name : frage.loesungen[0];
+    // Karteikarte: vorn die Frage, bei Bildfragen das Foto oder Abzeichen,
+    // ein Klick dreht die Karte um, hinten stehen Antwort, weitere zählende
+    // Namen und bei Mustern der Steckbrief. Dann die Selbsteinschätzung.
+    const kartenfrage = (frage) => {
+      const karte = karteVon(frage);
       mitte.innerHTML = `
-        ${frage.frage ? `<div class="frage">${frage.frage}</div>` : ""}
-        ${bild ? `<div class="quizbild ${frage.form === "muster" ? "" : "hochkant"}"><img src="${bild}" alt="Zur Frage gehörendes Bild"></div>` : ""}
-        <form class="eingabezeile" id="u6-form">
-          <input class="zahlenfeld musterfeld" id="u6-eingabe" type="text" autocomplete="off"
-            autocapitalize="off" spellcheck="false" placeholder="${frage.form === "muster" ? "Muster benennen" : "Antwort"}">
-        </form>
+        <div class="kartenstapel abfragestapel">
+          <div class="karteikarte dahinter zwei"></div>
+          <div class="karteikarte dahinter eins"></div>
+          <div class="karteikarte oben">
+            <div class="kartenseite">
+              ${karte.bild ? `<div class="kartenbild ${frage.form === "muster" ? "" : "hochkant"}"><img src="${karte.bild}" alt="Zur Frage gehörendes Bild"></div>` : ""}
+              <div class="kartenzeile kartenfrage">${karte.frage}</div>
+            </div>
+            <div class="kartenfuss"><span class="kartenzaehler">Karte anklicken zum Umdrehen</span></div>
+          </div>
+        </div>
+        <div class="antworten wissensantworten" hidden>
+          <button class="antwortknopf" data-wert="ja">GEWUSST</button>
+          <button class="antwortknopf" data-wert="nein">MUSS ICH ÜBEN</button>
+        </div>
         <div class="rueckmeldung"></div>`;
-      const form = mitte.querySelector("#u6-form");
-      const eingabe = mitte.querySelector("#u6-eingabe");
-      eingabe.focus();
-      let entschieden = false;
-      form.addEventListener("click", (e) => e.stopPropagation());
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        if (entschieden || beendet || eingabe.value.trim() === "") return;
-        entschieden = true;
-        const getroffen = frage.form === "muster"
-          ? istRichtig(eingabe.value, frage.muster)
-          : pruefeEingabe6(eingabe.value, frage);
-        eingabe.disabled = true;
-        eingabe.classList.add(getroffen ? "richtig" : "falsch");
-        schliesseFrage({
-          getroffen,
-          meldung: getroffen ? `RICHTIG · ${richtigText}` : `FALSCH · richtig: ${richtigText}`,
-        });
-      });
-    };
-
-    const auswahlfrage = (frage) => {
-      mitte.innerHTML = `
-        <div class="frage">${frage.frage}</div>
-        <div class="antworten wissensantworten">${frage.antworten.map((a, i) =>
-          `<button class="antwortknopf" data-nr="${i}">${a}</button>`).join("")}</div>
-        <div class="rueckmeldung"></div>`;
-      let entschieden = false;
-      mitte.querySelector(".antworten").addEventListener("click", (e) => {
-        const knopf = e.target.closest(".antwortknopf");
-        if (!knopf || entschieden || beendet) return;
+      const oben = mitte.querySelector(".karteikarte.oben");
+      const knoepfe = mitte.querySelector(".antworten");
+      let umgedreht = false;
+      oben.addEventListener("click", (e) => {
         e.stopPropagation();
-        entschieden = true;
-        const getroffen = knopf.textContent === frage.richtig;
-        mitte.querySelectorAll(".antwortknopf").forEach((k) => {
-          k.disabled = true;
-          if (k.textContent === frage.richtig) k.classList.add("richtig");
-          else if (k === knopf) k.classList.add("falsch");
-        });
-        schliesseFrage({ getroffen, meldung: getroffen ? "RICHTIG" : "FALSCH" });
+        if (umgedreht || beendet) return;
+        umgedreht = true;
+        oben.classList.add("blaettert");
+        const auch = karte.auch.length
+          ? `<div class="kartenzeile kartenauch">auch richtig: ${karte.auch.join(", ")}</div>` : "";
+        const zusatz = karte.zusatz
+          ? `<div class="kartenzeile kartenzusatz">${karte.zusatz}</div>` : "";
+        oben.innerHTML = `<div class="kartenseite">
+            <div class="kartenkopf">${karte.antwort}</div>
+            ${auch}${zusatz}
+          </div>`;
+        knoepfe.hidden = false;
+      });
+      knoepfe.addEventListener("click", (e) => {
+        const knopf = e.target.closest(".antwortknopf");
+        if (!knopf || beendet) return;
+        e.stopPropagation();
+        knoepfe.querySelectorAll(".antwortknopf").forEach((k) => { k.disabled = true; });
+        bewerte(knopf.dataset.wert === "ja");
       });
     };
 
-    // Reflexionsfrage: erst laut oder im Kopf antworten, dann die Hinweise
-    // aufdecken und selbst einschätzen. "Saß" zählt wie eine richtige
-    // Antwort, so wird die Kennzahl zum Übungsstand.
+    // Reflexionsfrage (nur Persönliches, bleibt Textform): erst laut oder
+    // im Kopf antworten, dann die Hinweise aufdecken und selbst einschätzen.
     const reflexionsfrage = (frage) => {
       mitte.innerHTML = `
         <div class="frage">${frage.frage}</div>
@@ -243,15 +216,11 @@ export function erzeugeUebung6({ speicher }) {
             <button class="antwortknopf" data-wert="ja">SASS</button>
             <button class="antwortknopf" data-wert="nein">MUSS ICH ÜBEN</button>
           </div>`;
-        let entschieden = false;
         block.querySelector(".antworten").addEventListener("click", (e) => {
           const knopf = e.target.closest(".antwortknopf");
-          if (!knopf || entschieden || beendet) return;
-          entschieden = true;
-          const getroffen = knopf.dataset.wert === "ja";
+          if (!knopf || beendet) return;
           block.querySelectorAll(".antwortknopf").forEach((k) => { k.disabled = true; });
-          knopf.classList.add(getroffen ? "richtig" : "falsch");
-          schliesseFrage({ getroffen, meldung: getroffen ? "SASS" : "KOMMT AUF DIE ÜBUNGSLISTE" });
+          bewerte(knopf.dataset.wert === "ja");
         });
       });
     };
@@ -265,9 +234,8 @@ export function erzeugeUebung6({ speicher }) {
       // Die nächste Aufnahme lädt schon im Hintergrund, damit der Wechsel
       // nicht am Netz hängt.
       if (fragen[nummer]?.bild) new Image().src = fragen[nummer].bild;
-      if (frage.form === "auswahl") auswahlfrage(frage);
-      else if (frage.form === "reflexion") reflexionsfrage(frage);
-      else eingabefrage(frage);
+      if (frage.form === "reflexion") reflexionsfrage(frage);
+      else kartenfrage(frage);
     };
 
     // Ergebnistafel für beide Wege: vollendeter Lauf (gewertet) und Abbruch
@@ -277,7 +245,6 @@ export function erzeugeUebung6({ speicher }) {
     const zeigeErgebnis = async (gewertet) => {
       if (beendet || ergebnisOffen) return;
       ergebnisOffen = true;
-      for (const t of zeitgeber) clearTimeout(t);
       document.removeEventListener("fullscreenchange", beiVollbildwechsel);
       document.removeEventListener("visibilitychange", beiSichtwechsel);
       kopf.textContent = "";
@@ -289,7 +256,7 @@ export function erzeugeUebung6({ speicher }) {
       const bereichsname = BEREICHE.find((b) => b.id === bereich)?.name ?? bereich;
       const trefferzeile = bereich === "persoenlich"
         ? `${richtig} von ${gestellt} Antworten saßen nach eigener Einschätzung`
-        : `${richtig} von ${gestellt} Fragen richtig`;
+        : `${richtig} von ${gestellt} Karten gewusst`;
       const abbruchzeile = gewertet ? "" : `<span class="abgebrochen">ABGEBROCHEN · DER LAUF ZÄHLT NICHT ZUR STATISTIK</span>`;
       const tafel = document.createElement("div");
       tafel.className = "ergebnisschicht";

@@ -98,9 +98,11 @@ unter `bilder/abzeichen/`), Aufbau der Bundeswehr, Aktuelle Themen,
 Beschaffungen und Bestände sowie Persönliches. Die Fakten der
 recherchierten Bereiche tragen den Stand August 2026 (Rechercheprotokolle
 mit Quellen je Aussage liegen der Sitzung bei; als unsicher markierte
-Punkte wurden nicht übernommen). Drei Frageformen: tolerante Texteingabe
-(wahlweise mit Bild), Auswahlfrage mit vier Antworten, Reflexionsfrage
-mit Hinweisen und Selbsteinschätzung (Persönliches). Das Lexikon zeigt
+Punkte wurden nicht übernommen). Seit dem 28.08.2026 läuft die
+Wissensabfrage als Karteikarten (Willis Vorgabe): vorn Frage oder Bild,
+Karte umdrehen, hinten die Antwort, dann Selbsteinschätzung GEWUSST oder
+MUSS ICH ÜBEN; nur Persönliches bleibt in Textform mit Hinweisen. Die
+Kennzahl ist der selbst eingeschätzte Übungsstand in Prozent. Das Lexikon zeigt
 je Bereich einen aufklappbaren Abschnitt, die Flugzeugmuster starten
 offen. Da sich aktuelle Zahlen ändern, sollten Themen und Beschaffungen
 vor der Prüfung im September 2026 noch einmal gegengelesen werden.

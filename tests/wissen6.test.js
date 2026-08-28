@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { WISSEN6, WISSEN6_REIHE } from "../js/wissen6.js";
-import { BEREICHE, erzeugeFragen, pruefeEingabe6 } from "../js/uebung6.js";
+import { BEREICHE, erzeugeFragen, karteVon } from "../js/uebung6.js";
+import { MUSTER } from "../js/muster6.js";
 
 const wurzel = fileURLToPath(new URL("..", import.meta.url));
 
@@ -57,26 +58,34 @@ test("erzeugeFragen zieht aus einem Katalogbereich ohne Doppelungen", () => {
   assert.equal(texte.size, 10);
 });
 
-test("Auswahlfragen bekommen vier gemischte Antworten samt der richtigen", () => {
-  const fragen = erzeugeFragen({ bereich: "dienstgrade", anzahl: 0, rnd: festerZufall() });
-  const auswahl = fragen.filter((f) => f.form === "auswahl");
-  assert.ok(auswahl.length >= 5);
-  for (const f of auswahl) {
-    assert.equal(f.antworten.length, 4);
-    assert.ok(f.antworten.includes(f.richtig));
-  }
-});
-
 test("erzeugeFragen mit 0 nimmt den ganzen Katalog", () => {
   const alle = erzeugeFragen({ bereich: "persoenlich", anzahl: 0, rnd: festerZufall() });
   assert.equal(alle.length, WISSEN6.persoenlich.fragen.length);
 });
 
-test("pruefeEingabe6 ist großzügig bei Schreibweise und Umlauten", () => {
-  const frage = { loesungen: ["Kapitänleutnant", "Kapitaenleutnant"] };
-  assert.equal(pruefeEingabe6("kapitänleutnant", frage), true);
-  assert.equal(pruefeEingabe6("KAPITAENLEUTNANT", frage), true);
-  assert.equal(pruefeEingabe6("kapitaen leutnant", frage), true);
-  assert.equal(pruefeEingabe6("korvettenkapitaen", frage), false);
-  assert.equal(pruefeEingabe6("", frage), false);
+test("karteVon macht aus einer Musterfrage die Bildkarte mit Namen und Steckbrief", () => {
+  const f16 = MUSTER.find((m) => m.id === "f16");
+  const karte = karteVon({ form: "muster", muster: f16, bild: "bilder/muster/f16/2.jpg" });
+  assert.equal(karte.frage, "Welches Muster ist das?");
+  assert.equal(karte.bild, "bilder/muster/f16/2.jpg");
+  assert.equal(karte.antwort, f16.name);
+  assert.ok(karte.auch.includes("Viper"));
+  assert.equal(karte.zusatz, f16.steckbrief);
+});
+
+test("karteVon zeigt bei Eingabefragen die erste Lösung und streicht Schreibvarianten", () => {
+  const karte = karteVon({ frage: "Marine-Entsprechung des Hauptmanns?", form: "eingabe", loesungen: ["Kapitänleutnant", "Kapitaenleutnant"] });
+  assert.equal(karte.antwort, "Kapitänleutnant");
+  assert.deepEqual(karte.auch, []);
+  const mitAuch = karteVon({ frage: "Wer bildet Eurofighter-Piloten aus?", form: "eingabe", loesungen: ["TaktLwG 73", "73", "Steinhoff"] });
+  assert.equal(mitAuch.antwort, "TaktLwG 73");
+  assert.deepEqual(mitAuch.auch, ["73", "Steinhoff"]);
+});
+
+test("karteVon nimmt bei Auswahlfragen die richtige Antwort und trägt das Fragebild", () => {
+  const karte = karteVon({ frage: "Zielbestand Patriot?", form: "auswahl", richtig: "15 Feuereinheiten", falsch: ["7", "10", "24"] });
+  assert.equal(karte.antwort, "15 Feuereinheiten");
+  assert.equal(karte.bild, null);
+  const bildkarte = karteVon({ frage: "Welcher Dienstgrad ist das?", form: "eingabe", bild: "bilder/abzeichen/luftwaffe-major.png", loesungen: ["Major"] });
+  assert.equal(bildkarte.bild, "bilder/abzeichen/luftwaffe-major.png");
 });

@@ -2,7 +2,7 @@
 // Die Abfrage kennt mehrere Wissensbereiche: die Flugzeugmuster (Bildquiz
 // aus muster6.js) und die Katalogbereiche aus wissen6.js mit den Formen
 // eingabe, auswahl und reflexion.
-import { MUSTER, bildpfad, normalisiere } from "./muster6.js";
+import { MUSTER, bildpfad, normalisiere, anzeigenamen } from "./muster6.js";
 import { WISSEN6, WISSEN6_REIHE } from "./wissen6.js";
 import { mische } from "./zufall.js";
 
@@ -16,8 +16,7 @@ export const FRAGENZAHLEN = [10, 20, 0];
 
 // Ein Lauf stellt jede Frage höchstens einmal. Für die Flugzeugmuster wird
 // je Muster eine zufällige der vorhandenen Ansichten gezogen (ansichten:
-// { musterId: Bilderzahl }), bei Auswahlfragen werden die vier Antworten
-// gemischt.
+// { musterId: Bilderzahl }).
 export function erzeugeFragen({ bereich = "flugzeugmuster", ansichten = {}, anzahl, rnd = Math.random }) {
   if (bereich === "flugzeugmuster") {
     const verfuegbar = MUSTER.filter((m) => (ansichten[m.id] ?? 0) > 0);
@@ -30,17 +29,36 @@ export function erzeugeFragen({ bereich = "flugzeugmuster", ansichten = {}, anza
   }
   const katalog = WISSEN6[bereich]?.fragen ?? [];
   const gemischt = mische(katalog, rnd);
-  const gewaehlt = anzahl > 0 ? gemischt.slice(0, anzahl) : gemischt;
-  return gewaehlt.map((f) =>
-    f.form === "auswahl" ? { ...f, antworten: mische([f.richtig, ...f.falsch], rnd) } : { ...f });
+  return anzahl > 0 ? gemischt.slice(0, anzahl) : gemischt;
 }
 
-// Tolerante Prüfung der Texteingabe gegen die Lösungsliste einer Frage,
-// gleiche Normalisierung wie bei den Flugzeugmustern.
-export function pruefeEingabe6(eingabe, frage) {
-  const geprueft = normalisiere(eingabe);
-  if (geprueft === "") return false;
-  return frage.loesungen.some((l) => normalisiere(l) === geprueft);
+// Karteikartensicht einer Frage (Willis Vorgabe vom 28.08.2026: die
+// Wissensabfrage läuft als Karteikarten, nur Persönliches bleibt Text).
+// Vorderseite: Frage und gegebenenfalls Bild. Rückseite: die Antwort,
+// weitere zählende Namen (ohne Schreibvarianten, die nur die tolerante
+// Normalisierung bedienen) und bei Mustern der Steckbrief als Zusatz.
+export function karteVon(frage) {
+  if (frage.form === "muster") {
+    return {
+      frage: "Welches Muster ist das?",
+      bild: frage.bild,
+      antwort: frage.muster.name,
+      auch: anzeigenamen(frage.muster),
+      zusatz: frage.muster.steckbrief,
+    };
+  }
+  if (frage.form === "auswahl") {
+    return { frage: frage.frage, bild: null, antwort: frage.richtig, auch: [], zusatz: "" };
+  }
+  const gesehen = new Set([normalisiere(frage.loesungen[0])]);
+  const auch = [];
+  for (const l of frage.loesungen.slice(1)) {
+    const norm = normalisiere(l);
+    if (gesehen.has(norm)) continue;
+    gesehen.add(norm);
+    auch.push(l);
+  }
+  return { frage: frage.frage, bild: frage.bild ?? null, antwort: frage.loesungen[0], auch, zusatz: "" };
 }
 
 export function kennzahl(richtig, gestellt) {
