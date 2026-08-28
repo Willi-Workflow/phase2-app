@@ -193,12 +193,15 @@ export function pruefeEingabe(text, antwort) {
 }
 
 // Punktrechnung je Aufgabe, Aufteilung von Willi festgelegt: falsch gibt
-// nichts, richtig gibt den Grundanteil plus einen mit der Restzeit linear
-// wachsenden Bonus. Eine langsame richtige Antwort schlägt so immer jede
-// falsche.
+// nichts, richtig gibt den Grundanteil plus Bonus. Volle Punktzahl gibt es
+// für jede Antwort innerhalb von acht Sekunden (Willis Vorgabe vom
+// 28.08.2026), danach schmilzt der Bonus linear bis zum Zeitlimit. Eine
+// langsame richtige Antwort schlägt so immer jede falsche.
+export const VOLLE_PUNKTE_MS = 8000;
 export function punkteFuerAntwort(richtig, restzeitMs, limitMs) {
   if (!richtig) return 0;
-  const anteil = Math.max(0, Math.min(1, restzeitMs / limitMs));
+  const spielraum = Math.max(1, limitMs - VOLLE_PUNKTE_MS);
+  const anteil = Math.max(0, Math.min(1, restzeitMs / spielraum));
   return 7 + 3 * anteil;
 }
 

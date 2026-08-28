@@ -39,9 +39,10 @@ export function erzeugeUebung6({ speicher }) {
     };
   }
 
-  // Lexikon fest unter Mission und Auswertung: je Bereich ein aufklappbarer
-  // Abschnitt. Die Flugzeugmuster starten offen (Bildkarten, Klick aufs Bild
-  // blättert durch die Ansichten), die übrigen Bereiche als Wissenskarten.
+  // Lexikon fest unter Mission und Auswertung: je Bereich ein Kapitel zum
+  // Aufklappen, alle starten zu (Willis Vorgabe vom 28.08.2026). Die
+  // Flugzeugmuster als Bildkarten (Klick aufs Bild blättert durch die
+  // Ansichten), die übrigen Bereiche als Wissenskarten mit Nachschlagteil.
   function musterLexikon() {
     return GRUPPEN.map((g) => {
       const eintraege = MUSTER.filter((m) => m.gruppe === g.id).map((m) => {
@@ -93,7 +94,7 @@ export function erzeugeUebung6({ speicher }) {
 
   function zeichneUnten(feld) {
     const abschnitte = [
-      `<details class="lexikonklappe" open>
+      `<details class="lexikonklappe">
          <summary>FLUGZEUGMUSTER</summary>
          ${musterLexikon()}
        </details>`,

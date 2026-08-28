@@ -201,6 +201,14 @@ test("punkteFuerAntwort: richtig liegt zwischen Grundanteil und zehn", () => {
   assert.ok(grund >= 5 && grund < 10);
 });
 
+test("punkteFuerAntwort: volle Punktzahl für jede Antwort binnen acht Sekunden", () => {
+  const limit = 20000;
+  assert.equal(punkteFuerAntwort(true, limit, limit), 10);
+  assert.equal(punkteFuerAntwort(true, limit - 8000, limit), 10);
+  assert.ok(punkteFuerAntwort(true, limit - 9000, limit) < 10);
+  assert.equal(punkteFuerAntwort(true, 0, limit), 7);
+});
+
 test("punkteFuerAntwort: mehr Restzeit gibt nie weniger Punkte", () => {
   let vorher = 0;
   for (let rest = 0; rest <= 30000; rest += 3000) {
