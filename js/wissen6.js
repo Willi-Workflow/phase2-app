@@ -144,7 +144,7 @@ export const WISSEN6 = {
         titel: "Aufbau und Antrieb",
         absaetze: [
           "Der <b>Eurofighter</b> ist ein <b>Deltaflügler mit Canards</b> und absichtlich instabil ausgelegt: Erst die <b>Fly-by-wire-Steuerung</b> macht ihn fliegbar, genau das verschafft ihm seine Wendigkeit. Die Zelle misst <b>15,96 Meter</b> Länge bei <b>10,95 Metern</b> Spannweite, wiegt leer rund elf Tonnen und startet mit höchstens <b>rund 23,5 Tonnen</b>.",
-          "Zwei Eurojet-<b>EJ200</b>-Triebwerke liefern je <b>rund 60 Kilonewton</b> Trockenschub und <b>rund 90 Kilonewton</b> mit Nachbrenner. Damit erreicht der Jet <b>Mach 2,0</b>, steigt in etwa zweieinhalb Minuten auf über <b>10.000 Meter</b> und kommt auf eine Flughöhe von bis zu <b>rund 16.800 Metern</b> (<b>55.000 Fuß</b>). Die Zelle hält Manöver mit dem Neunfachen der Erdanziehung aus (<b>+9 g</b>). Als eine von wenigen Maschinen beherrscht er <b>Supercruise</b>, also anhaltenden Überschallflug ohne Nachbrenner.",
+          "Zwei Eurojet-<b>EJ200</b>-Triebwerke liefern je <b>rund 60 Kilonewton</b> Trockenschub und <b>rund 90 Kilonewton</b> mit Nachbrenner. Damit erreicht der Jet <b>Mach 2,0</b> (die Bundeswehr selbst nennt bis zu <b>Mach 2,35</b>), steigt in etwa zweieinhalb Minuten auf über <b>10.000 Meter</b> und kommt auf eine Flughöhe von bis zu <b>rund 16.800 Metern</b> (<b>55.000 Fuß</b>). Die Zelle hält Manöver mit dem Neunfachen der Erdanziehung aus (<b>+9 g</b>). Als eine von wenigen Maschinen beherrscht er <b>Supercruise</b>, also anhaltenden Überschallflug ohne Nachbrenner.",
         ],
       },
       {
@@ -185,7 +185,7 @@ export const WISSEN6 = {
         absaetze: [
           "Ihre Hauptbewaffnung trägt die F-35 im <b>internen Waffenschacht</b>, damit die Tarnwirkung erhalten bleibt. Wenn Tarnung nicht gefragt ist, lädt sie im <b>Beast Mode</b> auf <b>vier internen und sechs externen Stationen</b> deutlich mehr. Fest eingebaut ist die vierläufige 25-mm-Kanone <b>GAU-22/A</b>, die nur die A-Version intern führt.",
           "Ihre eigentliche Stärke ist die <b>Sensorfusion</b>: Radar, elektrooptische Sensoren und das <b>Distributed Aperture System</b> verschmelzen zu einem Lagebild direkt im Helm, der Pilot blickt damit durch die eigene Zelle hindurch. Der Erstflug war <b>2006</b>.",
-          "Ihr Radar ist das <b>AESA</b>-Radar <b>AN/APG-81</b> von Northrop Grumman, der elektrooptische Zielsensor heißt <b>EOTS</b>. Als erster Kampfjet seit rund 50 Jahren hat die F-35 kein <b>Head-up-Display</b> mehr: Alle Fluginformationen erscheinen direkt auf dem Visier des für jeden Piloten individuell angefertigten Helms.",
+          "Ihr Radar ist das <b>AESA</b>-Radar <b>AN/APG-81</b> von Northrop Grumman, der elektrooptische Zielsensor heißt <b>EOTS</b>; für die Ausbaustufe Block 4 ist langfristig das neue AN/APG-85 geplant, dessen Entwicklung sich verzögert. Als erster Kampfjet seit rund 50 Jahren hat die F-35 kein <b>Head-up-Display</b> mehr: Alle Fluginformationen erscheinen direkt auf dem Visier des für jeden Piloten individuell angefertigten Helms.",
         ],
       },
       {
@@ -206,7 +206,7 @@ export const WISSEN6 = {
     fragen: [
       { frage: "Wie viele Triebwerke hat der Eurofighter, und wie heißen sie?", form: "eingabe", loesungen: ["Zwei Eurojet EJ200", "2 EJ200", "zwei EJ200", "EJ200"] },
       { frage: "Welches Triebwerk treibt die F-35A an?", form: "eingabe", loesungen: ["Pratt und Whitney F135", "F135", "Pratt & Whitney F135"] },
-      { frage: "Welche Höchstgeschwindigkeit erreicht der Eurofighter?", form: "eingabe", loesungen: ["Mach 2,0", "Mach 2"] },
+      { frage: "Welche Höchstgeschwindigkeit erreicht der Eurofighter?", form: "eingabe", loesungen: ["Mach 2,0", "Mach 2", "Mach 2,35"] },
       { frage: "Welche Höchstgeschwindigkeit erreicht die F-35A?", form: "eingabe", loesungen: ["Mach 1,6", "Mach 1.6"] },
       { frage: "Welche Bordkanone trägt der Eurofighter?", form: "eingabe", loesungen: ["27-mm-Mauser BK-27", "BK-27", "BK27", "Mauser BK-27"] },
       { frage: "Welche Bordkanone trägt die F-35A?", form: "eingabe", loesungen: ["25-mm-GAU-22/A, vierläufig und intern", "GAU-22", "GAU22", "GAU-22/A"] },
