@@ -89,6 +89,22 @@ Beide Punkte sind entschieden und gebaut:
   `bilder/muster/QUELLEN.md`, Bilderzahl je Muster erzeugt
   `zaehle-ansichten.py` nach `js/muster6-ansichten.js`.
 
+## Erweiterung vom 28.08.2026: sieben Wissensbereiche
+
+Auf Willis Auftrag kamen sechs Bereiche zu den Flugzeugmustern dazu,
+Daten in `js/wissen6.js`: Standorte und Verbände, Eigener Ausbildungsweg,
+Dienstgrade (Inhalte und Abzeichen aus der Bundeswehr-Lern-App, PNGs
+unter `bilder/abzeichen/`), Aufbau der Bundeswehr, Aktuelle Themen,
+Beschaffungen und Bestände sowie Persönliches. Die Fakten der
+recherchierten Bereiche tragen den Stand August 2026 (Rechercheprotokolle
+mit Quellen je Aussage liegen der Sitzung bei; als unsicher markierte
+Punkte wurden nicht übernommen). Drei Frageformen: tolerante Texteingabe
+(wahlweise mit Bild), Auswahlfrage mit vier Antworten, Reflexionsfrage
+mit Hinweisen und Selbsteinschätzung (Persönliches). Das Lexikon zeigt
+je Bereich einen aufklappbaren Abschnitt, die Flugzeugmuster starten
+offen. Da sich aktuelle Zahlen ändern, sollten Themen und Beschaffungen
+vor der Prüfung im September 2026 noch einmal gegengelesen werden.
+
 ## Quellen für den aktuellen Stand
 
 - Ausrüstung der Luftwaffe 2026: suv.report/ausruestung-der-luftwaffe-2026-bestaende-luecken-beschaffungen
