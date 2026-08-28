@@ -851,24 +851,47 @@ main { position: relative; z-index: 1; }
 .fragetext { font-size: 12px; letter-spacing: 0.04em; color: var(--gedeckt); }
 .antworttext { margin-top: 2px; font-size: 13px; letter-spacing: 0.04em; color: var(--hell); }
 
-/* Mission 6: das Lexikon als Einsatzmappe. Oben das Kapitelregister wie an
-   einem Ordner, darunter das aufgeschlagene Kapitel; ohne Wahl liegt das
-   Deckblatt auf. */
-.lexikonmappe { border: 1px solid #39422c; border-radius: 12px; background: #10140b; overflow: hidden; box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35); }
-.mappenreiter { display: flex; flex-wrap: wrap; gap: 6px; padding: 14px 14px 0; background: linear-gradient(#171c10, #10140b); border-bottom: 1px solid #39422c; }
-.reiter { font-family: inherit; font-size: 11px; letter-spacing: 0.14em; color: var(--gedeckt); background: #1a2113; border: 1px solid #39422c; border-bottom: none; border-radius: 9px 9px 0 0; padding: 10px 14px 9px; cursor: pointer; position: relative; top: 1px; }
-.reiter:hover { color: var(--hell); background: #232c18; }
-.reiter.aktiv { color: #1c2013; background: #cfc39a; border-color: #cfc39a; font-weight: 600; }
-.mappenblatt { padding: 22px 20px 26px; }
-.deckblatt { display: grid; place-items: center; padding: 46px 0 52px; }
-.deckblattrahmen { display: grid; justify-items: center; gap: 14px; border: 1px solid #39422c; outline: 1px solid #262e1c; outline-offset: 6px; border-radius: 4px; padding: 44px 60px; }
-.deckblattkicker { font-size: 10px; letter-spacing: 0.3em; color: var(--gedeckt); }
-.deckblatttitel { font-size: clamp(30px, 4vw, 44px); letter-spacing: 0.3em; color: var(--hell); font-weight: 700; }
-.deckblatthinweis { font-size: 11px; letter-spacing: 0.16em; color: var(--gedeckt); }
-.kapitelkopf { display: grid; gap: 4px; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid #39422c; }
-.kapitelnummer { font-size: 10px; letter-spacing: 0.28em; color: var(--gedeckt); }
-.kapiteltitel { font-size: clamp(20px, 2.4vw, 28px); letter-spacing: 0.18em; color: var(--hell); font-weight: 700; }
-.mappenblatt [data-blatt][hidden] { display: none; }
+/* Mission 6: das Lexikon als Buch. Einband und Papier sind mit Higgsfield
+   erzeugte Aufnahmen (bilder/lexikon/), aufgeschlagen wird über den Deckel,
+   navigiert über Inhaltsverzeichnis und Blätterzeilen, nicht über Knöpfe.
+   Auf den Papierseiten gilt Buchsatz: Serifenschrift, dunkle Tinte, die
+   dunklen Kartenkästen der App weichen zurückhaltenden Linien. */
+.lexikonbuch { width: 100%; display: grid; justify-items: center; }
+.lexikonbuch [data-blatt][hidden] { display: none; }
+.buchdeckel { position: relative; width: min(520px, 88vw); aspect-ratio: 3 / 4; background: url("bilder/lexikon/einband.jpg") center / cover no-repeat; border-radius: 6px 14px 14px 6px; box-shadow: 0 24px 50px rgba(0, 0, 0, 0.55), inset 0 0 60px rgba(0, 0, 0, 0.25); display: grid; align-content: center; justify-items: center; gap: 18px; padding: 40px; cursor: pointer; }
+.buchdeckel:hover { box-shadow: 0 28px 56px rgba(0, 0, 0, 0.65), inset 0 0 60px rgba(0, 0, 0, 0.25); }
+.deckeltitel { font-size: clamp(38px, 5vw, 56px); letter-spacing: 0.26em; color: #2c3226; text-shadow: 0 1px 0 rgba(214, 214, 190, 0.28), 0 -1px 2px rgba(0, 0, 0, 0.55); }
+.deckeluntertitel { font-size: 11px; letter-spacing: 0.3em; color: #333a2c; text-shadow: 0 1px 0 rgba(214, 214, 190, 0.22); }
+.deckelhinweis { margin-top: 26px; font-size: 10px; letter-spacing: 0.2em; color: rgba(43, 49, 37, 0.85); text-shadow: 0 1px 0 rgba(214, 214, 190, 0.18); }
+.buchseite { position: relative; width: 100%; background: url("bilder/lexikon/papier.jpg") center / cover no-repeat; border-radius: 4px 10px 10px 4px; padding: 44px clamp(26px, 4vw, 60px) 30px; color: #2e2a20; font-family: Georgia, "Times New Roman", serif; box-shadow: 2px 2px 0 #d6cbaa, 4px 4px 0 #cabf9e, 6px 6px 0 #bdb192, 0 18px 40px rgba(0, 0, 0, 0.55); }
+.buchseite::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(90deg, rgba(60, 45, 20, 0.16), rgba(60, 45, 20, 0.04) 46px, transparent 90px); pointer-events: none; }
+.buchseite > * { position: relative; }
+
+/* Kapitelkopf und Inhaltsverzeichnis im Buchsatz */
+.kapitelkopf { display: grid; gap: 6px; justify-items: center; text-align: center; margin-bottom: 26px; padding-bottom: 14px; border-bottom: 2px solid rgba(70, 58, 34, 0.4); }
+.kapitelnummer { font-style: italic; font-size: 15px; color: #6b6046; }
+.kapiteltitel { font-family: "Black Ops One", Georgia, serif; font-size: clamp(20px, 2.4vw, 30px); letter-spacing: 0.16em; color: #34301f; }
+.inhaltsliste { list-style: none; max-width: 640px; margin: 8px auto 30px; display: grid; gap: 16px; }
+.inhaltseintrag { display: flex; align-items: baseline; gap: 10px; font-size: 19px; color: #2e2a20; cursor: pointer; }
+.inhaltseintrag:hover .inhaltstitel { text-decoration: underline; text-underline-offset: 4px; }
+.punktlinie { flex: 1; border-bottom: 2px dotted rgba(70, 58, 34, 0.55); transform: translateY(-4px); }
+.inhaltsnummer { font-style: italic; color: #6b6046; }
+.seitenfuss { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-top: 34px; padding-top: 12px; border-top: 1px solid rgba(70, 58, 34, 0.3); }
+.blaettern { font-style: italic; font-size: 15px; color: #5b5138; cursor: pointer; }
+.blaettern:hover { color: #2e2a20; text-decoration: underline; text-underline-offset: 4px; }
+
+/* Kapitelinhalte auf Papier: dunkle Tinte statt heller Schrift, Linien
+   statt dunkler Kästen. Die Fotos der Muster und Abzeichen bleiben. */
+.buchseite .lexikongruppe { color: #4a4028; border-bottom: 1px solid rgba(70, 58, 34, 0.4); font-family: Georgia, serif; font-weight: 700; letter-spacing: 0.18em; }
+.buchseite .lexikonkarte { background: rgba(255, 252, 240, 0.42); border: 1px solid rgba(70, 58, 34, 0.32); }
+.buchseite .lexikonname { color: #2e2a20; }
+.buchseite .lexikonname .lexikonnamen, .buchseite .lexikonnamen { color: #6b6046; }
+.buchseite .lexikontext { color: #4a4335; }
+.buchseite .lexikonbild.leer { color: #6b6046; background: rgba(70, 58, 34, 0.12); }
+.buchseite .bildzaehler { color: #f2e9d3; }
+.buchseite .fragenzeile { background: rgba(255, 252, 240, 0.42); border: 1px solid rgba(70, 58, 34, 0.28); }
+.buchseite .fragetext { color: #6b6046; }
+.buchseite .antworttext { color: #2e2a20; }
 
 /* Missionen ohne Auswertung (etwa das psychologische Gespräch): das
    Missionsfeld steht allein und mittig statt im Zweierraster. */

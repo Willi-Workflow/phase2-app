@@ -89,12 +89,12 @@ export function erzeugeUebung6({ speicher }) {
       : "";
   }
 
-  // Lexikon fest unter Mission und Auswertung, gestaltet als Einsatzmappe
-  // (Willis Vorgabe vom 28.08.2026: wie ein Buch, nicht bloß aufklappen):
-  // oben das Kapitelregister, darunter das aufgeschlagene Kapitel mit
-  // Kapitelkopf; solange keins gewählt ist, liegt das Deckblatt auf.
-  // Die Kapitelinhalte bleiben unverändert: Flugzeugmuster als Bildkarten,
-  // die übrigen Bereiche als Wissenskarten mit Nachschlagteil.
+  // Lexikon fest unter Mission und Auswertung, gestaltet als Buch (Willis
+  // Vorgabe vom 28.08.2026, Texturen aus Higgsfield): zu sehen ist erst der
+  // Einband, ein Klick schlägt das Inhaltsverzeichnis auf, von dort geht es
+  // in die Kapitel; unten auf jeder Seite wird geblättert. Die Kapitelinhalte
+  // bleiben: Flugzeugmuster als Bildkarten, die übrigen Bereiche als
+  // Wissenskarten mit Nachschlagteil.
   function zeichneUnten(feld) {
     const kapitel = [
       { id: "flugzeugmuster", name: "Flugzeugmuster", inhalt: musterLexikon() },
@@ -108,40 +108,58 @@ export function erzeugeUebung6({ speicher }) {
         };
       }).filter(Boolean),
     ];
+    const blaettern = (ziel, text) => `<span class="blaettern" data-ziel="${ziel}">${text}</span>`;
+    const seiten = kapitel.map((k, i) => {
+      const vor = i > 0
+        ? blaettern(kapitel[i - 1].id, `◂ Kapitel ${i}`)
+        : blaettern("inhalt", "◂ Inhalt");
+      const zurueck = i < kapitel.length - 1
+        ? blaettern(kapitel[i + 1].id, `Kapitel ${i + 2} ▸`)
+        : blaettern("deckel", "Zuklappen ▸");
+      return `
+        <div class="buchseite" data-blatt="${k.id}" hidden>
+          <div class="kapitelkopf">
+            <span class="kapitelnummer">Kapitel ${i + 1}</span>
+            <span class="kapiteltitel">${k.name.toUpperCase()}</span>
+          </div>
+          ${k.inhalt}
+          <div class="seitenfuss">${vor}${blaettern("inhalt", "Inhalt")}${zurueck}</div>
+        </div>`;
+    }).join("");
     feld.innerHTML = `
       <section class="wissensbereich lexikonbereich">
-        <div class="lexikonmappe">
-          <nav class="mappenreiter">${kapitel.map((k, i) =>
-            `<button class="reiter" type="button" data-kapitel="${k.id}">${String(i + 1).padStart(2, "0")} · ${k.name.toUpperCase()}</button>`).join("")}</nav>
-          <div class="mappenblatt">
-            <div class="deckblatt" data-blatt="deckblatt">
-              <div class="deckblattrahmen">
-                <span class="deckblattkicker">PHASE II · PSYCHOLOGISCHES GESPRÄCH</span>
-                <span class="deckblatttitel">LEXIKON</span>
-                <span class="deckblatthinweis">Kapitel im Register wählen</span>
-              </div>
-            </div>
-            ${kapitel.map((k, i) => `
-              <div class="kapitel" data-blatt="${k.id}" hidden>
-                <div class="kapitelkopf">
-                  <span class="kapitelnummer">KAPITEL ${String(i + 1).padStart(2, "0")}</span>
-                  <span class="kapiteltitel">${k.name.toUpperCase()}</span>
-                </div>
-                ${k.inhalt}
-              </div>`).join("")}
+        <div class="lexikonbuch">
+          <div class="buchdeckel" data-ziel="inhalt" data-blatt="deckel" role="button" tabindex="0">
+            <span class="deckeluntertitel">PHASE II · PSYCHOLOGISCHES GESPRÄCH</span>
+            <span class="deckeltitel">LEXIKON</span>
+            <span class="deckelhinweis">Zum Aufschlagen anklicken</span>
           </div>
+          <div class="buchseite inhaltsseite" data-blatt="inhalt" hidden>
+            <div class="kapitelkopf">
+              <span class="kapitelnummer">Inhalt</span>
+              <span class="kapiteltitel">WISSENSBEREICHE</span>
+            </div>
+            <ol class="inhaltsliste">${kapitel.map((k, i) => `
+              <li><span class="inhaltseintrag" data-ziel="${k.id}">
+                <span class="inhaltstitel">${k.name}</span>
+                <span class="punktlinie"></span>
+                <span class="inhaltsnummer">${i + 1}</span>
+              </span></li>`).join("")}
+            </ol>
+            <div class="seitenfuss">${blaettern("deckel", "◂ Zuklappen")}<span></span>${blaettern(kapitel[0].id, "Kapitel 1 ▸")}</div>
+          </div>
+          ${seiten}
         </div>
       </section>`;
-    // Ein Hörer für Register und Blätter: Reiter schlagen ihr Kapitel auf
-    // (nochmaliger Klick zurück zum Deckblatt), Klick aufs Musterbild
-    // blättert zur nächsten Ansicht, alles über Delegation.
+    // Ein Hörer fürs ganze Buch: alles mit data-ziel blättert (Deckel,
+    // Inhaltseinträge, Blätterzeilen), Klick aufs Musterbild wechselt die
+    // Ansicht, alles über Delegation.
     feld.addEventListener("click", (e) => {
-      const reiter = e.target.closest(".reiter");
-      if (reiter) {
-        const war = reiter.classList.contains("aktiv");
-        const ziel = war ? "deckblatt" : reiter.dataset.kapitel;
-        feld.querySelectorAll(".reiter").forEach((r) => r.classList.toggle("aktiv", r === reiter && !war));
+      const zielTraeger = e.target.closest("[data-ziel]");
+      if (zielTraeger) {
+        const ziel = zielTraeger.dataset.ziel;
         feld.querySelectorAll("[data-blatt]").forEach((b) => { b.hidden = b.dataset.blatt !== ziel; });
+        feld.querySelector(".lexikonbuch").scrollIntoView({ block: "nearest" });
         return;
       }
       const knopf = e.target.closest(".lexikonbild[data-id]");
