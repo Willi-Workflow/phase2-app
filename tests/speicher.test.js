@@ -102,6 +102,37 @@ test("ladeLaeufe vereinigt gemeinsamen Bestand und Warteschlange ohne Doppelte",
   assert.equal(laeufe.length, 2);
 });
 
+test("ladeLaeufe zwingt ferne kennzahl zur Zahl und verwirft ungültige Zeilen", async () => {
+  const fern = [
+    { ...lauf, kennzahl: 70, zeitpunkt: "2026-08-20T10:00:00Z" },
+    { ...lauf, kennzahl: "84", zeitpunkt: "2026-08-21T10:00:00Z" }, // Textzahl wird zur Zahl
+    { ...lauf, kennzahl: "<img src=x onerror=alert(1)>", zeitpunkt: "2026-08-22T10:00:00Z" }, // fällt raus
+    { ...lauf, kennzahl: null, zeitpunkt: "2026-08-23T10:00:00Z" }, // fällt raus
+  ];
+  const fetchFn = async () => ({ ok: true, json: async () => fern });
+  const s = erzeugeSpeicher({ konfig, fetchFn, lager: attrappenLager() });
+  const laeufe = await s.ladeLaeufe(1);
+  assert.equal(laeufe.length, 2);
+  assert.deepEqual(laeufe.map((l) => l.kennzahl).sort((a, b) => a - b), [70, 84]);
+  assert.ok(laeufe.every((l) => typeof l.kennzahl === "number"));
+});
+
+test("Sonderzeichen in Profil und Schlüssel werden in der URL kodiert", async () => {
+  const rufe = [];
+  const fetchFn = async (adresse, optionen = {}) => {
+    rufe.push({ adresse, methode: optionen.method ?? "GET" });
+    return { ok: true, json: async () => [] };
+  };
+  const s = erzeugeSpeicher({ konfig, fetchFn, lager: attrappenLager() });
+  s.setzeProfil("willi&bereich=eq.1");
+  await s.ladeEinstellung("a b", "vorgabe");
+  const einstellung = rufe.find((r) => r.adresse.includes("/einstellungen"));
+  assert.ok(einstellung, "Einstellungsabruf fand statt");
+  assert.ok(!einstellung.adresse.includes("willi&bereich=eq.1"), "roher Sonderzeichenwert darf nicht in der URL stehen");
+  assert.ok(einstellung.adresse.includes("willi%26bereich%3Deq.1"), "Profil ist kodiert");
+  assert.ok(einstellung.adresse.includes("schluessel=eq.a%20b"), "Schlüssel ist kodiert");
+});
+
 test("loescheLaeufe ruft DELETE und leert die örtliche Kopie des Profils", async () => {
   const rufe = [];
   const fetchFn = async (adresse, optionen = {}) => {

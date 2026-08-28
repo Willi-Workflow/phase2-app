@@ -141,8 +141,17 @@ export function erzeugeSpeicher({ konfig, fetchFn = fetch, lager = localStorage 
       const alleOertlich = liesJson(LAGER_LAEUFE, []); // ein Lesevorgang, mehrfach verwendet
       let fern = null;
       try {
-        const antwort = await rufe(`${tabelle("laeufe")}?bereich=eq.${bereich}&select=profil,bereich,zeitpunkt,kennzahl,daten`);
-        fern = await antwort.json();
+        const antwort = await rufe(`${tabelle("laeufe")}?bereich=eq.${encodeURIComponent(bereich)}&select=profil,bereich,zeitpunkt,kennzahl,daten`);
+        const roh = await antwort.json();
+        // Fern geladene Läufe sind nicht vertrauenswürdig: kennzahl hart zu einer
+        // endlichen Zahl zwingen und Zeilen ohne gültige Zahl verwerfen. Sonst
+        // könnte ein manipulierter Wert die Auswertung zerbrechen (NaN in Skala
+        // und Punkten) oder als roher Text in eine DOM-Beschriftung geraten.
+        fern = (Array.isArray(roh) ? roh : [])
+          // Number(null) und Number("") sind 0, nicht NaN: leere Werte vorher
+          // ausdrücklich als ungültig markieren, damit sie nicht als 0 erscheinen.
+          .map((l) => ({ ...l, kennzahl: l.kennzahl === null || l.kennzahl === "" ? NaN : Number(l.kennzahl) }))
+          .filter((l) => Number.isFinite(l.kennzahl));
       } catch { /* örtliche Kopie greift */ }
       const schlange = liesJson(LAGER_WARTESCHLANGE, []).filter((l) => l.bereich === bereich);
       // Bei erfolgreichem Fernabruf zählt der gemeinsame Bestand: die alte örtliche
@@ -161,8 +170,8 @@ export function erzeugeSpeicher({ konfig, fetchFn = fetch, lager = localStorage 
 
     async loescheLaeufe(profil, bereichOderNull) {
       const filter = bereichOderNull === null
-        ? `?profil=eq.${profil}`
-        : `?profil=eq.${profil}&bereich=eq.${bereichOderNull}`;
+        ? `?profil=eq.${encodeURIComponent(profil)}`
+        : `?profil=eq.${encodeURIComponent(profil)}&bereich=eq.${encodeURIComponent(bereichOderNull)}`;
       // Mit Zugang zählt nur ein tatsächlich erfolgreiches Fernlöschen als Erfolg:
       // scheitert es, wird der Fehler durchgereicht und örtlich NICHTS geleert,
       // sonst meldet die App ein Zurücksetzen, das gar nicht stattgefunden hat.
@@ -180,7 +189,7 @@ export function erzeugeSpeicher({ konfig, fetchFn = fetch, lager = localStorage 
       const profil = aktuellesProfil();
       if (zugang) {
         try {
-          const antwort = await rufe(`${tabelle("einstellungen")}?profil=eq.${profil}&schluessel=eq.${schluessel}&select=wert`);
+          const antwort = await rufe(`${tabelle("einstellungen")}?profil=eq.${encodeURIComponent(profil)}&schluessel=eq.${encodeURIComponent(schluessel)}&select=wert`);
           const treffer = await antwort.json();
           if (treffer.length > 0) {
             const wert = treffer[0].wert;
