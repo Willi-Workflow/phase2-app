@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   TESTDAUERN, ELEMENTE, HALTEZEIT_MS, NADEL_MIN, NADEL_MAX,
-  ZIELKREIS_R, STRICH_TOLERANZ, NADEL_TOLERANZ, SOLL_KT, RAHMEN_VERHAELTNIS,
+  ZIELKREIS_R, STRICH_TOLERANZ, NADEL_TOLERANZ, SOLL_KT, RAHMEN_VERHAELTNIS, FADEN_RAND,
   erzeugeLaufzustand, takt, zufallsFadenkreuz, zufallsStrich,
   inDeckung, punkte, pruefeAuswahl, zufallsNadel, deckungsquote,
 } from "../js/uebung2.js";
@@ -54,11 +54,12 @@ test("takt: Grenzen halten alle Elemente im erlaubten Bereich", () => {
   const rnd = saatZufall(13);
   const z = erzeugeLaufzustand(ALLE, rnd);
   for (let i = 0; i < 200; i++) takt(z, { stickX: 1, stickY: 1, ruder: 1, schub: 1 }, 50, rnd);
-  assert.ok(z.fadenkreuz.x <= 1 && z.fadenkreuz.y <= 1);
+  // Das Fadenkreuz bleibt innerhalb des Randabstands, nie am Bildrand.
+  assert.ok(z.fadenkreuz.x <= 1 - FADEN_RAND && z.fadenkreuz.y <= 1 - FADEN_RAND);
   assert.ok(z.strich.x <= 1);
   assert.ok(z.nadel <= NADEL_MAX);
   for (let i = 0; i < 400; i++) takt(z, { stickX: -1, stickY: -1, ruder: -1, schub: -1 }, 50, rnd);
-  assert.ok(z.fadenkreuz.x >= 0 && z.fadenkreuz.y >= 0);
+  assert.ok(z.fadenkreuz.x >= FADEN_RAND && z.fadenkreuz.y >= FADEN_RAND);
   assert.ok(z.strich.x >= 0);
   assert.ok(z.nadel >= NADEL_MIN);
 });

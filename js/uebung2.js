@@ -13,6 +13,10 @@ export const STRICH_TOLERANZ = 0.01; // Anteil der Rahmenbreite
 export const RAHMEN_VERHAELTNIS = 3 / 7; // Höhe zu Breite des Rahmens; das Bildmodul leitet seine Maße daraus ab
 export const NADEL_TOLERANZ = 2;     // Knoten
 export const SOLL_KT = 95; // fester Sollwert der Geschwindigkeit, Willis Festlegung
+// Randabstand des Fadenkreuzes: die Drift darf es nicht bis an den Bildrand
+// schieben (Willis Vorgabe vom 28.08.2026). Die Mitte bleibt erreichbar, das
+// Fadenkreuz bleibt aber immer sichtbar im Rahmen.
+export const FADEN_RAND = 0.06;
 
 // Raten bei Vollausschlag (je Sekunde) und Driftstärken.
 const RATE_STICK = 0.45;
@@ -107,8 +111,8 @@ export function takt(z, eingaben, dtMs, rnd = Math.random) {
   const ereignisse = [];
 
   if (aktiv.includes("stick")) {
-    z.fadenkreuz.x = begrenze(z.fadenkreuz.x + (eingaben.stickX * RATE_STICK + taktDrift(z.drift.fx, dtMs, rnd)) * dt, 0, 1);
-    z.fadenkreuz.y = begrenze(z.fadenkreuz.y + (eingaben.stickY * RATE_STICK + taktDrift(z.drift.fy, dtMs, rnd)) * dt, 0, 1);
+    z.fadenkreuz.x = begrenze(z.fadenkreuz.x + (eingaben.stickX * RATE_STICK + taktDrift(z.drift.fx, dtMs, rnd)) * dt, FADEN_RAND, 1 - FADEN_RAND);
+    z.fadenkreuz.y = begrenze(z.fadenkreuz.y + (eingaben.stickY * RATE_STICK + taktDrift(z.drift.fy, dtMs, rnd)) * dt, FADEN_RAND, 1 - FADEN_RAND);
   }
   if (aktiv.includes("ruder")) {
     z.strich.x = begrenze(z.strich.x + (eingaben.ruder * RATE_RUDER + taktDrift(z.drift.strich, dtMs, rnd)) * dt, 0, 1);

@@ -20,13 +20,16 @@ export const MAXROLL = 1.0;            // rad, etwa 57 Grad
 // Simulator-Art, abgeglichen mit dem Vorführlauf im Video (12:40 bis 13:10):
 // Die Raten laufen träge an (Anlaufzeit), die Fluglage bleibt stehen statt
 // zurückzufedern, nur eine schwache Eigenstabilität richtet langsam auf.
-// Der Horizont kippt mit rund 30 Grad je Sekunde, die Schräglage hält.
-// Die Feinfühligkeit um die Mittellage (Totzone, Expo) kommt aus der
-// Empfindlichkeitskurve in controls/kurve, einstellbar im Controls-Dialog.
-const RATE_NICK = 0.28;
-const RATE_GIER = 0.32;
-const ROLLRATE = 0.55;
-const ANLAUF_MS = 150;    // Trägheit, bis eine Steuerrate voll anliegt
+// Kalibrierung vom 28.08.2026 nach Willis Rückmeldung (Steuerung zu
+// empfindlich und zu impulsartig): längere Anlaufzeit für einen weichen,
+// bewussten Steuereinsatz statt eines Anreißens wie im Referenzvideo, und
+// spürbar niedrigere Roll-, Nick- und Gierraten. Die Feinfühligkeit um die
+// Mittellage (Totzone, Expo) kommt zusätzlich aus der Empfindlichkeitskurve
+// in controls/kurve, einstellbar im Controls-Dialog.
+const RATE_NICK = 0.21;
+const RATE_GIER = 0.24;
+const ROLLRATE = 0.42;
+const ANLAUF_MS = 300;    // Trägheit, bis eine Steuerrate voll anliegt
 const STABIL = 0.12;      // schwache Eigenstabilität je Sekunde
 const NICK_SICHT = 0.5;   // rad Blickneigung je Einheit Nickbewegung
 const MAXNICK = 0.3;      // rad

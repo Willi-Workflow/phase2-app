@@ -14,18 +14,16 @@ export const RECHENTAKT_S = 12;       // Abstand der Rechenaufgaben in Stufe 4
 
 const INSTRUMENTE = ["kurs", "hoehe", "fahrt"]; // feste Reihenfolge im Ergebnis
 
-// Raster der Zielvorgaben laut Entwurf.
-const KURS_START_SCHRITTE = 72;               // 0 bis 355 in 5er Schritten
-const KURS_SCHRITT = 5;
+// Festes Standardszenario (Willis Vorgabe vom 28.08.2026): keine gewürfelten
+// Zielvorgaben mehr, jeder Durchgang fliegt dieselbe Standardaufgabe.
+const HOEHE_BASIS = 5000;      // Fuß, Starthöhe des Steigflugs
+const HOEHE_STEIGFLUG = 1000;  // Fuß, immer steigen
+const FAHRT_ZIEL_START = 100;  // Knoten, Startvorgabe der Fahrt
+const FAHRT_ZIEL_ZIEL = 140;   // Knoten, Zielvorgabe der Fahrt
 
-const HOEHE_MIN = 2000, HOEHE_MAX = 8000, HOEHE_SCHRITT = 500;
-const HOEHE_START_SCHRITTE = (HOEHE_MAX - HOEHE_MIN) / HOEHE_SCHRITT + 1; // 13
-const HOEHE_AENDERUNG_BETRAEGE = [500, 1000, 1500, 2000, 2500, 3000];
-const HOEHE_ZIEL_MIN = 500, HOEHE_ZIEL_MAX = 9900;
-
-const FAHRT_MIN = 60, FAHRT_MAX = 320, FAHRT_SCHRITT = 10;
-const FAHRT_SCHRITTE = (FAHRT_MAX - FAHRT_MIN) / FAHRT_SCHRITT + 1; // 27
-const FAHRT_MINDESTUNTERSCHIED = 40;
+// Physischer Fahrtbereich, den der Schub kommandiert (bleibt breiter als die
+// Aufgabe, die Nadel läuft von 60 bis 320 kt).
+const FAHRT_MIN = 60, FAHRT_MAX = 320;
 
 // Steuerdynamik des Takts.
 const KURSRATE = 9;              // Grad je Sekunde bei Vollausschlag
@@ -44,38 +42,24 @@ const mod360 = (grad) => ((grad % 360) + 360) % 360;
 const begrenze = (wert, min, max) => Math.min(max, Math.max(min, wert));
 const wuerfelIndex = (anzahl, rnd) => Math.floor(rnd() * anzahl);
 
-// Immer eine volle Drehung in der Flugzeit (Willis Festlegung vom
-// 25.08.2026), nur die Richtung wird gewürfelt: 6 Grad je Sekunde bei
-// höchstens 9 vom Stick. Das Ziel ist damit wieder der Startkurs.
-function wuerfleKurs(rnd) {
-  const start = wuerfelIndex(KURS_START_SCHRITTE, rnd) * KURS_SCHRITT;
-  const vorzeichen = rnd() < 0.5 ? -1 : 1;
-  const aenderung = vorzeichen * 360;
-  return { start, aenderung, ziel: mod360(start + aenderung) };
+// Festes Standardszenario (Willis Vorgabe vom 28.08.2026): Kurs immer eine
+// volle Drehung ab Norden, im Uhrzeigersinn, Ziel damit wieder Norden. Kein
+// Zufall mehr, jeder Kurs-Durchgang ist gleich.
+function wuerfleKurs() {
+  return { start: 0, aenderung: 360, ziel: 0 };
 }
 
-// Höhe und Fahrt würfeln jeweils neu, bis das Ziel im erlaubten Bereich
-// beziehungsweise der Mindestunterschied erreicht ist. Der Schleifenwächter
-// verhindert eine Endlosschleife bei einem entarteten Zufall.
-function wuerfleHoehe(rnd) {
-  for (let versuch = 0; versuch < 1000; versuch++) {
-    const start = HOEHE_MIN + wuerfelIndex(HOEHE_START_SCHRITTE, rnd) * HOEHE_SCHRITT;
-    const betrag = HOEHE_AENDERUNG_BETRAEGE[wuerfelIndex(HOEHE_AENDERUNG_BETRAEGE.length, rnd)];
-    const vorzeichen = rnd() < 0.5 ? -1 : 1;
-    const aenderung = vorzeichen * betrag;
-    const ziel = start + aenderung;
-    if (ziel >= HOEHE_ZIEL_MIN && ziel <= HOEHE_ZIEL_MAX) return { start, aenderung, ziel };
-  }
-  return { start: HOEHE_MIN, aenderung: HOEHE_AENDERUNG_BETRAEGE[0], ziel: HOEHE_MIN + HOEHE_AENDERUNG_BETRAEGE[0] };
+// Höhe: fester Steigflug um 1000 Fuß ab 5000 Fuß (festes Standardszenario,
+// Willis Vorgabe vom 28.08.2026, Höhenmesser zeigt Fuß).
+function wuerfleHoehe() {
+  return { start: HOEHE_BASIS, aenderung: HOEHE_STEIGFLUG, ziel: HOEHE_BASIS + HOEHE_STEIGFLUG };
 }
 
-function wuerfleFahrt(rnd) {
-  for (let versuch = 0; versuch < 1000; versuch++) {
-    const start = FAHRT_MIN + wuerfelIndex(FAHRT_SCHRITTE, rnd) * FAHRT_SCHRITT;
-    const ziel = FAHRT_MIN + wuerfelIndex(FAHRT_SCHRITTE, rnd) * FAHRT_SCHRITT;
-    if (Math.abs(ziel - start) >= FAHRT_MINDESTUNTERSCHIED) return { start, ziel };
-  }
-  return { start: FAHRT_MIN, ziel: FAHRT_MAX };
+// Fahrt: fest von 100 auf 140 Knoten (festes Standardszenario, Willis Vorgabe
+// vom 28.08.2026). Die Zelle beginnt weiter bei 60 kt und wird in der
+// Einrichtzeit auf den Startwert hochgezogen (siehe erzeugeFlugzustand).
+function wuerfleFahrt() {
+  return { start: FAHRT_ZIEL_START, ziel: FAHRT_ZIEL_ZIEL };
 }
 
 // Stufe 1 nimmt eines der drei Instrumente, Stufe 2 zwei, ab Stufe 3 alle
