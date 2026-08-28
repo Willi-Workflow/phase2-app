@@ -63,12 +63,12 @@ export function erzeugeUebung6({ speicher }) {
     }).join("");
   }
 
+  // Kapitelinhalt der Wissensbereiche: Buchsatz mit Teilüberschriften und
+  // Absätzen in Fließtext statt Kartenkästen (Willis Vorgabe vom 28.08.2026).
   function wissensLexikon(bereich) {
-    return `<div class="wissensraster">${bereich.wissen.map((w) => `
-      <article class="lexikonkarte wissenskarte">
-        <div class="lexikonname">${w.titel}</div>
-        ${w.zeilen.map((z) => `<p class="lexikontext">${z}</p>`).join("")}
-      </article>`).join("")}</div>`;
+    return `<div class="wissenstext">${bereich.wissen.map((w) => `
+      <h4 class="abschnittstitel">${w.titel}</h4>
+      ${w.absaetze.map((a) => `<p class="absatz">${a}</p>`).join("")}`).join("")}</div>`;
   }
 
   // Nachschlagteil je Bereich: alle abgefragten Fragen mit ihrer Antwort
@@ -85,7 +85,7 @@ export function erzeugeUebung6({ speicher }) {
         </div></div>`;
     });
     return eintraege.length
-      ? `<h3 class="lexikongruppe">ABGEFRAGT</h3><div class="fragenliste">${eintraege.join("")}</div>`
+      ? `<h4 class="abschnittstitel">Abgefragt</h4><div class="fragenliste">${eintraege.join("")}</div>`
       : "";
   }
 

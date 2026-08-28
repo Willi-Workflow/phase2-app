@@ -815,9 +815,12 @@ main { position: relative; z-index: 1; }
 .lexikontext { margin: 6px 0 0; padding: 0 12px 12px; font-size: 12px; line-height: 1.5; color: var(--gedeckt); }
 
 /* Mission 6: zusätzliche Frageformen der Abfrage. */
-.wissensraster { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
-.wissenskarte { padding-bottom: 4px; }
-.wissenskarte .lexikonname { letter-spacing: 0.1em; }
+/* Wissensabschnitte im Buchsatz: Teilüberschriften und Blocksatz mit
+   Silbentrennung, kein Kartenraster. */
+.wissenstext { max-width: 62ch; margin: 0 auto; }
+.abschnittstitel { margin: 24px 0 10px; font-family: Georgia, serif; font-size: 19px; font-weight: 700; letter-spacing: 0.04em; font-variant: small-caps; color: #3a3320; border-bottom: 1px solid rgba(70, 58, 34, 0.35); padding-bottom: 4px; }
+.wissenstext .abschnittstitel:first-child { margin-top: 0; }
+.absatz { margin: 0 0 12px; font-size: 15.5px; line-height: 1.65; text-align: justify; hyphens: auto; color: #33291c; }
 .quizbild.hochkant { width: auto; }
 .quizbild.hochkant img { max-height: 38vh; width: auto; margin: 0 auto; background: transparent; box-shadow: none; }
 .antworten.wissensantworten { grid-template-columns: repeat(2, minmax(220px, 340px)); }
@@ -905,7 +908,10 @@ main { position: relative; z-index: 1; }
 .buchseite .lexikontext { color: #4a4335; }
 .buchseite .lexikonbild.leer { color: #6b6046; background: rgba(70, 58, 34, 0.12); }
 .buchseite .bildzaehler { color: #f2e9d3; }
-.buchseite .fragenzeile { background: rgba(255, 252, 240, 0.42); border: 1px solid rgba(70, 58, 34, 0.28); }
+.buchseite .fragenliste { max-width: 62ch; margin: 6px auto 0; }
+.buchseite .fragenzeile { background: none; border: 0; border-bottom: 1px solid rgba(70, 58, 34, 0.25); border-radius: 0; padding: 10px 2px; }
+.buchseite .fragenzeile:last-child { border-bottom: 0; }
+.buchseite .fragetext { font-style: italic; }
 .buchseite .fragetext { color: #6b6046; }
 .buchseite .antworttext { color: #2e2a20; }
 
