@@ -23,7 +23,7 @@ export const WISSEN6 = {
         titel: "Die Tornado-Geschwader",
         absaetze: [
           "Das <b>TaktLwG 33</b> in <b>Büchel</b> in der Eifel stellt den deutschen Beitrag zur <b>nuklearen Teilhabe</b> der NATO. Nach rund vier Jahren Ausweichbetrieb in <b>Nörvenich</b> und einer Bahnsanierung für etwa <b>260 Millionen Euro</b> kehrten die <b>Tornado</b>s im Juni <b>2026</b> nach <b>Büchel</b> zurück. Ab Ende <b>2027</b> wird der Fliegerhorst zur Heimat der <b>F-35A</b>, der neue <b>F-35</b>-Campus soll ab November <b>2026</b> bezugsfertig sein.",
-          "Das <b>TaktLwG 51 Immelmann</b> in <b>Schleswig-Jagel</b> fliegt <b>Tornado IDS und ECR</b> sowie die Drohnen <b>Heron 1</b> und <b>Heron TP</b>. Seine Aufträge sind die taktische Luftaufklärung und die Niederhaltung gegnerischer Flugabwehr; künftig werden dort der <b>Eurofighter EK</b> und die <b>Pegasus</b>-Signalaufklärer stationiert.",
+          "Das <b>TaktLwG 51 Immelmann</b> in <b>Schleswig-Jagel</b> fliegt <b>Tornado IDS und ECR</b> sowie die Drohnen <b>Heron 1</b> und <b>Heron TP</b>. Seine Aufträge sind die Luftaufklärung und das Ausschalten gegnerischer Flugabwehr (im NATO-Deutsch SEAD); künftig werden dort der <b>Eurofighter EK</b> und die <b>Pegasus</b>-Signalaufklärer stationiert.",
         ],
       },
       {
@@ -36,7 +36,7 @@ export const WISSEN6 = {
       {
         titel: "Bodengebundene Luftverteidigung und Schutz",
         absaetze: [
-          "Das <b>Flugabwehrraketengeschwader 1</b> in <b>Husum</b> ist seit <b>2013</b> das einzige seiner Art in der Luftwaffe, sein Hauptwaffensystem ist <b>Patriot</b>. Gegen ballistische Raketen steht seit Dezember <b>2025</b> die erste Arrow-3-Stellung in <b>Holzdorf</b> mit Anfangsbefähigung bereit; insgesamt sind drei Stellungen geplant, die Vollbefähigung soll <b>2030</b> erreicht sein.",
+          "Das <b>Flugabwehrraketengeschwader 1</b> in <b>Husum</b> ist seit <b>2013</b> das einzige seiner Art in der Luftwaffe, sein Hauptwaffensystem ist <b>Patriot</b>. Gegen ballistische Raketen steht seit Dezember <b>2025</b> die erste Arrow-3-Stellung in <b>Holzdorf</b> in der ersten Ausbaustufe bereit (Anfangsbefähigung); insgesamt sind drei Stellungen geplant, voll einsatzbereit soll das System <b>2030</b> sein.",
           "Das <b>Objektschutzregiment der Luftwaffe Friesland</b> in Schortens kann mit seinen Infanteriekräften im Einsatzgebiet ein komplettes Flugfeld aufbauen, betreiben und schützen.",
         ],
       },
@@ -102,19 +102,19 @@ export const WISSEN6 = {
         titel: "Aufbau und Antrieb",
         absaetze: [
           "Der <b>Eurofighter</b> ist ein <b>Deltaflügler mit Canards</b> und absichtlich instabil ausgelegt: Erst die <b>Fly-by-wire-Steuerung</b> macht ihn fliegbar, genau das verschafft ihm seine Wendigkeit. Die Zelle misst <b>15,96 Meter</b> Länge bei <b>10,95 Metern</b> Spannweite, wiegt leer rund elf Tonnen und startet mit höchstens <b>rund 23,5 Tonnen</b>.",
-          "Zwei Eurojet-<b>EJ200</b>-Triebwerke liefern je <b>rund 60 Kilonewton</b> Trockenschub und <b>rund 90 Kilonewton</b> mit Nachbrenner. Damit erreicht der Jet <b>Mach 2,0</b> und eine Dienstgipfelhöhe von <b>rund 16.800 Metern</b> (<b>55.000 Fuß</b>), steigt in etwa zweieinhalb Minuten auf über <b>10.000 Meter</b> und ist für <b>+9 g</b> zugelassen. Als eine von wenigen Maschinen beherrscht er <b>Supercruise</b>, also anhaltenden Überschallflug ohne Nachbrenner.",
+          "Zwei Eurojet-<b>EJ200</b>-Triebwerke liefern je <b>rund 60 Kilonewton</b> Trockenschub und <b>rund 90 Kilonewton</b> mit Nachbrenner. Damit erreicht der Jet <b>Mach 2,0</b>, steigt in etwa zweieinhalb Minuten auf über <b>10.000 Meter</b> und kommt auf eine Flughöhe von bis zu <b>rund 16.800 Metern</b> (<b>55.000 Fuß</b>). Die Zelle hält Manöver mit dem Neunfachen der Erdanziehung aus (<b>+9 g</b>). Als eine von wenigen Maschinen beherrscht er <b>Supercruise</b>, also anhaltenden Überschallflug ohne Nachbrenner.",
         ],
       },
       {
         titel: "Bewaffnung",
         absaetze: [
-          "Fest eingebaut ist die 27-mm-Bordkanone <b>Mauser BK-27</b>, dazu kommen <b>13 Außenlaststationen</b>. In der Luft-Luft-Rolle trägt der Jet <b>IRIS-T</b>, <b>AMRAAM</b> und den Langstreckenflugkörper <b>Meteor</b>, gegen Bodenziele je nach Rüststand Präzisionsbomben und den Marschflugkörper <b>Taurus</b>. Sein Erstflug war <b>1994</b>, bei der Luftwaffe fliegt er seit <b>2004</b>.",
+          "Fest eingebaut ist die 27-mm-Bordkanone <b>Mauser BK-27</b>, dazu kommen <b>13 Außenlaststationen</b>. In der Luft-Luft-Rolle trägt der Jet <b>IRIS-T</b>, <b>AMRAAM</b> und den Langstreckenflugkörper <b>Meteor</b>, gegen Bodenziele je nach Ausbaustufe Präzisionsbomben und den Marschflugkörper <b>Taurus</b>. Sein Erstflug war <b>1994</b>, bei der Luftwaffe fliegt er seit <b>2004</b>.",
         ],
       },
       {
         titel: "Bestand, Bestellungen und Stationierung",
         absaetze: [
-          "Die Luftwaffe hat <b>138 Eurofighter</b> im Bestand, nach Zulauf aller Bestellungen wächst die Flotte auf <b>163</b>. Aus dem Projekt <b>Quadriga</b> (Tranche 4) kommen <b>38 Maschinen</b> mit Auslieferung bis <b>2030</b>, im Oktober 2025 wurden <b>20 weitere</b> der Tranche 5 für <b>rund 3,75 Milliarden Euro</b> bestellt, Zulauf <b>2031 bis 2034</b>. Dazu werden <b>15 Maschinen</b> zum <b>Eurofighter EK</b> für den Elektronischen Kampf umgerüstet.",
+          "Die Luftwaffe hat <b>138 Eurofighter</b> im Bestand, mit allen Bestellungen wächst die Flotte auf <b>163</b>. Aus dem Projekt <b>Quadriga</b> (Tranche 4) kommen <b>38 Maschinen</b> mit Auslieferung bis <b>2030</b>, im Oktober 2025 wurden <b>20 weitere</b> der Tranche 5 für <b>rund 3,75 Milliarden Euro</b> bestellt, geliefert wird <b>2031 bis 2034</b>. Dazu werden <b>15 Maschinen</b> zum <b>Eurofighter EK</b> für den Elektronischen Kampf umgerüstet.",
           "Stationiert ist der Eurofighter bei vier Geschwadern: <b>TaktLwG 31 Boelcke</b> in <b>Nörvenich</b>, <b>TaktLwG 71 Richthofen</b> in <b>Wittmund</b> (Alarmrotte Nord), <b>TaktLwG 73 Steinhoff</b> in <b>Laage</b> (Ausbildung aller Eurofighter-Piloten) und <b>TaktLwG 74</b> in <b>Neuburg</b> (Alarmrotte Süd); die Eurofighter EK gehen nach <b>Jagel</b>.",
         ],
       },
@@ -123,7 +123,7 @@ export const WISSEN6 = {
         titel: "Aufbau und Antrieb",
         absaetze: [
           "Die <b>F-35A Lightning II</b> ist ein einstrahliger Tarnkappenjet der <b>fünften Generation</b>. Sie ist mit <b>15,7 Metern</b> Länge und <b>10,7 Metern</b> Spannweite ähnlich groß wie der Eurofighter, aber deutlich schwerer: <b>rund 13 Tonnen</b> leer, bis zu <b>31,8 Tonnen</b> beim Start.",
-          "Ihr einzelnes Pratt-und-Whitney-<b>F135</b>-Triebwerk ist mit <b>rund 125 Kilonewton</b> Trockenschub und <b>rund 190 Kilonewton</b> mit Nachbrenner das stärkste Kampfjettriebwerk im Truppendienst. Die F-35A erreicht <b>Mach 1,6</b> und <b>rund 15.000 Meter</b> Dienstgipfelhöhe (<b>50.000 Fuß</b>), fliegt <b>+9 g</b> und hat einen Kampfradius von <b>rund 1.100 Kilometern</b>.",
+          "Ihr einzelnes Pratt-und-Whitney-<b>F135</b>-Triebwerk ist mit <b>rund 125 Kilonewton</b> Trockenschub und <b>rund 190 Kilonewton</b> mit Nachbrenner das stärkste Kampfjettriebwerk im Truppendienst. Die F-35A erreicht <b>Mach 1,6</b>, fliegt bis zu <b>rund 15.000 Meter</b> hoch (<b>50.000 Fuß</b>) und hält wie der Eurofighter <b>+9 g</b> aus. Ohne Nachtanken kommt sie im Einsatz <b>rund 1.100 Kilometer</b> weit und wieder zurück.",
         ],
       },
       {
@@ -136,8 +136,8 @@ export const WISSEN6 = {
       {
         titel: "Bestand, Bestellungen und Stationierung",
         absaetze: [
-          "Deutschland hat <b>35 F-35A</b> im Rüststand <b>Block 4</b> bestellt, das Gesamtpaket kostet <b>knapp zehn Milliarden Euro</b>. Die erste Maschine mit der Kennung <b>35+01</b> verlässt im <b>September 2026</b> das Werk in Fort Worth; die ersten <b>acht</b> gehen zur Ausbildung nach <b>Fort Smith</b> in Arkansas und bleiben dauerhaft dort.",
-          "Ab <b>Ende 2027</b> beginnt die Stationierung beim <b>TaktLwG 33</b> in <b>Büchel</b>, die Anfangsbefähigung ist für <b>2029</b> geplant, und ab <b>2030</b> übernimmt die F-35A vom Tornado die <b>nukleare Teilhabe</b>. An Bewaffnung laufen bis zu <b>400</b> Flugkörper <b>AIM-120D-3 AMRAAM</b> und die Abstandswaffe <b>Joint Strike Missile</b> zu.",
+          "Deutschland hat <b>35 F-35A</b> in der Ausbaustufe <b>Block 4</b> bestellt, das Gesamtpaket mit Ersatzteilen, Bewaffnung und Wartung kostet <b>knapp zehn Milliarden Euro</b>. Die erste Maschine mit der Kennung <b>35+01</b> verlässt im <b>September 2026</b> das Werk in Fort Worth; die ersten <b>acht</b> gehen zur Ausbildung nach <b>Fort Smith</b> in Arkansas und bleiben dauerhaft dort.",
+          "Ab <b>Ende 2027</b> beginnt die Stationierung beim <b>TaktLwG 33</b> in <b>Büchel</b>, einsatzbereit in erster Stufe soll sie <b>2029</b> sein (Anfangsbefähigung), und ab <b>2030</b> übernimmt die F-35A vom Tornado die <b>nukleare Teilhabe</b>. An Bewaffnung sind bis zu <b>400</b> Flugkörper <b>AIM-120D-3 AMRAAM</b> und die Abstandswaffe <b>Joint Strike Missile</b> bestellt.",
         ],
       },
       {
@@ -154,7 +154,7 @@ export const WISSEN6 = {
       { frage: "Welche Höchstgeschwindigkeit erreicht die F-35A?", form: "eingabe", loesungen: ["Mach 1,6", "Mach 1.6"] },
       { frage: "Welche Bordkanone trägt der Eurofighter?", form: "eingabe", loesungen: ["27-mm-Mauser BK-27", "BK-27", "BK27", "Mauser BK-27"] },
       { frage: "Welche Bordkanone trägt die F-35A?", form: "eingabe", loesungen: ["25-mm-GAU-22/A, vierläufig und intern", "GAU-22", "GAU22", "GAU-22/A"] },
-      { frage: "Wie hoch liegt die Dienstgipfelhöhe des Eurofighters?", form: "eingabe", loesungen: ["Rund 16.800 Meter (55.000 Fuß)", "16800", "55000 Fuß", "16.800 m"] },
+      { frage: "Wie hoch kann der Eurofighter höchstens fliegen?", form: "eingabe", loesungen: ["Rund 16.800 Meter (55.000 Fuß)", "16800", "55000 Fuß", "16.800 m"] },
       { frage: "Wie viele Außenlaststationen hat der Eurofighter?", form: "eingabe", loesungen: ["13", "dreizehn"] },
       { frage: "In welchem Jahr flog der Eurofighter zum ersten Mal?", form: "eingabe", loesungen: ["1994"] },
       { frage: "In welchem Jahr flog die F-35 zum ersten Mal?", form: "eingabe", loesungen: ["2006"] },
@@ -189,7 +189,7 @@ export const WISSEN6 = {
         falsch: ["+6 g", "+7,5 g", "+12 g"],
       },
       {
-        frage: "Wie groß ist der Kampfradius der F-35A ungefähr?", form: "auswahl",
+        frage: "Wie weit kommt die F-35A im Einsatz ungefähr (Kampfradius)?", form: "auswahl",
         richtig: "Rund 1.100 Kilometer",
         falsch: ["Rund 400 Kilometer", "Rund 700 Kilometer", "Rund 2.500 Kilometer"],
       },
@@ -216,7 +216,7 @@ export const WISSEN6 = {
       {
         titel: "Das Auswahlverfahren",
         absaetze: [
-          "Der Weg beginnt bei der Karriereberatung und führt zur Offizier-Eignungsfeststellung am <b>Assessmentcenter für Führungskräfte der Bundeswehr</b> in Köln, zwei Tage plus Anreisetag. Wer besteht, geht in Phase II ans <b>Zentrum für Luft- und Raumfahrtmedizin</b> der Luftwaffe: fliegerärztliche Untersuchungen und fliegerpsychologische Tests zu Rechenfähigkeit, Merkfähigkeit, Koordination und Belastbarkeit entscheiden über die <b>Wehrfliegerverwendungsfähigkeit</b>.",
+          "Der Weg beginnt bei der Karriereberatung und führt zur Offizier-Eignungsfeststellung am <b>Assessmentcenter für Führungskräfte der Bundeswehr</b> in Köln, zwei Tage plus Anreisetag. Wer besteht, geht in Phase II ans <b>Zentrum für Luft- und Raumfahrtmedizin</b> der Luftwaffe: fliegerärztliche Untersuchungen und fliegerpsychologische Tests zu Rechenfähigkeit, Merkfähigkeit, Koordination und Belastbarkeit entscheiden über die <b>Wehrfliegerverwendungsfähigkeit</b>, also die Tauglichkeit fürs Militärcockpit.",
           "Den Abschluss bildet Phase III, eine simulatorgestützte Lern- und Arbeitsprobe (für Flächenflugzeuge das System <b>FPS/F</b>). Bewertet wird sie von Fliegerpsychologen, Simulatorlehrern und einem Prüfstabsoffizier.",
         ],
       },
@@ -493,7 +493,7 @@ export const WISSEN6 = {
       {
         titel: "Einsätze und Missionen",
         absaetze: [
-          "Mitte <b>2026</b> standen rund <b>700 Soldaten</b> in mandatierten Auslandseinsätzen, das größte Kontingent bei <b>KFOR</b> im Kosovo. <b>UNIFIL</b> im Libanon endet nach rund 20 Jahren deutscher Beteiligung, das Mandat wurde letztmalig verlängert. Daneben laufen <b>Aspides</b> zum Schutz der Schifffahrt im Roten Meer, <b>Irini</b> zur Überwachung des Libyen-Embargos, <b>NSATU</b> zur Koordinierung der Ukraine-Unterstützung und seit Januar <b>2025</b> <b>Baltic Sentry</b> zum Schutz der Unterwasser-Infrastruktur in der Ostsee.",
+          "Mitte <b>2026</b> standen rund <b>700 Soldaten</b> in vom Bundestag beschlossenen Auslandseinsätzen, das größte Kontingent bei <b>KFOR</b> im Kosovo. <b>UNIFIL</b> im Libanon endet nach rund 20 Jahren deutscher Beteiligung, das Mandat wurde letztmalig verlängert. Daneben laufen <b>Aspides</b> zum Schutz der Schifffahrt im Roten Meer, <b>Irini</b> zur Überwachung des Libyen-Embargos, <b>NSATU</b> zur Koordinierung der Ukraine-Unterstützung und seit Januar <b>2025</b> <b>Baltic Sentry</b> zum Schutz der Unterwasser-Infrastruktur in der Ostsee.",
         ],
       },
       {
@@ -575,14 +575,14 @@ export const WISSEN6 = {
       {
         titel: "Der Eurofighter-Bestand wächst",
         absaetze: [
-          "Die Luftwaffe fliegt 138 <b>Eurofighter</b>, nach Zulauf aller Bestellungen wächst die Flotte auf 163. Aus dem Projekt <b>Quadriga</b> (Tranche 4) kommen <b>38 Maschinen</b>, bestellt <b>2020</b>, mit Erstflug im Juli <b>2026</b> und Auslieferung bis <b>2030</b>. Im Oktober <b>2025</b> folgte die Tranche 5 mit 20 weiteren Jets für <b>rund 3,75 Milliarden Euro</b>, Zulauf <b>2031</b> bis <b>2034</b>. Dazu werden <b>15 Maschinen</b> mit Arexis-Sensorik und AARGM zum <b>Eurofighter EK</b> für den Elektronischen Kampf umgerüstet, der bis <b>2030</b> die SEAD-Rolle vom <b>Tornado ECR</b> übernimmt.",
+          "Die Luftwaffe fliegt 138 <b>Eurofighter</b>, mit allen Bestellungen wächst die Flotte auf 163. Aus dem Projekt <b>Quadriga</b> (Tranche 4) kommen <b>38 Maschinen</b>, bestellt <b>2020</b>; der erste flog im Juli <b>2026</b>, ausgeliefert wird bis <b>2030</b>. Im Oktober <b>2025</b> folgte die Tranche 5 mit 20 weiteren Jets für <b>rund 3,75 Milliarden Euro</b>, geliefert <b>2031</b> bis <b>2034</b>. Dazu werden <b>15 Maschinen</b> mit Arexis-Sensorik und AARGM zum <b>Eurofighter EK</b> umgerüstet, der bis <b>2030</b> vom <b>Tornado ECR</b> die Aufgabe übernimmt, gegnerische Flugabwehr auszuschalten.",
         ],
       },
       {
         titel: "Vom Tornado zur F-35A",
         absaetze: [
           "Noch fliegen rund 93 <b>Tornado IDS und ECR</b>, bis <b>2030</b> werden alle ausgemustert. Die Nachfolge ist geteilt: Die <b>F-35A</b> übernimmt die IDS-Rolle samt nuklearer Teilhabe, der <b>Eurofighter EK</b> die ECR-Rolle.",
-          "35 <b>F-35A</b> sind bestellt, das Gesamtpaket kostet knapp zehn Milliarden Euro. Die erste Maschine mit der Kennung 35+01 verlässt im September <b>2026</b> das Werk, die ersten acht bleiben zur Ausbildung in <b>Fort Smith</b>, ab Ende <b>2027</b> beginnt die Stationierung in <b>Büchel</b>, die Anfangsbefähigung ist für <b>2029</b> geplant. An Bewaffnung laufen bis zu 400 Luft-Luft-Flugkörper <b>AIM-120D-3 AMRAAM</b> und die Abstandswaffe <b>Joint Strike Missile</b> zu.",
+          "35 <b>F-35A</b> sind bestellt, das Gesamtpaket kostet knapp zehn Milliarden Euro. Die erste Maschine mit der Kennung 35+01 verlässt im September <b>2026</b> das Werk, die ersten acht bleiben zur Ausbildung in <b>Fort Smith</b>, ab Ende <b>2027</b> beginnt die Stationierung in <b>Büchel</b>, einsatzbereit in erster Stufe soll sie <b>2029</b> sein. An Bewaffnung sind bis zu 400 Luft-Luft-Flugkörper <b>AIM-120D-3 AMRAAM</b> und die Abstandswaffe <b>Joint Strike Missile</b> bestellt.",
         ],
       },
       {
@@ -594,13 +594,13 @@ export const WISSEN6 = {
       {
         titel: "Aufklärung",
         absaetze: [
-          "Für die Seefernaufklärung sind acht <b>P-8A Poseidon</b> für <b>rund 3,1 Milliarden Euro</b> bestellt; Mitte <b>2026</b> standen drei in <b>Nordholz</b>, der Rest folgt bis <b>2029</b>. In <b>Jagel</b> fliegen fünf geleaste <b>Heron TP</b>, drei weitere sind bestellt. Die Signalaufklärung übernimmt künftig <b>Pegasus</b> auf drei Bombardier <b>Global 6000</b>, mit Zulauf ab <b>2027</b> ebenfalls nach <b>Jagel</b>.",
+          "Für die Seefernaufklärung sind acht <b>P-8A Poseidon</b> für <b>rund 3,1 Milliarden Euro</b> bestellt; Mitte <b>2026</b> standen drei in <b>Nordholz</b>, der Rest folgt bis <b>2029</b>. In <b>Jagel</b> fliegen fünf geleaste <b>Heron TP</b>, drei weitere sind bestellt. Die Signalaufklärung übernimmt künftig <b>Pegasus</b> auf drei Bombardier <b>Global 6000</b>, die ab <b>2027</b> ebenfalls nach <b>Jagel</b> kommen.",
         ],
       },
       {
         titel: "Bodengebundene Luftverteidigung",
         absaetze: [
-          "<b>Arrow 3</b> fängt seit Dezember <b>2025</b> von <b>Holzdorf</b> aus ballistische Raketen außerhalb der Atmosphäre ab, die Vollbefähigung ist für <b>2030</b> geplant. Bei <b>IRIS-T SLM</b> sind sechs Feuereinheiten bestellt und 14 weitere für <b>3,18 Milliarden Euro</b> beauftragt, Zielbestand 20. Bei <b>Patriot</b> hat Deutschland fünf Feuereinheiten an die Ukraine abgegeben und sieben behalten; acht neue sind bestellt, der Zulauf beginnt Ende <b>2026</b>, der Zielbestand liegt bei 15.",
+          "<b>Arrow 3</b> fängt seit Dezember <b>2025</b> von <b>Holzdorf</b> aus ballistische Raketen außerhalb der Atmosphäre ab, voll einsatzbereit soll es <b>2030</b> sein. Bei <b>IRIS-T SLM</b> sind sechs Feuereinheiten bestellt und 14 weitere für <b>3,18 Milliarden Euro</b> beauftragt, Zielbestand 20. Bei <b>Patriot</b> hat Deutschland fünf Feuereinheiten an die Ukraine abgegeben und sieben behalten; acht neue sind bestellt und kommen ab Ende <b>2026</b>, am Ende sollen es 15 sein.",
         ],
       },
     ],
