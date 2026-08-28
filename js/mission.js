@@ -204,7 +204,10 @@ function starteLauf() {
       tuer,
       registriereAbbruch: (fn) => { brichLaufAb = fn; },
       beiEnde: async (ergebnis) => {
-        laufAktiv = false;
+        // Abbruch sofort entschärfen, den Lauf aber erst nach Sichern und
+        // Neuzeichnen freigeben: sonst startet ein schneller START-Klick einen
+        // zweiten Lauf, während dieser hier noch speichert und die Auswertung
+        // neu zeichnet (Q8).
         brichLaufAb = null;
         if (ergebnis && mission.wertung) {
           try {
@@ -220,6 +223,7 @@ function starteLauf() {
           }
         }
         await zeichneAuswertung();
+        laufAktiv = false;
       },
     }));
     return;
@@ -292,6 +296,10 @@ function starteLauf() {
   };
 
   tuer.schliesse().then(() => {
+    // Wurde während der zufahrenden Tür abgebrochen, darf der Schleier nicht mehr
+    // angehängt und kein Vollbild angefordert werden: raeumeAuf hat den Schleier
+    // schon entfernt, ein nachträgliches Anhängen bliebe für immer stehen (Q1).
+    if (beendet) return;
     document.body.append(schleier);
     if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
     tuer.oeffne().then(() => {
@@ -315,14 +323,19 @@ function initialisiereSeite() {
   document.getElementById("missionsnummer").textContent = `MISSION 0${mission.nr}`;
   document.getElementById("probehinweis").hidden = Boolean(mission.wertung);
 
+  const startknopf = document.getElementById("start");
+  startknopf.addEventListener("click", starteLauf);
   if (uebung) {
     document.getElementById("uebungshinweis").textContent = uebung.hinweis;
-    Promise.resolve(uebung.ladeEinstellung?.()).then(() =>
-      uebung.zeichneFeld?.(document.getElementById("uebungsfeld")));
+    // START bleibt gesperrt, bis die gespeicherten Einstellungen geladen sind,
+    // sonst liefe ein früher Klick mit den Vorgabewerten statt der eigenen (Q9).
+    if (uebung.ladeEinstellung) startknopf.disabled = true;
+    Promise.resolve(uebung.ladeEinstellung?.()).then(() => {
+      uebung.zeichneFeld?.(document.getElementById("uebungsfeld"));
+      startknopf.disabled = false;
+    });
     uebung.zeichneUnten?.(document.getElementById("uebungsunten"));
   }
-
-  document.getElementById("start").addEventListener("click", starteLauf);
   addEventListener("keydown", (e) => { if (e.key === "Escape" && brichLaufAb) brichLaufAb(); });
 
 

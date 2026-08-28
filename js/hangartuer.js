@@ -6,6 +6,11 @@ const FAHRZEIT = 1000; // Millisekunden je Fahrt, passend zur Übergangszeit im 
 
 export function erzeugeHangartuer() {
   let tuer = null;
+  // Fahrten laufen serialisiert: eine neue Fahrt beginnt erst, wenn die laufende
+  // fertig ist. Sonst schalten überlappende schliesse/oeffne die Klasse
+  // gegeneinander um und ein Aufrufer arbeitet hinter einer in Wahrheit schon
+  // offenen oder entfernten Tür weiter.
+  let kette = Promise.resolve();
 
   function baue() {
     tuer = document.createElement("div");
@@ -14,21 +19,27 @@ export function erzeugeHangartuer() {
     document.body.append(tuer);
   }
 
-  const fahre = (zu) => new Promise((fertig) => {
-    if (!tuer) baue();
-    // Erzwungener Layout-Durchlauf: so startet die Fahrt sicher vom
-    // Ausgangszustand, statt dass der Flügel ans Ziel springt.
-    void tuer.offsetHeight;
-    tuer.classList.toggle("zu", zu);
-    setTimeout(fertig, FAHRZEIT);
-  });
+  const fahre = (zu) => {
+    kette = kette.then(() => new Promise((fertig) => {
+      if (!tuer) baue();
+      // Erzwungener Layout-Durchlauf: so startet die Fahrt sicher vom
+      // Ausgangszustand, statt dass der Flügel ans Ziel springt.
+      void tuer.offsetHeight;
+      tuer.classList.toggle("zu", zu);
+      setTimeout(fertig, FAHRZEIT);
+    }));
+    return kette;
+  };
 
   return {
     schliesse: () => fahre(true),
-    async oeffne() {
-      await fahre(false);
-      tuer?.remove();
-      tuer = null;
+    oeffne() {
+      // Das Entfernen hängt am Ende derselben Kette, damit eine danach
+      // eingereihte Fahrt die Tür sauber neu aufbaut statt an einer halb
+      // entfernten weiterzumachen.
+      fahre(false);
+      kette = kette.then(() => { tuer?.remove(); tuer = null; });
+      return kette;
     },
     verwische(an) { tuer?.classList.toggle("verwischt", an); },
   };

@@ -151,7 +151,10 @@ export function erzeugeUebung5({ speicher }) {
     registriereAbbruch(() => verlasse?.());
 
     const stelle = () => {
-      if (beendet) return;
+      // ergebnisOffen deckt das Fenster ab, in dem die Ergebnistafel-Tür noch
+      // zufährt: Klicks gehen durch die Tür, dürfen aber keine neue Aufgabe
+      // mehr stellen (Q3).
+      if (beendet || ergebnisOffen) return;
       if (performance.now() >= testende) { zeigeErgebnis(true); return; }
       nummer += 1;
       const aufgabe = naechsteAufgabe();
@@ -186,7 +189,7 @@ export function erzeugeUebung5({ speicher }) {
       spaeter(() => entscheide({ abgelaufen: true }), limitMs);
 
       const entscheide = ({ getroffen = false, abgelaufen = false, gewaehlt = null }) => {
-        if (entschieden || beendet) return;
+        if (entschieden || beendet || ergebnisOffen) return;
         entschieden = true;
         gestellt += 1;
         const rest = abgelaufen ? 0 : Math.max(0, limitMs - (performance.now() - start));
@@ -209,7 +212,7 @@ export function erzeugeUebung5({ speicher }) {
         rueck.classList.add(getroffen ? "gut" : "schlecht");
         let weitergegangen = false;
         const weiter = () => {
-          if (weitergegangen || beendet) return;
+          if (weitergegangen || beendet || ergebnisOffen) return;
           weitergegangen = true;
           schleier.removeEventListener("click", weiter);
           stelle();

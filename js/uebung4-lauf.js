@@ -85,7 +85,10 @@ export function erzeugeUebung4({ speicher }) {
     registriereAbbruch(() => verlasse?.());
 
     const runde = () => {
-      if (beendet) return;
+      // ergebnisOffen deckt das Fenster ab, in dem die Ergebnistafel-Tür noch
+      // zufährt: durchgehende Klicks dürfen keine neue Runde oder Frage mehr
+      // auslösen (Q3).
+      if (beendet || ergebnisOffen) return;
       const werte = zufallswerte();
       panel.innerHTML = tafelHtml(werte);
       mitte.innerHTML = "";
@@ -94,7 +97,7 @@ export function erzeugeUebung4({ speicher }) {
     };
 
     const frageFolge = (werte, ids, index) => {
-      if (beendet) return;
+      if (beendet || ergebnisOffen) return;
       if (index >= ids.length) {
         if (performance.now() < testende) runde();
         else zeigeErgebnis(true);
@@ -122,7 +125,7 @@ export function erzeugeUebung4({ speicher }) {
       spaeter(() => entscheide(null), ANTWORTZEIT * 1000);
 
       const entscheide = (nr) => {
-        if (entschieden || beendet) return;
+        if (entschieden || beendet || ergebnisOffen) return;
         entschieden = true;
         gestellt += 1;
         const getroffen = nr !== null && istGleich(id, optionen[nr], wert);
@@ -139,7 +142,7 @@ export function erzeugeUebung4({ speicher }) {
         rueck.classList.add(getroffen ? "gut" : "schlecht");
         let weitergegangen = false;
         const weiter = () => {
-          if (weitergegangen || beendet) return;
+          if (weitergegangen || beendet || ergebnisOffen) return;
           weitergegangen = true;
           schleier.removeEventListener("click", weiter);
           frageFolge(werte, ids, index + 1);

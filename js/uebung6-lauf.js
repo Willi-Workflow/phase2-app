@@ -220,6 +220,10 @@ export function erzeugeUebung6({ speicher }) {
     // Selbsteinschätzung zählt wie eine Antwort, danach geht es ohne
     // Wartezeit zur nächsten Karte, das ist das Karteikartentempo.
     const bewerte = (getroffen) => {
+      // Während die Ergebnistafel-Tür zufährt, gehen Klicks durch die Tür.
+      // Ohne diesen Wächter zählten sie noch in die Abbruchbilanz und stellten
+      // neue Karten hinter der Tafel (Q3).
+      if (beendet || ergebnisOffen) return;
       gestellt += 1;
       if (getroffen) richtig += 1;
       stelle();
@@ -252,7 +256,7 @@ export function erzeugeUebung6({ speicher }) {
       let umgedreht = false;
       oben.addEventListener("click", (e) => {
         e.stopPropagation();
-        if (umgedreht || beendet) return;
+        if (umgedreht || beendet || ergebnisOffen) return;
         umgedreht = true;
         oben.classList.add("blaettert");
         const auch = karte.auch.length
@@ -267,7 +271,7 @@ export function erzeugeUebung6({ speicher }) {
       });
       knoepfe.addEventListener("click", (e) => {
         const knopf = e.target.closest(".antwortknopf");
-        if (!knopf || beendet) return;
+        if (!knopf || beendet || ergebnisOffen) return;
         e.stopPropagation();
         knoepfe.querySelectorAll(".antwortknopf").forEach((k) => { k.disabled = true; });
         bewerte(knopf.dataset.wert === "ja");
@@ -286,7 +290,7 @@ export function erzeugeUebung6({ speicher }) {
       const block = mitte.querySelector(".hinweisblock");
       block.addEventListener("click", (e) => e.stopPropagation());
       block.querySelector("#u6-aufdecken").addEventListener("click", () => {
-        if (beendet) return;
+        if (beendet || ergebnisOffen) return;
         block.innerHTML = `
           <ul class="hinweisliste">${frage.hinweise.map((h) => `<li>${h}</li>`).join("")}</ul>
           <div class="antworten wissensantworten">
@@ -295,7 +299,7 @@ export function erzeugeUebung6({ speicher }) {
           </div>`;
         block.querySelector(".antworten").addEventListener("click", (e) => {
           const knopf = e.target.closest(".antwortknopf");
-          if (!knopf || beendet) return;
+          if (!knopf || beendet || ergebnisOffen) return;
           block.querySelectorAll(".antwortknopf").forEach((k) => { k.disabled = true; });
           bewerte(knopf.dataset.wert === "ja");
         });
@@ -303,7 +307,7 @@ export function erzeugeUebung6({ speicher }) {
     };
 
     const stelle = () => {
-      if (beendet) return;
+      if (beendet || ergebnisOffen) return;
       if (nummer >= fragen.length) { zeigeErgebnis(true); return; }
       const frage = fragen[nummer];
       nummer += 1;
