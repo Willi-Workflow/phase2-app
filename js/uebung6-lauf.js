@@ -39,10 +39,7 @@ export function erzeugeUebung6({ speicher }) {
     };
   }
 
-  // Lexikon fest unter Mission und Auswertung: je Bereich ein Kapitel zum
-  // Aufklappen, alle starten zu (Willis Vorgabe vom 28.08.2026). Die
-  // Flugzeugmuster als Bildkarten (Klick aufs Bild blättert durch die
-  // Ansichten), die übrigen Bereiche als Wissenskarten mit Nachschlagteil.
+  // Kapitelinhalt Flugzeugmuster: Bildkarten nach Gruppen.
   function musterLexikon() {
     return GRUPPEN.map((g) => {
       const eintraege = MUSTER.filter((m) => m.gruppe === g.id).map((m) => {
@@ -92,30 +89,61 @@ export function erzeugeUebung6({ speicher }) {
       : "";
   }
 
+  // Lexikon fest unter Mission und Auswertung, gestaltet als Einsatzmappe
+  // (Willis Vorgabe vom 28.08.2026: wie ein Buch, nicht bloß aufklappen):
+  // oben das Kapitelregister, darunter das aufgeschlagene Kapitel mit
+  // Kapitelkopf; solange keins gewählt ist, liegt das Deckblatt auf.
+  // Die Kapitelinhalte bleiben unverändert: Flugzeugmuster als Bildkarten,
+  // die übrigen Bereiche als Wissenskarten mit Nachschlagteil.
   function zeichneUnten(feld) {
-    const abschnitte = [
-      `<details class="lexikonklappe">
-         <summary>FLUGZEUGMUSTER</summary>
-         ${musterLexikon()}
-       </details>`,
+    const kapitel = [
+      { id: "flugzeugmuster", name: "Flugzeugmuster", inhalt: musterLexikon() },
       ...WISSEN6_REIHE.map((id) => {
         const bereich = WISSEN6[id];
-        if (!bereich.wissen.length && !bereich.fragen.length) return "";
-        return `<details class="lexikonklappe">
-            <summary>${bereich.name.toUpperCase()}</summary>
-            ${wissensLexikon(bereich)}
-            ${id === "persoenlich" ? "" : fragenNachschlag(bereich)}
-          </details>`;
-      }),
-    ].join("");
+        if (!bereich.wissen.length && !bereich.fragen.length) return null;
+        return {
+          id,
+          name: bereich.name,
+          inhalt: wissensLexikon(bereich) + (id === "persoenlich" ? "" : fragenNachschlag(bereich)),
+        };
+      }).filter(Boolean),
+    ];
     feld.innerHTML = `
       <section class="wissensbereich lexikonbereich">
-        <div class="lexikonkopf">LEXIKON</div>
-        ${abschnitte}
+        <div class="lexikonmappe">
+          <nav class="mappenreiter">${kapitel.map((k, i) =>
+            `<button class="reiter" type="button" data-kapitel="${k.id}">${String(i + 1).padStart(2, "0")} · ${k.name.toUpperCase()}</button>`).join("")}</nav>
+          <div class="mappenblatt">
+            <div class="deckblatt" data-blatt="deckblatt">
+              <div class="deckblattrahmen">
+                <span class="deckblattkicker">PHASE II · PSYCHOLOGISCHES GESPRÄCH</span>
+                <span class="deckblatttitel">LEXIKON</span>
+                <span class="deckblatthinweis">Kapitel im Register wählen</span>
+              </div>
+            </div>
+            ${kapitel.map((k, i) => `
+              <div class="kapitel" data-blatt="${k.id}" hidden>
+                <div class="kapitelkopf">
+                  <span class="kapitelnummer">KAPITEL ${String(i + 1).padStart(2, "0")}</span>
+                  <span class="kapiteltitel">${k.name.toUpperCase()}</span>
+                </div>
+                ${k.inhalt}
+              </div>`).join("")}
+          </div>
+        </div>
       </section>`;
-    // Ein Hörer fürs ganze Lexikon: Klick aufs Musterbild blättert zur
-    // nächsten Ansicht, die Karten sind viele, darum Delegation.
+    // Ein Hörer für Register und Blätter: Reiter schlagen ihr Kapitel auf
+    // (nochmaliger Klick zurück zum Deckblatt), Klick aufs Musterbild
+    // blättert zur nächsten Ansicht, alles über Delegation.
     feld.addEventListener("click", (e) => {
+      const reiter = e.target.closest(".reiter");
+      if (reiter) {
+        const war = reiter.classList.contains("aktiv");
+        const ziel = war ? "deckblatt" : reiter.dataset.kapitel;
+        feld.querySelectorAll(".reiter").forEach((r) => r.classList.toggle("aktiv", r === reiter && !war));
+        feld.querySelectorAll("[data-blatt]").forEach((b) => { b.hidden = b.dataset.blatt !== ziel; });
+        return;
+      }
       const knopf = e.target.closest(".lexikonbild[data-id]");
       if (!knopf) return;
       const anzahl = Number(knopf.dataset.anzahl);

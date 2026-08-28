@@ -814,13 +814,7 @@ main { position: relative; z-index: 1; }
 .lexikonname .lexikonnamen { color: var(--gedeckt); font-size: 12px; }
 .lexikontext { margin: 6px 0 0; padding: 0 12px 12px; font-size: 12px; line-height: 1.5; color: var(--gedeckt); }
 
-/* Mission 6: Lexikon in aufklappbaren Abschnitten je Wissensbereich und
-   die zusätzlichen Frageformen der Abfrage. */
-.lexikonklappe { border: 1px solid #262e1c; border-radius: 10px; padding: 0 16px 14px; background: rgba(13, 17, 9, 0.4); }
-.lexikonklappe > summary { list-style: none; cursor: pointer; padding: 14px 0; font-size: 12px; font-weight: 600; letter-spacing: 0.22em; color: var(--hell); }
-.lexikonklappe > summary::before { content: "►"; display: inline-block; margin-right: 10px; font-size: 9px; color: var(--gedeckt); transition: transform 0.15s; }
-.lexikonklappe[open] > summary::before { transform: rotate(90deg); }
-.lexikonklappe > summary::-webkit-details-marker { display: none; }
+/* Mission 6: zusätzliche Frageformen der Abfrage. */
 .wissensraster { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
 .wissenskarte { padding-bottom: 4px; }
 .wissenskarte .lexikonname { letter-spacing: 0.1em; }
@@ -856,3 +850,22 @@ main { position: relative; z-index: 1; }
 .fragenbild { width: 46px; height: 66px; object-fit: contain; flex: none; }
 .fragetext { font-size: 12px; letter-spacing: 0.04em; color: var(--gedeckt); }
 .antworttext { margin-top: 2px; font-size: 13px; letter-spacing: 0.04em; color: var(--hell); }
+
+/* Mission 6: das Lexikon als Einsatzmappe. Oben das Kapitelregister wie an
+   einem Ordner, darunter das aufgeschlagene Kapitel; ohne Wahl liegt das
+   Deckblatt auf. */
+.lexikonmappe { border: 1px solid #39422c; border-radius: 12px; background: #10140b; overflow: hidden; box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35); }
+.mappenreiter { display: flex; flex-wrap: wrap; gap: 6px; padding: 14px 14px 0; background: linear-gradient(#171c10, #10140b); border-bottom: 1px solid #39422c; }
+.reiter { font-family: inherit; font-size: 11px; letter-spacing: 0.14em; color: var(--gedeckt); background: #1a2113; border: 1px solid #39422c; border-bottom: none; border-radius: 9px 9px 0 0; padding: 10px 14px 9px; cursor: pointer; position: relative; top: 1px; }
+.reiter:hover { color: var(--hell); background: #232c18; }
+.reiter.aktiv { color: #1c2013; background: #cfc39a; border-color: #cfc39a; font-weight: 600; }
+.mappenblatt { padding: 22px 20px 26px; }
+.deckblatt { display: grid; place-items: center; padding: 46px 0 52px; }
+.deckblattrahmen { display: grid; justify-items: center; gap: 14px; border: 1px solid #39422c; outline: 1px solid #262e1c; outline-offset: 6px; border-radius: 4px; padding: 44px 60px; }
+.deckblattkicker { font-size: 10px; letter-spacing: 0.3em; color: var(--gedeckt); }
+.deckblatttitel { font-size: clamp(30px, 4vw, 44px); letter-spacing: 0.3em; color: var(--hell); font-weight: 700; }
+.deckblatthinweis { font-size: 11px; letter-spacing: 0.16em; color: var(--gedeckt); }
+.kapitelkopf { display: grid; gap: 4px; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid #39422c; }
+.kapitelnummer { font-size: 10px; letter-spacing: 0.28em; color: var(--gedeckt); }
+.kapiteltitel { font-size: clamp(20px, 2.4vw, 28px); letter-spacing: 0.18em; color: var(--hell); font-weight: 700; }
+.mappenblatt [data-blatt][hidden] { display: none; }
