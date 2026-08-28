@@ -133,6 +133,33 @@ test("Sonderzeichen in Profil und Schlüssel werden in der URL kodiert", async (
   assert.ok(einstellung.adresse.includes("schluessel=eq.a%20b"), "Schlüssel ist kodiert");
 });
 
+test("ohne Zugang reiht speichereLauf nichts in die Warteschlange (Q7)", async () => {
+  const lager = attrappenLager();
+  const s = erzeugeSpeicher({ konfig: { supabaseUrl: "", supabaseKey: "", version: 1 }, fetchFn: async () => { throw new Error("darf nicht gerufen werden"); }, lager });
+  await s.speichereLauf(lauf);
+  await s.speichereLauf({ ...lauf, zeitpunkt: "2026-08-23T10:00:00Z" });
+  const schlange = JSON.parse(lager.getItem("p2-warteschlange") ?? "[]");
+  assert.equal(schlange.length, 0);
+  assert.equal((await s.ladeLaeufe(1)).length, 2); // beide örtlich sichtbar
+});
+
+test("volles Lager bei erfolgreicher Sendung hält den Lauf über die Warteschlange sichtbar (Q6)", async () => {
+  const kaputtesLager = (() => {
+    const m = new Map();
+    return {
+      getItem: (k) => m.get(k) ?? null,
+      setItem: (k, v) => { if (k === "p2-laeufe") throw new Error("QuotaExceededError"); m.set(k, String(v)); },
+    };
+  })();
+  const fetchFn = async () => ({ ok: true, json: async () => [] });
+  const s = erzeugeSpeicher({ konfig, fetchFn, lager: kaputtesLager });
+  await s.speichereLauf(lauf);
+  const schlange = JSON.parse(kaputtesLager.getItem("p2-warteschlange") ?? "[]");
+  assert.equal(schlange.length, 1); // trotz erfolgreicher Sendung als örtlicher Halt eingereiht
+  const laeufe = await s.ladeLaeufe(1); // ferne Antwort leer, Warteschlange greift
+  assert.equal(laeufe.length, 1);
+});
+
 test("loescheLaeufe ruft DELETE und leert die örtliche Kopie des Profils", async () => {
   const rufe = [];
   const fetchFn = async (adresse, optionen = {}) => {

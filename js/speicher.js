@@ -96,8 +96,19 @@ export function erzeugeSpeicher({ konfig, fetchFn = fetch, lager = localStorage 
 
     async speichereLauf(lauf) {
       const oertlichOk = merkeOertlich(lauf);
+      if (!zugang) {
+        // Ohne gemeinsamen Bestand genügt die örtliche Kopie. Nicht einreihen,
+        // sonst wüchse die Warteschlange endlos, weil synce nie sendet (Q7).
+        // Scheiterte auch die örtliche Kopie, ist der Lauf weg: melden.
+        if (!oertlichOk) throw new Error("Lauf konnte örtlich nicht gesichert werden");
+        return;
+      }
       try {
         await sendeLauf(lauf);
+        // Konnte die örtliche Kopie nicht geschrieben werden (etwa volles Lager),
+        // hält die Warteschlange den Lauf trotzdem sichtbar (ladeLaeufe mischt sie
+        // ein) und wiederholbar; synce trägt ihn nach dem Senden wieder aus (Q6).
+        if (!oertlichOk) reiheEin(lauf);
       } catch (fehler) {
         if (fehler.dauerhaft) {
           // Dauerhafte Ablehnung: Fehler dem Aufrufer mitteilen, damit dieser
