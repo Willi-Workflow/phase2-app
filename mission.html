@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <title>Phase II · Mission</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="stil.css?v=82">
+<link rel="stylesheet" href="stil.css?v=83">
 <link rel="preload" as="image" href="bilder/hangartuer.jpg">
 </head>
 <body>
@@ -12,7 +12,7 @@
 <main style="padding-top:max(7vh, 80px);">
   <h1 class="she-titel" id="missionstitel"></h1>
   <p class="she-untertitel" id="missionsnummer"></p>
-  <div class="missionsraster">
+  <div class="missionsraster" id="missionsraster">
     <section class="missionsfeld">
       <h2>MISSION</h2>
       <p id="uebungshinweis" style="font-size:13px;color:var(--gedeckt);letter-spacing:.05em;">
@@ -24,7 +24,7 @@
       <p class="probehinweis" id="probehinweis" hidden>PROBEBETRIEB · LÄUFE WERDEN NICHT GEWERTET</p>
       <div class="geraetestand" id="geraetestand"></div>
     </section>
-    <section class="missionsfeld">
+    <section class="missionsfeld" id="auswertungsfeld">
       <h2>AUSWERTUNG</h2>
       <div class="diagramm" id="diagramm" hidden>
         <div class="diagrammlegende" id="diagrammlegende"></div>
@@ -40,6 +40,6 @@
   </div>
   <div id="uebungsunten"></div>
 </main>
-<script type="module" src="js/mission.js?v=101"></script>
+<script type="module" src="js/mission.js?v=102"></script>
 </body>
 </html>

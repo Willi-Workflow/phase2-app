@@ -869,3 +869,8 @@ main { position: relative; z-index: 1; }
 .kapitelnummer { font-size: 10px; letter-spacing: 0.28em; color: var(--gedeckt); }
 .kapiteltitel { font-size: clamp(20px, 2.4vw, 28px); letter-spacing: 0.18em; color: var(--hell); font-weight: 700; }
 .mappenblatt [data-blatt][hidden] { display: none; }
+
+/* Missionen ohne Auswertung (etwa das psychologische Gespräch): das
+   Missionsfeld steht allein und mittig statt im Zweierraster. */
+.missionsraster.eine-spalte { grid-template-columns: min(640px, 100%); justify-content: center; }
+.missionsfeld[hidden] { display: none; }

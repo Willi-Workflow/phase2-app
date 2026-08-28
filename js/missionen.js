@@ -9,5 +9,7 @@ export const MISSIONEN = [
   { nr: 3, name: "60s Instrumentenflug", kennzahlName: "Wertung %", wertung: false, maximal: 100 },
   { nr: 4, name: "Instrumente merken", kennzahlName: "Wertung %", wertung: false, maximal: 100 },
   { nr: 5, name: "Test Flugphysik", kennzahlName: "Wertung %", wertung: false, maximal: 100 },
-  { nr: 6, name: "Psychologisches Gespräch", kennzahlName: "Treffer %", wertung: false, maximal: 100 },
+  // auswertung: false blendet Diagramm, Bestwert und Vergleich der
+  // Missionsseite aus; beim Gespräch zählt Üben, nicht die Kurve.
+  { nr: 6, name: "Psychologisches Gespräch", kennzahlName: "Treffer %", wertung: false, maximal: 100, auswertung: false },
 ];

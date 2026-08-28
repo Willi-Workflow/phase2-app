@@ -47,6 +47,7 @@ function zeichneStatistik() {
 }
 
 async function zeichneAuswertung() {
+  if (mission.auswertung === false) return;
   alleLaeufe = await speicher.ladeLaeufe(mission.nr);
   zeichneStatistik();
 }
@@ -307,6 +308,10 @@ function initialisiereSeite() {
   controls.lade().then(zeichneGeraete);
 
   document.getElementById("missionstitel").textContent = mission.name.toUpperCase();
+  if (mission.auswertung === false) {
+    document.getElementById("auswertungsfeld").hidden = true;
+    document.getElementById("missionsraster").classList.add("eine-spalte");
+  }
   document.getElementById("missionsnummer").textContent = `MISSION 0${mission.nr}`;
   document.getElementById("probehinweis").hidden = Boolean(mission.wertung);
 
