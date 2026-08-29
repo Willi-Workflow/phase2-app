@@ -1,5 +1,5 @@
 // Gamepad-Anbindung: Anlernen über alle Geräte, Kurven, Tastatur-Ersatz.
-import { mitKurve, groessterAusschlag } from "./kurve.js";
+import { mitKurve, groessterAusschlag, mitEmpfindlichkeit, empfindlichkeitFuer } from "./kurve.js";
 import { geraeteListe } from "./geraetestand.js";
 
 const ROLLEN = [
@@ -20,11 +20,19 @@ const ROLLEN = [
 // und werden je Profil gespeichert.
 const TOTZONE_VORGABE = 0.10;
 const EXPO_VORGABE = 0.4;
+// Empfindlichkeit: Faktor hinter der Kurve (Willis Auftrag vom 29.08.2026).
+// Entweder gilt ein allgemeiner Wert für alle Geräte, oder der Haken
+// "je Gerät" schaltet um, dann zählt nur noch der je Gerät gespeicherte
+// Faktor und der allgemeine Regler ist stillgelegt.
+const EMPFINDLICHKEIT_VORGABE = 1;
 
 export function erzeugeControls(speicher) {
   let zuordnung = {};        // rolle -> {geraet, achse, invert}
   let totzone = TOTZONE_VORGABE;
   let expo = EXPO_VORGABE;
+  let empfindlichkeit = EMPFINDLICHKEIT_VORGABE;
+  let empfindlichkeitJeGeraet = {};   // geraetekennung -> faktor
+  let empfindlichkeitModus = "alle";  // "alle" | "geraet"
   let knopfPadAlt = false;
   let knopfRaumAlt = false;
   let fang = null;           // {rolle, basen, beiTreffer}
@@ -65,6 +73,9 @@ export function erzeugeControls(speicher) {
       zuordnung = await speicher.ladeEinstellung("zuordnung", {});
       totzone = await speicher.ladeEinstellung("totzone", TOTZONE_VORGABE);
       expo = await speicher.ladeEinstellung("expo", EXPO_VORGABE);
+      empfindlichkeit = await speicher.ladeEinstellung("empfindlichkeit", EMPFINDLICHKEIT_VORGABE);
+      empfindlichkeitJeGeraet = await speicher.ladeEinstellung("empfindlichkeitJeGeraet", {});
+      empfindlichkeitModus = await speicher.ladeEinstellung("empfindlichkeitModus", "alle");
       schusstaste = await speicher.ladeEinstellung("schusstaste", null);
     },
 
@@ -78,10 +89,14 @@ export function erzeugeControls(speicher) {
         const pad = pads().find((p) => p.id === z.geraet);
         if (pad && z.achse < pad.axes.length) {
           const roh = pad.axes[z.achse] * (z.invert ? -1 : 1);
-          return mitKurve(roh, totzone, expo);
+          const faktor = empfindlichkeitFuer(empfindlichkeitModus, empfindlichkeit, empfindlichkeitJeGeraet, z.geraet);
+          return mitEmpfindlichkeit(mitKurve(roh, totzone, expo), faktor);
         }
       }
-      return tastaturWert(rolle);
+      // Tastatur-Ersatz: im Modus "alle" wirkt der allgemeine Faktor mit,
+      // im Gerätemodus bleibt die Tastatur neutral (sie ist kein Gerät).
+      const faktor = empfindlichkeitFuer(empfindlichkeitModus, empfindlichkeit, empfindlichkeitJeGeraet, undefined);
+      return mitEmpfindlichkeit(tastaturWert(rolle), faktor);
     },
 
     // Flanken je Quelle getrennt: Ein dauerhaft gedrückt gemeldeter
@@ -187,15 +202,31 @@ export function erzeugeControls(speicher) {
     async setzeRegler(name, wert) {
       if (name === "totzone") totzone = wert;
       if (name === "expo") expo = wert;
+      if (name === "empfindlichkeit") empfindlichkeit = wert;
       await speicher.setzeEinstellung(name, wert);
     },
 
     setzeReglerFluechtig(name, wert) {
       if (name === "totzone") totzone = wert;
       if (name === "expo") expo = wert;
+      if (name === "empfindlichkeit") empfindlichkeit = wert;
     },
 
-    regler() { return { totzone, expo }; },
+    async setzeEmpfindlichkeitModus(modus) {
+      empfindlichkeitModus = modus;
+      await speicher.setzeEinstellung("empfindlichkeitModus", modus);
+    },
+
+    setzeGeraeteEmpfindlichkeitFluechtig(kennung, wert) {
+      empfindlichkeitJeGeraet = { ...empfindlichkeitJeGeraet, [kennung]: wert };
+    },
+
+    async setzeGeraeteEmpfindlichkeit(kennung, wert) {
+      empfindlichkeitJeGeraet = { ...empfindlichkeitJeGeraet, [kennung]: wert };
+      await speicher.setzeEinstellung("empfindlichkeitJeGeraet", empfindlichkeitJeGeraet);
+    },
+
+    regler() { return { totzone, expo, empfindlichkeit, empfindlichkeitModus, empfindlichkeitJeGeraet }; },
 
     // Dialog-Rückrufe erben das this von controls lexikalisch. oeffneDialog muss daher
     // immer als controls.oeffneDialog() gerufen werden, nicht entnommen.
@@ -221,8 +252,10 @@ export function erzeugeControls(speicher) {
           <span class="rollenstand" id="stand-schuss"></span>
           <button class="punkt klein" data-tat="schuss">Zuweisen</button>
         </div>
-        <label class="zustand">Totzone <input type="range" id="totzone" min="0" max="0.2" step="0.01"></label>
-        <label class="zustand">Expo <input type="range" id="expo" min="0" max="1" step="0.05"></label>
+        <label class="zustand">Totzone <input type="range" id="totzone" min="0" max="0.2" step="0.01"> <span class="reglerwert" id="totzone-wert"></span></label>
+        <label class="zustand">Expo <input type="range" id="expo" min="0" max="1" step="0.05"> <span class="reglerwert" id="expo-wert"></span></label>
+        <label class="zustand">Empfindlichkeit <input type="range" id="empfindlichkeit" min="0.5" max="2" step="0.05"> <span class="reglerwert" id="empfindlichkeit-wert"></span></label>
+        <label class="zustand"><input type="checkbox" id="empf-je-geraet"> Empfindlichkeit je Gerät (Regler in der Geräteliste, der allgemeine gilt dann nicht)</label>
         <button class="punkt" data-tat="schliessen">Fertig</button>
       `;
       const schliesse = () => { this.brichFangAb(); this.brichSchussFangAb(); schleier.remove(); dialog.remove(); halteAn = true; };
@@ -261,12 +294,35 @@ export function erzeugeControls(speicher) {
         }
       });
 
+      const alsZahl = (w) => w.toLocaleString("de-DE", { minimumFractionDigits: 2 });
+      const zeigeRegler = () => {
+        const stand = this.regler();
+        dialog.querySelector("#totzone-wert").textContent = alsZahl(stand.totzone);
+        dialog.querySelector("#expo-wert").textContent = alsZahl(stand.expo);
+        dialog.querySelector("#empfindlichkeit-wert").textContent = alsZahl(stand.empfindlichkeit);
+      };
+      // Der Modus schaltet die Klasse am Dialog: Sie blendet die Geräteregler
+      // ein und legt den allgemeinen Empfindlichkeitsregler still.
+      const zeigeModus = () => {
+        const jeGeraet = this.regler().empfindlichkeitModus === "geraet";
+        dialog.classList.toggle("je-geraet", jeGeraet);
+        dialog.querySelector("#empf-je-geraet").checked = jeGeraet;
+        dialog.querySelector("#empfindlichkeit").disabled = jeGeraet;
+      };
       dialog.querySelector("#totzone").value = this.regler().totzone;
       dialog.querySelector("#expo").value = this.regler().expo;
-      dialog.querySelector("#totzone").addEventListener("input", (e) => this.setzeReglerFluechtig("totzone", Number(e.target.value)));
+      dialog.querySelector("#empfindlichkeit").value = this.regler().empfindlichkeit;
+      zeigeRegler();
+      zeigeModus();
+      dialog.querySelector("#totzone").addEventListener("input", (e) => { this.setzeReglerFluechtig("totzone", Number(e.target.value)); zeigeRegler(); });
       dialog.querySelector("#totzone").addEventListener("change", (e) => this.setzeRegler("totzone", Number(e.target.value)));
-      dialog.querySelector("#expo").addEventListener("input", (e) => this.setzeReglerFluechtig("expo", Number(e.target.value)));
+      dialog.querySelector("#expo").addEventListener("input", (e) => { this.setzeReglerFluechtig("expo", Number(e.target.value)); zeigeRegler(); });
       dialog.querySelector("#expo").addEventListener("change", (e) => this.setzeRegler("expo", Number(e.target.value)));
+      dialog.querySelector("#empfindlichkeit").addEventListener("input", (e) => { this.setzeReglerFluechtig("empfindlichkeit", Number(e.target.value)); zeigeRegler(); });
+      dialog.querySelector("#empfindlichkeit").addEventListener("change", (e) => this.setzeRegler("empfindlichkeit", Number(e.target.value)));
+      dialog.querySelector("#empf-je-geraet").addEventListener("change", (e) => {
+        this.setzeEmpfindlichkeitModus(e.target.checked ? "geraet" : "alle").then(zeigeModus);
+      });
 
       let halteAn = false;
       // Die Zeilen werden nur bei geändertem Gerätebestand oder geänderter
@@ -274,6 +330,18 @@ export function erzeugeControls(speicher) {
       let geraeteMerkmal = "";
       const geraeteFeld = dialog.querySelector("#geraeteliste");
       const sicher = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+      // Geräteregler über Weiterleitung am Feld: Die Zeilen werden bei
+      // Gerätewechseln neu gebaut, die Horcher hier überleben das.
+      geraeteFeld.addEventListener("input", (e) => {
+        if (!e.target.classList?.contains("geraete-empf")) return;
+        const wert = Number(e.target.value);
+        this.setzeGeraeteEmpfindlichkeitFluechtig(e.target.dataset.kennung, wert);
+        e.target.nextElementSibling.textContent = alsZahl(wert);
+      });
+      geraeteFeld.addEventListener("change", (e) => {
+        if (!e.target.classList?.contains("geraete-empf")) return;
+        this.setzeGeraeteEmpfindlichkeit(e.target.dataset.kennung, Number(e.target.value));
+      });
       const takt = () => {
         if (halteAn) return;
         const liste = geraeteListe(ROLLEN, zuordnung, this.geraete());
@@ -287,8 +355,13 @@ export function erzeugeControls(speicher) {
                 <div class="geraetename">${sicher(g.name)}</div>
                 <div class="geraeteinfo">${g.zustand === "fehlt" ? "nicht verbunden" : sicher(g.umfang)}${g.rollen.length ? ` · ${g.rollen.join(", ")}` : ""}</div>
                 <div class="geraeteachsen" data-kennung="${sicher(g.kennung)}"></div>
+                ${g.zustand === "fehlt" ? "" : `<label class="zustand geraeteempf">Empfindlichkeit <input type="range" class="geraete-empf" data-kennung="${sicher(g.kennung)}" min="0.5" max="2" step="0.05"> <span class="reglerwert"></span></label>`}
               </div>
             </div>`).join("") || `<p class="zustand">Kein Gerät erkannt.</p>`;
+          for (const regler of geraeteFeld.querySelectorAll(".geraete-empf")) {
+            regler.value = this.regler().empfindlichkeitJeGeraet[regler.dataset.kennung] ?? 1;
+            regler.nextElementSibling.textContent = alsZahl(Number(regler.value));
+          }
         }
         for (const feld of geraeteFeld.querySelectorAll(".geraeteachsen")) {
           const pad = pads().find((p) => p.id === feld.dataset.kennung);

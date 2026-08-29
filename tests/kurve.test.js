@@ -1,6 +1,25 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mitKurve, groessterAusschlag } from "../js/kurve.js";
+import { mitKurve, groessterAusschlag, mitEmpfindlichkeit, empfindlichkeitFuer } from "../js/kurve.js";
+
+test("mitEmpfindlichkeit: skaliert und bleibt im Achsenbereich", () => {
+  assert.equal(mitEmpfindlichkeit(0.4, 1), 0.4);
+  assert.equal(mitEmpfindlichkeit(0.4, 1.5), 0.6000000000000001);
+  assert.equal(mitEmpfindlichkeit(0.8, 2), 1);    // Deckel bei 1
+  assert.equal(mitEmpfindlichkeit(-0.8, 2), -1);  // und bei -1
+  assert.equal(mitEmpfindlichkeit(1, 0.5), 0.5);
+});
+
+test("empfindlichkeitFuer: Modus alle nimmt den allgemeinen Wert", () => {
+  assert.equal(empfindlichkeitFuer("alle", 1.4, { Stick: 0.8 }, "Stick"), 1.4);
+});
+
+test("empfindlichkeitFuer: Modus geraet nimmt den Gerätewert, ohne Eintrag neutral", () => {
+  assert.equal(empfindlichkeitFuer("geraet", 1.4, { Stick: 0.8 }, "Stick"), 0.8);
+  assert.equal(empfindlichkeitFuer("geraet", 1.4, { Stick: 0.8 }, "Pedale"), 1);
+  // Tastatur-Ersatz hat kein Gerät: im Gerätemodus neutral
+  assert.equal(empfindlichkeitFuer("geraet", 1.4, {}, undefined), 1);
+});
 
 test("mitKurve: innerhalb der Totzone ist der Wert 0", () => {
   assert.equal(mitKurve(0.05, 0.06, 0), 0);

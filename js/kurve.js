@@ -9,6 +9,22 @@ export function mitKurve(wert, totzone, expo) {
   return (1 - e) * gestreckt + e * gestreckt ** 3;
 }
 
+// Empfindlichkeit: Faktor auf den fertigen Kurvenwert. Über 1 ist der volle
+// Ausschlag früher erreicht, unter 1 später; der Wert bleibt im Achsenbereich.
+// Der Faktor sitzt bewusst hinter der Kurve, damit Totzone und Expo ihre
+// Form behalten und die drei Regler unabhängig bleiben.
+export function mitEmpfindlichkeit(wert, faktor) {
+  return Math.max(-1, Math.min(1, wert * faktor));
+}
+
+// Wahl des Faktors nach Modus: "alle" nimmt den allgemeinen Wert, "geraet"
+// den je Gerät gespeicherten. Ohne Eintrag (oder ohne Gerät, etwa beim
+// Tastatur-Ersatz) bleibt der Faktor neutral bei 1.
+export function empfindlichkeitFuer(modus, allgemein, jeGeraet, geraet) {
+  if (modus === "geraet") return (geraet != null ? jeGeraet?.[geraet] : null) ?? 1;
+  return allgemein;
+}
+
 export function groessterAusschlag(basen, jetzt, schwelle) {
   const ruhe = new Map(basen.map((g) => [g.geraet, g.achsen]));
   let treffer = null;

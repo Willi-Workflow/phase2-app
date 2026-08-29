@@ -258,6 +258,14 @@ main { position: relative; z-index: 1; }
   pointer-events: none;
 }
 .uebung1 .zielpfeil.da { display: block; }
+/* Zahlenwert neben den Reglern im Controls-Dialog; feste Breite, damit die
+   Zeile beim Schieben nicht springt. */
+.controlsdialog .reglerwert { display: inline-block; min-width: 2.6em; text-align: right; font-variant-numeric: tabular-nums; }
+/* Empfindlichkeit je Gerät: die Zeilenregler erscheinen nur im Gerätemodus
+   (Klasse je-geraet am Dialog), der allgemeine Regler ist dann stillgelegt. */
+.controlsdialog .geraeteempf { display: none; }
+.controlsdialog.je-geraet .geraeteempf { display: block; }
+.controlsdialog #empfindlichkeit:disabled { opacity: 0.4; }
 .laufschleier.uebung1 .testkopf { position: absolute; top: 3vh; left: 50%; transform: translateX(-50%); z-index: 2; color: var(--gedeckt); letter-spacing: 0.25em; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8); }
 
 /* Mission 1: ausklappbarer Buchstabenblock im Einstellungsfeld */
