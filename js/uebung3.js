@@ -26,7 +26,9 @@ const FAHRT_ZIEL_ZIEL = 140;   // Knoten, Zielvorgabe der Fahrt
 const FAHRT_MIN = 60, FAHRT_MAX = 320;
 
 // Steuerdynamik des Takts.
-const KURSRATE = 9;              // Grad je Sekunde bei Vollausschlag
+// Kursrate seit 29.08.2026 auf 15: Die Doppeldrehung (720 Grad in 60 s
+// braucht im Schnitt 12 Grad je Sekunde) muss mit Reserve fliegbar sein.
+const KURSRATE = 15;             // Grad je Sekunde bei Vollausschlag
 const HOEHENRATE = 100;          // ft je Sekunde bei Vollausschlag, Ziehen steigt
 const FAHRT_ZEITKONSTANTE = 1.5; // Sekunden, mit der die Nadel dem Schub folgt
 const TAKT_DT_MAX = 0.05;        // Sekunden, Deckel je Aufruf
@@ -42,11 +44,14 @@ const mod360 = (grad) => ((grad % 360) + 360) % 360;
 const begrenze = (wert, min, max) => Math.min(max, Math.max(min, wert));
 const wuerfelIndex = (anzahl, rnd) => Math.floor(rnd() * anzahl);
 
-// Festes Standardszenario (Willis Vorgabe vom 28.08.2026): Kurs immer eine
-// volle Drehung ab Norden, im Uhrzeigersinn, Ziel damit wieder Norden. Kein
-// Zufall mehr, jeder Kurs-Durchgang ist gleich.
-function wuerfleKurs() {
-  return { start: 0, aenderung: 360, ziel: 0 };
+// Kurs seit 29.08.2026 (Willis Auftrag): Richtung und Betrag wechseln je
+// Durchgang, minus dreht gegen den Uhrzeigersinn, auch Teil- und
+// Doppeldrehungen. Der Start bleibt Norden (Festlegung vom 28.08.2026).
+const KURS_BETRAEGE = [180, 270, 360, 720];
+function wuerfleKurs(rnd = Math.random) {
+  const betrag = KURS_BETRAEGE[wuerfelIndex(KURS_BETRAEGE.length, rnd)];
+  const aenderung = rnd() < 0.5 ? -betrag : betrag;
+  return { start: 0, aenderung, ziel: mod360(aenderung) };
 }
 
 // Höhe: fester Steigflug um 1000 Fuß ab 5000 Fuß (festes Standardszenario,
@@ -173,44 +178,35 @@ export function kennzahl3(punkteListe) {
   return Math.round(punkteListe.reduce((summe, p) => summe + p, 0) / punkteListe.length);
 }
 
-// Rechenaufgabe für Stufe 4: plus mit Ergebnis höchstens 99, minus mit
-// Ergebnis mindestens 0, kleines Einmaleins mit Faktoren 2 bis 12. Die
-// Operanden werden so gewürfelt, dass die Grenze immer eingehalten ist,
-// ohne dass ein Neuwürfeln nötig wird.
-export function erzeugeRechenaufgabe(rnd = Math.random) {
-  const formen = ["+", "-", "*"];
-  const op = formen[wuerfelIndex(formen.length, rnd)];
+// Rechenaufgaben seit 29.08.2026 (Willis Auftrag): nur Plus und Minus, und
+// eine anpassende Stufe deckelt die Operandengröße. Stufe 0 rechnet
+// einstellig; jede richtig beantwortete Aufgabe hebt die Stufe im Lauf um
+// eins, bis zur Obergrenze. Ergebnisse bleiben immer zwischen 0 und 99,
+// die Operanden werden so gewürfelt, dass kein Neuwürfeln nötig ist.
+export const RECHENSTUFEN_MAX = 4;
+const STUFENDECKEL = [9, 20, 40, 70, 99]; // größter Operand je Stufe
+
+export function erzeugeRechenaufgabe(rnd = Math.random, stufe = 0) {
+  const deckel = STUFENDECKEL[begrenze(Math.floor(stufe), 0, RECHENSTUFEN_MAX)];
+  const op = rnd() < 0.5 ? "+" : "-";
   if (op === "+") {
-    const a = 1 + wuerfelIndex(98, rnd);   // 1 bis 98
-    const b = wuerfelIndex(100 - a, rnd);  // 0 bis (99 - a): Summe bleibt <= 99
+    const a = 1 + wuerfelIndex(deckel, rnd);                    // 1 bis deckel
+    const b = wuerfelIndex(Math.min(deckel, 99 - a) + 1, rnd);  // Summe bleibt <= 99
     return { a, op, b, antwort: a + b };
   }
-  if (op === "-") {
-    const a = 1 + wuerfelIndex(99, rnd);   // 1 bis 99
-    const b = wuerfelIndex(a + 1, rnd);    // 0 bis a: Ergebnis bleibt >= 0
-    return { a, op, b, antwort: a - b };
-  }
-  const a = 2 + wuerfelIndex(11, rnd);     // 2 bis 12
-  const b = 2 + wuerfelIndex(11, rnd);     // 2 bis 12
-  return { a, op, b, antwort: a * b };
+  const a = 1 + wuerfelIndex(deckel, rnd);                      // 1 bis deckel
+  const b = wuerfelIndex(a + 1, rnd);                           // 0 bis a: Ergebnis >= 0
+  return { a, op, b, antwort: a - b };
 }
 
 // Fünf gemischte Antwortmöglichkeiten: die richtige Antwort plus vier
-// eindeutige, positive Ablenker aus ihrer Nähe (±1, ±2, ±10, beim
-// Einmaleins zusätzlich die Nachbarprodukte). Der Kandidatenpool wird vor
-// der Auswahl gemischt, damit auch die Nachbarprodukte tatsächlich zum Zug
-// kommen und nicht immer von den nahen Zahlenwerten verdrängt werden. Reicht
-// die Nähe nicht für vier eindeutige Werte, füllt eine Schlussschleife mit
-// weiter entfernten, aber weiterhin eindeutigen Werten auf.
+// eindeutige, positive Ablenker aus ihrer Nähe (±1, ±2, ±10). Der
+// Kandidatenpool wird vor der Auswahl gemischt. Reicht die Nähe nicht für
+// vier eindeutige Werte, füllt eine Schlussschleife mit weiter entfernten,
+// aber weiterhin eindeutigen Werten auf.
 export function antworten5(aufgabe, rnd = Math.random) {
   const antwort = aufgabe.antwort;
   const kandidaten = [antwort - 1, antwort + 1, antwort - 2, antwort + 2, antwort - 10, antwort + 10];
-  if (aufgabe.op === "*") {
-    kandidaten.push(
-      (aufgabe.a - 1) * aufgabe.b, (aufgabe.a + 1) * aufgabe.b,
-      aufgabe.a * (aufgabe.b - 1), aufgabe.a * (aufgabe.b + 1),
-    );
-  }
   const eindeutig = [];
   for (const k of mische(kandidaten, rnd)) {
     if (k > 0 && k !== antwort && !eindeutig.includes(k)) eindeutig.push(k);

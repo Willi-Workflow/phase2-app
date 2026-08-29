@@ -4,7 +4,7 @@ import {
   TESTDAUERN, STUFEN, FLUGZEIT_S, EINRICHTZEIT_S, RECHENTAKT_S,
   erzeugeVorgaben, erzeugeFlugzustand, takt, sollwert, winkelabstand,
   momentanfehler, durchgangspunkte, kennzahl3,
-  erzeugeRechenaufgabe, antworten5, pedalwahl,
+  erzeugeRechenaufgabe, antworten5, pedalwahl, RECHENSTUFEN_MAX,
 } from "../js/uebung3.js";
 import { svgUhr, svgSaeule, uhrwinkel, saeulenanteil } from "../js/uebung3-bild.js";
 
@@ -21,32 +21,30 @@ test("Konstanten des Instrumentenflugs", () => {
   assert.equal(RECHENTAKT_S, 12);
 });
 
-test("erzeugeVorgaben: festes Standardszenario, unabhängig vom Zufall", () => {
-  // Willis Vorgabe vom 28.08.2026: Kurs immer volle Drehung ab Norden, Höhe
-  // fester Steigflug um 1000 Fuß ab 5000, Fahrt fest 100 auf 140. Die Werte
-  // hängen nicht mehr vom Zufall ab, nur die aktive Auswahl je Stufe.
-  const v = erzeugeVorgaben(3, folge([0.1, 0.25, 0.7]));
-  assert.deepEqual(v.kurs, { start: 0, aenderung: 360, ziel: 0 });
+test("erzeugeVorgaben: Kurs würfelt Richtung und Betrag, Höhe und Fahrt bleiben fest", () => {
+  // Willis Auftrag vom 29.08.2026: Die Kursdrehung wechselt in Richtung
+  // (minus = gegen den Uhrzeigersinn) und Betrag (180, 270, 360, 720).
+  // Höhe und Fahrt bleiben das feste Standardszenario vom 28.08.2026.
+  const v = erzeugeVorgaben(3, folge([0.1, 0.7, 0.5, 0.5]));
+  assert.deepEqual(v.kurs, { start: 0, aenderung: 180, ziel: 180 });
   assert.deepEqual(v.hoehe, { start: 5000, aenderung: 1000, ziel: 6000 });
   assert.deepEqual(v.fahrt, { start: 100, ziel: 140 });
-  // Ein zweiter Lauf mit ganz anderem Zufall liefert dieselben Werte.
-  const w = erzeugeVorgaben(3, folge([0.9, 0.02, 0.5]));
-  assert.deepEqual(w.kurs, v.kurs);
+  const w = erzeugeVorgaben(3, folge([0.8, 0.3, 0.5, 0.5]));
+  assert.deepEqual(w.kurs, { start: 0, aenderung: -720, ziel: 0 });
   assert.deepEqual(w.hoehe, v.hoehe);
   assert.deepEqual(w.fahrt, v.fahrt);
 });
 
 test("erzeugeVorgaben: Raster und Erreichbarkeit über viele Zufallszüge", () => {
+  const gesehen = new Set();
   for (let probe = 0; probe < 500; probe++) {
     for (const stufe of STUFEN) {
       const v = erzeugeVorgaben(stufe, Math.random);
 
-      assert.ok(v.kurs.start >= 0 && v.kurs.start <= 355);
-      assert.equal(v.kurs.start % 5, 0);
-      // Immer die volle Drehung, nur die Richtung wechselt; das Ziel ist
-      // damit wieder der Startkurs.
-      assert.equal(Math.abs(v.kurs.aenderung), 360);
-      assert.equal(v.kurs.ziel, v.kurs.start);
+      assert.equal(v.kurs.start, 0); // Start bleibt Norden
+      assert.ok([180, 270, 360, 720].includes(Math.abs(v.kurs.aenderung)));
+      assert.equal(v.kurs.ziel, ((v.kurs.aenderung % 360) + 360) % 360);
+      gesehen.add(v.kurs.aenderung);
 
       assert.ok(v.hoehe.start >= 2000 && v.hoehe.start <= 8000);
       assert.equal(v.hoehe.start % 500, 0);
@@ -63,6 +61,8 @@ test("erzeugeVorgaben: Raster und Erreichbarkeit über viele Zufallszüge", () =
       assert.ok(Math.abs(v.fahrt.ziel - v.fahrt.start) >= 40);
     }
   }
+  // Über 2000 Züge müssen beide Richtungen und alle vier Beträge vorkommen.
+  assert.equal(gesehen.size, 8);
 });
 
 test("erzeugeVorgaben: aktive je Stufe, feste Reihenfolge im Ergebnis", () => {
@@ -92,18 +92,20 @@ test("erzeugeFlugzustand: Kurs und Höhe auf Start, Fahrt auf 60", () => {
   assert.deepEqual(z, { kurs: 0, hoehe: 5000, fahrt: 60 });
 });
 
-test("takt: Kursrate stickX mal 9 Grad je Sekunde, Umlauf 0 bis 360", () => {
+test("takt: Kursrate stickX mal 15 Grad je Sekunde, Umlauf 0 bis 360", () => {
+  // 15 Grad je Sekunde seit 29.08.2026: Die Doppeldrehung (720 Grad in 60 s
+  // braucht im Schnitt 12) muss mit Reserve fliegbar sein.
   const z = { kurs: 0, hoehe: 0, fahrt: 100 };
   takt(z, { stickX: 1, stickY: 0, schub: -1 }, 40); // 0,04 s, unter dem Deckel
-  assert.ok(Math.abs(z.kurs - 0.36) < 1e-9);
+  assert.ok(Math.abs(z.kurs - 0.6) < 1e-9);
 
   const z2 = { kurs: 359.8, hoehe: 0, fahrt: 100 };
-  takt(z2, { stickX: 1, stickY: 0, schub: -1 }, 50); // +0,45 Grad -> Umlauf
-  assert.ok(Math.abs(z2.kurs - 0.25) < 1e-9);
+  takt(z2, { stickX: 1, stickY: 0, schub: -1 }, 50); // +0,75 Grad -> Umlauf
+  assert.ok(Math.abs(z2.kurs - 0.55) < 1e-9);
 
   const z3 = { kurs: 0.2, hoehe: 0, fahrt: 100 };
-  takt(z3, { stickX: -1, stickY: 0, schub: -1 }, 50); // -0,45 Grad -> Umlauf
-  assert.ok(Math.abs(z3.kurs - 359.75) < 1e-9);
+  takt(z3, { stickX: -1, stickY: 0, schub: -1 }, 50); // -0,75 Grad -> Umlauf
+  assert.ok(Math.abs(z3.kurs - 359.45) < 1e-9);
 });
 
 test("takt: Höhenrate stickY mal 100 ft je Sekunde, Ziehen steigt, Deckel 0 bis 9900", () => {
@@ -268,24 +270,26 @@ test("kennzahl3: gerundetes Mittel, leere Liste 0", () => {
   assert.equal(kennzahl3([70, 71]), 71);
 });
 
-test("erzeugeRechenaufgabe: Formen und Grenzen", () => {
-  for (let i = 0; i < 500; i++) {
-    const a = erzeugeRechenaufgabe(Math.random);
-    assert.ok(["+", "-", "*"].includes(a.op));
-    if (a.op === "+") {
-      assert.equal(a.antwort, a.a + a.b);
-      assert.ok(a.antwort <= 99);
-      assert.ok(a.a >= 1 && a.a <= 98 && a.b >= 0);
-    } else if (a.op === "-") {
-      assert.equal(a.antwort, a.a - a.b);
-      assert.ok(a.antwort >= 0);
-      assert.ok(a.a >= 1 && a.a <= 99 && a.b >= 0);
-    } else {
-      assert.equal(a.antwort, a.a * a.b);
-      assert.ok(a.a >= 2 && a.a <= 12);
-      assert.ok(a.b >= 2 && a.b <= 12);
+test("erzeugeRechenaufgabe: nur Plus und Minus, Grenzen je Stufe", () => {
+  // Willis Auftrag vom 29.08.2026: keine Malaufgaben mehr, und die Stufe
+  // deckelt die Operanden (0 rechnet einstellig, oben bleibt 99 die Grenze).
+  for (let stufe = 0; stufe <= RECHENSTUFEN_MAX; stufe++) {
+    for (let i = 0; i < 300; i++) {
+      const a = erzeugeRechenaufgabe(Math.random, stufe);
+      assert.ok(["+", "-"].includes(a.op));
+      assert.ok(a.antwort >= 0 && a.antwort <= 99);
+      const deckel = [9, 20, 40, 70, 99][stufe];
+      assert.ok(a.a >= 1 && a.a <= deckel, `Stufe ${stufe}: a=${a.a}`);
+      assert.ok(a.b >= 0 && a.b <= deckel, `Stufe ${stufe}: b=${a.b}`);
+      if (a.op === "+") assert.equal(a.antwort, a.a + a.b);
+      else assert.equal(a.antwort, a.a - a.b);
     }
   }
+  // Ohne Stufenangabe gilt Stufe 0, jenseits der Spanne wird geklemmt.
+  const leicht = erzeugeRechenaufgabe(() => 0.99);
+  assert.ok(leicht.a <= 9 && leicht.b <= 9);
+  const geklemmt = erzeugeRechenaufgabe(() => 0.99, 99);
+  assert.ok(geklemmt.a <= 99);
 });
 
 test("erzeugeRechenaufgabe ist mit gleichem Zufall gleich", () => {
@@ -309,10 +313,10 @@ test("antworten5: fünf eindeutige Werte inklusive der Antwort, Ablenker alle po
   }
 });
 
-test("antworten5: Ablenker liegen nah an der Antwort, beim Einmaleins auch Nachbarprodukte", () => {
-  const aufgabe = { a: 7, op: "*", b: 8, antwort: 56 };
+test("antworten5: Ablenker liegen nah an der Antwort", () => {
+  const aufgabe = { a: 47, op: "+", b: 9, antwort: 56 };
   const werte = antworten5(aufgabe, () => 0); // ohne Mischen prüfbar über den Inhalt
-  const erwartetNah = [55, 57, 54, 58, 46, 66, 49, 63, 48, 64]; // Nähe plus Nachbarprodukte
+  const erwartetNah = [55, 57, 54, 58, 46, 66]; // ±1, ±2, ±10
   for (const w of werte) {
     if (w === 56) continue;
     assert.ok(erwartetNah.includes(w), `${w} liegt nicht in der erwarteten Nähe`);

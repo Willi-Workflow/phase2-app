@@ -11,7 +11,7 @@ import {
   TESTDAUERN, STUFEN, FLUGZEIT_S, EINRICHTZEIT_S, RECHENTAKT_S,
   erzeugeVorgaben, erzeugeFlugzustand, takt, sollwert, winkelabstand,
   momentanfehler, durchgangspunkte, kennzahl3, schwierigkeitsfaktor3,
-  erzeugeRechenaufgabe, antworten5, pedalwahl,
+  erzeugeRechenaufgabe, antworten5, pedalwahl, RECHENSTUFEN_MAX,
 } from "./uebung3.js";
 import { svgUhr, svgSaeule } from "./uebung3-bild.js";
 import { svgKurs, svgFahrt, svgHoehe } from "./instrumente.js";
@@ -167,6 +167,8 @@ export function erzeugeUebung3({ speicher, controls }) {
     let richtig = 0;
     let falsch = 0;
     let verpasst = 0;
+    // Anpassende Schwierigkeit: jede richtige Antwort hebt die Stufe um eins.
+    let rechenstufe = 0;
 
     const zeichne = (gewaehlt = -1, echo = null) => {
       if (!aufgabe) { antwortenfeld.innerHTML = ""; return; }
@@ -200,7 +202,7 @@ export function erzeugeUebung3({ speicher, controls }) {
       testMs += dtMs;
       if (testMs >= naechsteMs) {
         if (aufgabe && !beantwortet) verpasst += 1;
-        aufgabe = erzeugeRechenaufgabe(Math.random);
+        aufgabe = erzeugeRechenaufgabe(Math.random, rechenstufe);
         antworten = antworten5(aufgabe, Math.random);
         beantwortet = false;
         gezeichneteZone = null;
@@ -213,7 +215,8 @@ export function erzeugeUebung3({ speicher, controls }) {
         if (controls.schussGedrueckt()) {
           beantwortet = true;
           const treffer = antworten[zone] === aufgabe.antwort;
-          if (treffer) richtig += 1; else falsch += 1;
+          if (treffer) { richtig += 1; rechenstufe = Math.min(RECHENSTUFEN_MAX, rechenstufe + 1); }
+          else falsch += 1;
           zeichne(-1, { zone, treffer });
           echoUhr = setTimeout(() => { if (!beendet && !ergebnisOffen) zeichne(); }, 600);
         }
@@ -315,6 +318,8 @@ export function erzeugeUebung3({ speicher, controls }) {
     const abwSumme = { kurs: 0, hoehe: 0, fahrt: 0 };
     const abwZaehler = { kurs: 0, hoehe: 0, fahrt: 0 };
     let rechnenRichtig = 0;
+    // Anpassende Schwierigkeit auch im Flug: richtig hebt die Stufe um eins.
+    let rechenstufe = 0;
     let rechnenFalsch = 0;
     let rechnenVerpasst = 0;
     const zeitgeber = new Set();
@@ -400,7 +405,7 @@ export function erzeugeUebung3({ speicher, controls }) {
     };
 
     const starteAufgabe = () => {
-      aktuelleAufgabe = erzeugeRechenaufgabe(Math.random);
+      aktuelleAufgabe = erzeugeRechenaufgabe(Math.random, rechenstufe);
       aktuelleAntworten = antworten5(aktuelleAufgabe, Math.random);
       aufgabeBeantwortet = false;
       gezeichneteZone = null;
@@ -412,7 +417,8 @@ export function erzeugeUebung3({ speicher, controls }) {
     const bestaetigeAufgabe = (zone) => {
       aufgabeBeantwortet = true;
       const treffer = aktuelleAntworten[zone] === aktuelleAufgabe.antwort;
-      if (treffer) rechnenRichtig += 1; else rechnenFalsch += 1;
+      if (treffer) { rechnenRichtig += 1; rechenstufe = Math.min(RECHENSTUFEN_MAX, rechenstufe + 1); }
+      else rechnenFalsch += 1;
       zeichneAntworten(-1, { zone, treffer });
       spaeter(() => { gezeichneteZone = null; zeichneAntworten(); }, AUFGABENECHO_MS);
     };
