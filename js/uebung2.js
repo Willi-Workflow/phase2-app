@@ -19,7 +19,9 @@ export const SOLL_KT = 95; // fester Sollwert der Geschwindigkeit, Willis Festle
 export const FADEN_RAND = 0.06;
 
 // Raten bei Vollausschlag (je Sekunde) und Driftstärken.
-const RATE_STICK = 0.45;
+// Stickrate am 29.08.2026 auf Willis Wunsch um rund ein Viertel angehoben
+// (der echte Teststick gilt als sehr empfindlich); Ruder unverändert.
+const RATE_STICK = 0.56;
 const RATE_RUDER = 0.5;
 const RATE_NADEL = 30;
 const DRIFT_STICK = 0.075;

@@ -39,9 +39,11 @@ export const SICHTWINKEL = 1.64;       // rad
 // (weicher Steuereinsatz statt Anreißen), und die Raten bleiben nur leicht
 // unter dem Ursprung, damit am Vollausschlag die Autorität für die kräftigen
 // Bankmomente aus dem Referenzvideo erhalten bleibt.
-const RATE_NICK = 0.25;
+// Stickraten am 29.08.2026 auf Willis Wunsch um rund ein Viertel angehoben
+// (der echte Teststick gilt als sehr empfindlich); Ruder unverändert.
+const RATE_NICK = 0.31;
 const RATE_GIER = 0.29;
-const ROLLRATE = 0.50;
+const ROLLRATE = 0.62;
 const ANLAUF_MS = 300;    // Trägheit, bis eine Steuerrate voll anliegt
 const STABIL = 0.12;      // schwache Eigenstabilität je Sekunde
 const NICK_SICHT = 0.5;   // rad Blickneigung je Einheit Nickbewegung
