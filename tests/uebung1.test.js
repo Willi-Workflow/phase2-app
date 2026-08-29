@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  TESTDAUERN, HALTEZEIT_MS, KREIS_R, BILDVERHAELTNIS, MINDESTABSTAND, KEGEL, MAXROLL, TEMPOS,
+  TESTDAUERN, HALTEZEIT_MS, KREIS_R, BILDVERHAELTNIS, MINDESTABSTAND, KEGEL, AUSSENGRENZE, MAXROLL, MAXNICK, TEMPOS, SICHTWINKEL, zielHinweis, PFEILRAND,
   zufallsZiel, erzeugeLaufzustand, takt, inDeckung,
   deckungsquote, ergebnisWerte,
   BUCHSTABEN_ABSTAND_MS, EREIGNIS_LUECKE_MIN, EREIGNIS_LUECKE_MAX, erzeugeBuchstabenreihe, erzeugeSlaZaehler,
@@ -62,12 +62,69 @@ test("Rollen baut sich auf, koppelt in die Kurve und bleibt begrenzt", () => {
   assert.ok(z.ziel.x < 0.6);
 });
 
-test("Ziel bleibt auch bei langem Vollausschlag im Kegel", () => {
+test("Das Ziel darf den Bildschirm verlassen, bleibt aber in der Außengrenze", () => {
   const z = erzeugeLaufzustand(halb);
+  z.ziel = { x: 0.5, y: 0.2 };
+  // Anhaltender Sturzflug schiebt das Ziel über den oberen Bildrand hinaus.
+  for (let i = 0; i < 400; i++) takt(z, { ...still, stickY: -1 }, 50, halb);
+  assert.ok(z.ziel.y < 0);
   for (let i = 0; i < 2000; i++) takt(z, { stickX: 1, stickY: 1, ruder: 1 }, 50, Math.random);
-  assert.ok(z.ziel.x >= KEGEL.xMin && z.ziel.x <= KEGEL.xMax);
-  assert.ok(z.ziel.y >= KEGEL.yMin && z.ziel.y <= KEGEL.yMax);
+  assert.ok(z.ziel.x >= AUSSENGRENZE.xMin && z.ziel.x <= AUSSENGRENZE.xMax);
+  assert.ok(z.ziel.y >= AUSSENGRENZE.yMin && z.ziel.y <= AUSSENGRENZE.yMax);
   assert.ok(Math.abs(z.roll) <= MAXROLL);
+});
+
+test("zielHinweis zeigt nur außerhalb des Bildes und klemmt an den Rand", () => {
+  assert.equal(zielHinweis({ x: 0.5, y: 0.5 }), null);
+  assert.equal(zielHinweis({ x: 0.02, y: 0.98 }), null);
+  const links = zielHinweis({ x: -0.3, y: 0.4 });
+  assert.deepEqual(links, { x: PFEILRAND, y: 0.4 });
+  const oben = zielHinweis({ x: 0.7, y: -0.1 });
+  assert.deepEqual(oben, { x: 0.7, y: PFEILRAND });
+  const ecke = zielHinweis({ x: 1.4, y: 1.2 });
+  assert.deepEqual(ecke, { x: 1 - PFEILRAND, y: 1 - PFEILRAND });
+});
+
+test("Am Nickanschlag schiebt der Stick das Ziel nicht weiter", () => {
+  const z = erzeugeLaufzustand(halb);
+  for (let i = 0; i < 400; i++) takt(z, { ...still, stickY: -1 }, 50, halb);
+  assert.equal(z.nick, -MAXNICK);           // Nase steht am Anschlag
+  z.ziel = { x: 0.5, y: 0.5 };              // frei von der Kegelgrenze
+  takt(z, { ...still, stickY: -1 }, 100, halb);
+  // Die Nase bewegt sich nicht mehr, also darf sich auch der Relativwinkel
+  // zum Ziel nicht mehr ändern: keine unsichtbare Wand am Kegelrand.
+  assert.ok(Math.abs(z.ziel.y - 0.5) < 1e-9);
+});
+
+test("Das Aufrichten der Eigenstabilität nimmt das Ziel mit", () => {
+  const z = erzeugeLaufzustand(halb);
+  for (let i = 0; i < 400; i++) takt(z, { ...still, stickY: -1 }, 50, halb);
+  z.ziel = { x: 0.5, y: 0.5 };
+  z.nickRate = 0;                           // Stick losgelassen, Rate schon abgeklungen
+  const nickVorher = z.nick;
+  takt(z, still, 100, halb);
+  assert.ok(z.nick > nickVorher);           // Nase richtet sich langsam auf
+  assert.ok(z.ziel.y > 0.5);                // und das Ziel wandert entsprechend
+});
+
+test("Gieren summiert den Kurs auf, entgegengesetzt zur Zielverschiebung", () => {
+  const z = erzeugeLaufzustand(halb);
+  assert.equal(z.kurs, 0);
+  z.ziel = { x: 0.5, y: 0.5 };  // frei von der Kegelgrenze, sonst klemmt der Vergleich
+  const vorher = z.ziel.x;
+  takt(z, { ...still, ruder: 1 }, 100, halb);
+  assert.ok(z.kurs > 0);
+  // Ziel und Kulisse drehen aus derselben Gierbewegung: der Kurszuwachs ist
+  // die Zielverschiebung, umgerechnet über das waagerechte Sichtfeld.
+  assert.ok(Math.abs(z.kurs - (vorher - z.ziel.x) * SICHTWINKEL) < 1e-12);
+});
+
+test("Schräglage zieht den Kurs in die Kurve, Stillhalten dreht nicht weiter zurück", () => {
+  const z = erzeugeLaufzustand(halb);
+  for (let i = 0; i < 100; i++) takt(z, { ...still, stickX: 1 }, 50, halb);
+  const stand = z.kurs;
+  takt(z, still, 100, halb);   // Rollage steht, die Kurve dreht den Kurs weiter
+  assert.ok(z.kurs > stand);
 });
 
 test("inDeckung misst den Winkelabstand mit Bildverhältnis", () => {

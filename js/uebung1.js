@@ -1,6 +1,7 @@
 // Übungslogik Mission 1 (Flugzeugverfolgung): Nachbau des PMT aus dem ICA.
 // Eigenflug: Stick rollt und nickt, Pedale gieren; das Zielflugzeug fliegt
-// mit träger Zufallsdrift in einem Kegel voraus. Reine Logik ohne DOM und
+// mit träger Zufallsdrift voraus und darf das Bild verlassen, dann zeigt ein
+// Pfeil am Bildrand die Richtung. Reine Logik ohne DOM und
 // ohne three.js, Zufall und Zeitschritt sind einspeisbar (node --test).
 // Die Drifthelfer sind bewusst eine Kopie aus uebung2.js; das gemeinsame
 // Laufgerüst zieht die Sammel-Härtung später heraus.
@@ -13,8 +14,18 @@ export const HALTEZEIT_MS = 1000;
 export const KREIS_R = 0.032;          // Anteil der Bildbreite
 export const BILDVERHAELTNIS = 9 / 16; // Höhe zu Breite des Sichtfelds
 export const MINDESTABSTAND = 0.18;    // Kreis springt nie näher ans Ziel
+// Startkegel: Neusetzung nach Treffer und Startlage liegen immer im Bild.
 export const KEGEL = { xMin: 0.12, xMax: 0.88, yMin: 0.15, yMax: 0.85 };
+// Im Flug darf das Ziel den Bildschirm verlassen (Willis Festlegung vom
+// 29.08.2026, der Pfeil am Bildrand zeigt dann die Richtung). Die Außengrenze
+// ist nur ein fernes Sicherheitsnetz, damit Drift und Dauerkurve das Ziel
+// nicht beliebig weit wegtragen; sie liegt unerreichbar weit außerhalb.
+export const AUSSENGRENZE = { xMin: -1.0, xMax: 2.0, yMin: -0.7, yMax: 1.7 };
 export const MAXROLL = 1.0;            // rad, etwa 57 Grad
+// Umrechnung von Bildanteil in Kurswinkel: das waagerechte Sichtfeld der
+// Kamera (62 Grad senkrecht bei 16:9 ergibt rund 94 Grad). Ziel und Kulisse
+// drehen damit aus derselben Gierbewegung und laufen nie auseinander.
+export const SICHTWINKEL = 1.64;       // rad
 
 // Raten bei Vollausschlag (je Sekunde) und Driftstärken. Steuerdynamik nach
 // Simulator-Art, abgeglichen mit dem Vorführlauf im Video (12:40 bis 13:10):
@@ -34,7 +45,7 @@ const ROLLRATE = 0.50;
 const ANLAUF_MS = 300;    // Trägheit, bis eine Steuerrate voll anliegt
 const STABIL = 0.12;      // schwache Eigenstabilität je Sekunde
 const NICK_SICHT = 0.5;   // rad Blickneigung je Einheit Nickbewegung
-const MAXNICK = 0.3;      // rad
+export const MAXNICK = 0.3; // rad
 const KOPPLUNG = 0.3;     // Kurvenzug bei vollem Rollen, Einheiten je Sekunde
 const DRIFT_ZIEL = 0.05;
 const DRIFTWECHSEL_MIN_MS = 1500;
@@ -82,12 +93,26 @@ export function inDeckung(z) {
   return abstand(z.ziel, z.kreis) <= KREIS_R;
 }
 
+// Pfeilhinweis am Bildrand: Liegt das Ziel außerhalb des Bildes, liefert die
+// Funktion den Ankerpunkt des Richtungspfeils (an den Rand geklemmt, mit
+// kleinem Abstand), sonst null. Die Drehung des Pfeils rechnet die
+// Darstellung aus Anker und Zielposition in Bildpunkten aus.
+export const PFEILRAND = 0.045;
+export function zielHinweis(ziel) {
+  if (ziel.x >= 0 && ziel.x <= 1 && ziel.y >= 0 && ziel.y <= 1) return null;
+  return {
+    x: begrenze(ziel.x, PFEILRAND, 1 - PFEILRAND),
+    y: begrenze(ziel.y, PFEILRAND, 1 - PFEILRAND),
+  };
+}
+
 export function erzeugeLaufzustand(rnd = Math.random) {
   return {
     ziel: zufallsZiel(rnd),
     kreis: { x: 0.5, y: 0.5 }, // fest in der Bildmitte, wie das Visier im Original
     roll: 0,
     nick: 0,
+    kurs: 0, // aufsummierter Gierwinkel, dreht in der Darstellung die Kulisse
     rollRate: 0,
     nickRate: 0,
     gierRate: 0,
@@ -115,11 +140,18 @@ export function takt(z, eingaben, dtMs, rnd = Math.random) {
 
   z.roll = begrenze(z.roll + (z.rollRate - z.roll * STABIL) * dt, -MAXROLL, MAXROLL);
   const nickBewegung = z.nickRate * dt;
-  z.nick = begrenze(z.nick + nickBewegung * NICK_SICHT - z.nick * STABIL * dt, -MAXNICK, MAXNICK);
+  const nickVorher = z.nick;
+  z.nick = begrenze(nickVorher + nickBewegung * NICK_SICHT - nickVorher * STABIL * dt, -MAXNICK, MAXNICK);
+  // Auf das Ziel wirkt nur die tatsächlich erreichte Nickänderung: Steht die
+  // Nase am Anschlag, ändert sich der Relativwinkel nicht mehr (sonst klemmt
+  // das Ziel als unsichtbare Wand am Kegelrand), und das langsame Aufrichten
+  // der Eigenstabilität nimmt das Ziel mit statt nur den Horizont.
+  const nickAngewandt = (z.nick - nickVorher) / NICK_SICHT;
   const gierBewegung = (z.gierRate + Math.sin(z.roll) * KOPPLUNG) * dt;
+  z.kurs += gierBewegung * SICHTWINKEL;
 
-  z.ziel.x = begrenze(z.ziel.x - gierBewegung + taktDrift(z.drift.zx, dtMs, rnd) * dt, KEGEL.xMin, KEGEL.xMax);
-  z.ziel.y = begrenze(z.ziel.y + nickBewegung + taktDrift(z.drift.zy, dtMs, rnd) * dt, KEGEL.yMin, KEGEL.yMax);
+  z.ziel.x = begrenze(z.ziel.x - gierBewegung + taktDrift(z.drift.zx, dtMs, rnd) * dt, AUSSENGRENZE.xMin, AUSSENGRENZE.xMax);
+  z.ziel.y = begrenze(z.ziel.y + nickAngewandt + taktDrift(z.drift.zy, dtMs, rnd) * dt, AUSSENGRENZE.yMin, AUSSENGRENZE.yMax);
 
   z.testMs += dtMs;
   const ereignisse = [];

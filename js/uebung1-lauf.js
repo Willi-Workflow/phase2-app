@@ -3,7 +3,7 @@
 // three.js-Zeichnung, Buchstabenausgabe und Tafeln.
 import {
   TESTDAUERN, TEMPOS, erzeugeLaufzustand, takt, ergebnisWerte, schwierigkeitsfaktor1,
-  erzeugeBuchstabenreihe, erzeugeSlaZaehler,
+  erzeugeBuchstabenreihe, erzeugeSlaZaehler, zielHinweis,
 } from "./uebung1.js";
 import * as THREE from "./fremd/three.module.js";
 import { GLTFLoader } from "./fremd/GLTFLoader.js";
@@ -295,6 +295,9 @@ export function erzeugeUebung1({ speicher, controls }) {
         <line x1="50" y1="8" x2="50" y2="92" stroke-width="2.5"/>
         <line x1="8" y1="50" x2="92" y2="50" stroke-width="2.5"/>
       </svg>
+      <svg class="zielpfeil" viewBox="0 0 24 24">
+        <path d="M3 6.5 L21 12 L3 17.5 L8 12 Z"/>
+      </svg>
       <div class="blitzschicht"></div>
       <div class="testkopf"></div>`;
     document.body.append(schleier);
@@ -302,6 +305,7 @@ export function erzeugeUebung1({ speicher, controls }) {
 
     const kopf = schleier.querySelector(".testkopf");
     const kreisBild = schleier.querySelector(".zielkreis");
+    const pfeil = schleier.querySelector(".zielpfeil");
     const leinwand = schleier.querySelector(".himmelbild");
     // Farbliche Rückmeldung der Letter-Task, gleiche Schicht wie in der
     // Hörübung; nur aktiv, wenn der Schalter RÜCKMELDUNG eingeschaltet ist.
@@ -322,6 +326,14 @@ export function erzeugeUebung1({ speicher, controls }) {
     // kleiner und weiter weg. Die Distanz staucht nur die scheinbare Größe,
     // die Bildposition bleibt gleich (halbeBreite/halbeHoehe wachsen mit).
     const FLUGDISTANZ = 215;
+    // Stetiger Vorwärtsflug in Weltmaß: Spannweite 22 entspricht rund 8 m,
+    // damit liegen 140 je Sekunde bei etwa 180 km/h Kunstflugtempo.
+    const FLUGTEMPO = 140;
+    // Bodenebene und Kachelraster; die Fahrt bricht je volle Kachel um,
+    // damit die Position klein bleibt und der Sprung im Bild unsichtbar ist.
+    const BODENWEITE = 60000;
+    const BODENKACHELN = 48;
+    const KACHEL = BODENWEITE / BODENKACHELN;
     let drei = null;
     try {
       const renderer = new THREE.WebGLRenderer({ canvas: leinwand, antialias: true, alpha: true });
@@ -357,11 +369,14 @@ export function erzeugeUebung1({ speicher, controls }) {
       );
       szene.add(kuppel);
       const kamera = new THREE.PerspectiveCamera(62, 16 / 9, 1, 9000);
+      // Flugzeug-Drehreihenfolge: erst Gieren um die Hochachse, dann Nicken,
+      // dann Rollen; sonst verkippt der Kurs die Rollachse.
+      kamera.rotation.order = "YXZ";
       szene.add(kamera);
       szene.add(new THREE.HemisphereLight(0xffffff, 0x565f4c, 1.05));
 
       const bodenStoff = new THREE.MeshLambertMaterial({ color: 0x66735f });
-      const boden = new THREE.Mesh(new THREE.PlaneGeometry(60000, 60000), bodenStoff);
+      const boden = new THREE.Mesh(new THREE.PlaneGeometry(BODENWEITE, BODENWEITE), bodenStoff);
       boden.rotation.x = -Math.PI / 2;
       boden.position.y = -BODENHOEHE;
       szene.add(boden);
@@ -371,7 +386,7 @@ export function erzeugeUebung1({ speicher, controls }) {
         if (beendet) { t.dispose?.(); return; } // Lauf schon beendet: nichts mehr anfassen (Q4)
         t.wrapS = THREE.RepeatWrapping;
         t.wrapT = THREE.RepeatWrapping;
-        t.repeat.set(48, 48);
+        t.repeat.set(BODENKACHELN, BODENKACHELN);
         bodenStoff.map = t;
         bodenStoff.color.set(0xffffff);
         bodenStoff.needsUpdate = true;
@@ -413,7 +428,7 @@ export function erzeugeUebung1({ speicher, controls }) {
         flugzeug.clear();
         flugzeug.add(halter);
       }, undefined, () => {}); // ohne Netz bleibt das Grundkörper-Modell
-      drei = { renderer, szene, kamera, flugzeug };
+      drei = { renderer, szene, kamera, flugzeug, kuppel };
     } catch {
       drei = null; // ohne WebGL läuft der Test nicht, der Start wird abgebrochen
     }
@@ -487,10 +502,21 @@ export function erzeugeUebung1({ speicher, controls }) {
       }
     };
 
-    const zeichne = () => {
-      const { kamera, flugzeug, renderer, szene } = drei;
-      // nick kippt nur den Horizontblick; die Bildposition des Ziels kommt allein aus zustand.ziel.x/y.
-      kamera.rotation.set(zustand.nick, 0, -zustand.roll);
+    const zeichne = (dtMs = 0) => {
+      const { kamera, flugzeug, renderer, szene, kuppel } = drei;
+      // Der Kurs dreht die Kulisse, nick kippt den Horizontblick, roll neigt
+      // ihn; die Bildposition des Ziels kommt allein aus zustand.ziel.x/y.
+      kamera.rotation.set(zustand.nick, -zustand.kurs, -zustand.roll);
+      // Stetige Fahrt in Kursrichtung über die Bodenkacheln; der Umbruch je
+      // Kachelweite hält die Zahlen klein und ist unsichtbar, weil die
+      // Bodentextur mit genau dieser Weite wiederholt.
+      kamera.position.x += Math.sin(zustand.kurs) * FLUGTEMPO * (dtMs / 1000);
+      kamera.position.z -= Math.cos(zustand.kurs) * FLUGTEMPO * (dtMs / 1000);
+      kamera.position.x -= Math.round(kamera.position.x / KACHEL) * KACHEL;
+      kamera.position.z -= Math.round(kamera.position.z / KACHEL) * KACHEL;
+      // Die Kuppel folgt der Kamera, so bleibt der Horizont in jeder Lage
+      // gleich weit und der Kachelumbruch verschiebt ihn nicht.
+      kuppel.position.copy(kamera.position);
       // Sichtfeldanteil in Kameraraum: Höhe aus dem senkrechten Blickwinkel
       // bei der Flugdistanz, Breite daraus mal dem echten Bildverhältnis.
       // So landet das Flugzeug bei jedem Seitenverhältnis genau dort, wo
@@ -507,6 +533,22 @@ export function erzeugeUebung1({ speicher, controls }) {
 
       // Der Kreis steht fest in der Bildmitte (stil.css), hier wechselt nur die Farbe.
       kreisBild.classList.toggle("deckung", zustand.halteMs > 0);
+
+      // Ziel außerhalb des Bildes: kleiner Pfeil am Bildrand zeigt die
+      // Richtung. Die Drehung kommt aus den Bildpunktabständen zwischen
+      // Ankerpunkt und Zielposition, damit sie in jedem Seitenverhältnis stimmt.
+      // Sichtbarkeit über die Klasse "da": das Attribut hidden wirkt nicht
+      // auf SVG-Elemente, dieselbe Schaltung wie bei der Blitzschicht.
+      const hinweis = zielHinweis(zustand.ziel);
+      pfeil.classList.toggle("da", hinweis !== null);
+      if (hinweis) {
+        const b = schleier.clientWidth;
+        const h = schleier.clientHeight;
+        const winkel = Math.atan2((zustand.ziel.y - hinweis.y) * h, (zustand.ziel.x - hinweis.x) * b);
+        pfeil.style.left = `${hinweis.x * 100}%`;
+        pfeil.style.top = `${hinweis.y * 100}%`;
+        pfeil.style.transform = `translate(-50%, -50%) rotate(${winkel}rad)`;
+      }
 
       const rest = Math.max(0, testende - performance.now());
       kopf.textContent = `VERFOLGUNG${sla ? " + LETTER-TASK" : ""} · REST ${Math.floor(rest / 60_000)}:${String(Math.floor((rest % 60_000) / 1000)).padStart(2, "0")}`;
@@ -535,7 +577,7 @@ export function erzeugeUebung1({ speicher, controls }) {
       }
       if (sla && rueckmeldung && zaehler.ablauf(zustand.testMs) > 0) flugblitz("rot");
       sprichBuchstaben();
-      zeichne();
+      zeichne(dtMs);
       if (performance.now() >= testende) { zeigeErgebnis(true); return; }
       requestAnimationFrame(schleife);
     };
