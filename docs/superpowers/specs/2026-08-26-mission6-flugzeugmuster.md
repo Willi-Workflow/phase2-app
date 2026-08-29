@@ -108,6 +108,18 @@ je Bereich einen aufklappbaren Abschnitt, die Flugzeugmuster starten
 offen. Da sich aktuelle Zahlen ändern, sollten Themen und Beschaffungen
 vor der Prüfung im September 2026 noch einmal gegengelesen werden.
 
+## Erweiterung vom 29.08.2026 abends: zwei neue Wissensbereiche
+
+Auf Willis Auftrag kamen "Flugkörper und Bewaffnung" (IRIS-T, AMRAAM,
+Meteor, Taurus, Brimstone 3, JSM und B61 für die F-35, Bordkanone) und
+"Luftkampf und Taktik" (BVR/WVR, Energiemanagement und Eckgeschwindigkeit,
+Rotte und Schwarm, Alarmrotte und Abfangverfahren, Täuschkörper, Air
+Defender 2023) in js/wissen6.js dazu, je fünf Auswahlfragen. Belege der
+Kernfakten: Meteor-Erstschuss vom deutschen Eurofighter Januar 2025
+(bundeswehr.de/esut.de), Brimstone-3-Rahmenvertrag Juni 2024 mit
+Auslieferung ab 2028 (hartpunkt.de/bundeswehr-journal.de), JSM-Bestellungen
+Juli 2025 und Mai 2026 (esut.de/janes.com).
+
 ## Erweiterung vom 29.08.2026: Hubschrauber der Bundeswehr
 
 Auf Willis Auftrag kamen die Hubschrauber zurück in die Musterliste,

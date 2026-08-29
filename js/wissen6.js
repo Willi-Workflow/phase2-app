@@ -979,8 +979,141 @@ export const WISSEN6 = {
       },
     ],
   },
+  flugkoerper: {
+    name: "Flugkörper und Bewaffnung",
+    wissen: [
+      { zwischen: "Luft-Luft" },
+      {
+        titel: "Kurze Reichweite: IRIS-T",
+        absaetze: [
+          "Für den Nahbereich trägt der <b>Eurofighter</b> die deutsche <b>IRIS-T</b> von Diehl Defence: infrarotgelenkt und dank <b>Schubvektorsteuerung</b> extrem wendig, die Zielzuweisung läuft auch über das Helmvisier. Sie löste die amerikanische <b>AIM-9 Sidewinder</b> ab und ist zugleich die Basis der bodengebundenen Flugabwehr <b>IRIS-T SLM</b>.",
+        ],
+      },
+      {
+        titel: "Mittlere und große Reichweite: AMRAAM und Meteor",
+        absaetze: [
+          "Die Standardwaffe für mittlere Entfernungen ist die aktiv radargelenkte <b>AIM-120 AMRAAM</b>. Für große Entfernungen kommt der europäische <b>Meteor</b> von MBDA dazu: Sein <b>Staustrahltriebwerk</b> hält den Schub über den ganzen Flug, dadurch bleibt am Ziel mehr Energie und die <b>No-Escape-Zone</b> ist größer als bei allen Vorgängern; die Reichweite liegt bei bis zu <b>200 Kilometern</b>. Im Januar <b>2025</b> verschoss die Luftwaffe erstmals einen Meteor von einem deutschen Eurofighter.",
+        ],
+      },
+      { zwischen: "Luft-Boden" },
+      {
+        titel: "Taurus und Brimstone",
+        absaetze: [
+          "Der Marschflugkörper <b>Taurus KEPD 350</b> fliegt im Tiefflug über <b>500 Kilometer</b> weit und wird vom <b>Tornado</b> getragen; sein Durchschlagsgefechtskopf <b>MEPHISTO</b> ist für Bunker und Führungsanlagen gedacht. Ein Nachfolger <b>Taurus Neo</b> ist in Planung.",
+          "Für den präzisen Kampf gegen Punktziele und bewegliche Ziele beschafft die Luftwaffe <b>Brimstone 3</b> für den Eurofighter: Rahmenvertrag von Juni <b>2024</b> über bis zu <b>3.266</b> Stück (erste Bestellung 274 für rund 376 Millionen Euro), Suchkopf aus <b>Laser- und Millimeterwellenradar</b>, Auslieferung ab <b>2028</b>.",
+        ],
+      },
+      {
+        titel: "Bewaffnung der F-35",
+        absaetze: [
+          "Die deutsche <b>F-35A</b> übernimmt vom Tornado die <b>nukleare Teilhabe</b> mit dem amerikanischen Gefechtskopf <b>B61-12</b>. Als Abstandswaffe hat Deutschland die norwegische <b>Joint Strike Missile</b> von Kongsberg bestellt, einen tarnkappenförmigen Flugkörper gegen See- und Landziele mit mehreren hundert Kilometern Reichweite; erste Bestellung <b>2025</b>, zweite Tranche im Mai <b>2026</b>.",
+        ],
+      },
+      {
+        titel: "Bordkanone",
+        absaetze: [
+          "Fest eingebaut trägt der Eurofighter die <b>Mauser BK-27</b>, eine 27-mm-Revolverkanone mit rund <b>1.700 Schuss je Minute</b> und etwa 150 Patronen Vorrat, für den Nahkampf und Warnschüsse beim Abfangen.",
+        ],
+      },
+    ],
+    fragen: [
+      {
+        frage: "Welcher Flugkörper macht den Eurofighter im Nahbereich besonders wendig?", form: "auswahl",
+        richtig: "Die infrarotgelenkte IRIS-T mit Schubvektorsteuerung",
+        falsch: ["Der Meteor mit Staustrahltriebwerk", "Die radargelenkte AIM-120 AMRAAM", "Der Taurus KEPD 350"],
+      },
+      {
+        frage: "Was hebt den Meteor von älteren Mittelstreckenwaffen ab?", form: "auswahl",
+        richtig: "Das Staustrahltriebwerk hält den Schub bis ins Ziel und vergrößert die No-Escape-Zone",
+        falsch: ["Er ist der einzige infrarotgelenkte Flugkörper", "Er wird ausschließlich vom Boden gestartet", "Er fliegt als einziger im Tiefflug ins Ziel"],
+      },
+      {
+        frage: "Welches Flugzeug trägt den Marschflugkörper Taurus KEPD 350?", form: "auswahl",
+        richtig: "Der Tornado",
+        falsch: ["Der Eurofighter", "Die F-35A", "Der A400M"],
+      },
+      {
+        frage: "Wofür beschafft die Luftwaffe Brimstone 3?", form: "auswahl",
+        richtig: "Präzisionsangriffe des Eurofighters auf Punktziele und bewegliche Ziele",
+        falsch: ["Als neue Kurzstrecken-Luft-Luft-Waffe", "Als Ersatz für die Bordkanone", "Für die Raketenabwehr im Weltraum"],
+      },
+      {
+        frage: "Welche Abstandswaffe hat Deutschland für die F-35A bestellt?", form: "auswahl",
+        richtig: "Die Joint Strike Missile aus Norwegen",
+        falsch: ["Den Taurus KEPD 350", "Die IRIS-T SLM", "Die Harpoon"],
+      },
+    ],
+  },
+  luftkampf: {
+    name: "Luftkampf und Taktik",
+    wissen: [
+      {
+        titel: "BVR und WVR",
+        absaetze: [
+          "Moderner Luftkampf beginnt jenseits der Sichtweite: <b>BVR</b> (Beyond Visual Range) heißt Kampf über große Entfernung mit radargestützten Flugkörpern, <b>WVR</b> (Within Visual Range) der Nahbereich. Der klassische <b>Kurvenkampf</b> mit seinen Grundmanövern (<b>Basic Fighter Maneuvers</b>) ist das letzte Mittel, wenn die Distanz zusammengebrochen ist.",
+        ],
+      },
+      {
+        titel: "Energie und Kurven",
+        absaetze: [
+          "Im Kurvenkampf zählt das <b>Energiemanagement</b>: Höhe und Geschwindigkeit sind tauschbare Energievorräte, wer sie klüger einteilt, gewinnt die Position. Die beste Wendeleistung liegt bei der <b>Eckgeschwindigkeit</b> (Corner Speed), der langsamsten Geschwindigkeit, bei der das Flugzeug noch die volle Lastvielfache erfliegen kann: Langsamer sinkt die Drehrate, schneller wächst nur der Kurvenradius.",
+        ],
+      },
+      {
+        titel: "Rotte und Schwarm",
+        absaetze: [
+          "Kampfflugzeuge fliegen grundsätzlich paarweise: Die <b>Rotte</b> aus Führer und <b>Flügelmann</b> ist die kleinste taktische Einheit, zwei Rotten bilden einen <b>Schwarm</b>. Der Flügelmann sichert den Rücken des Führers; das Prinzip stammt aus der Frühzeit des Luftkampfs und gilt bis heute.",
+        ],
+      },
+      {
+        titel: "Alarmrotte und Abfangen",
+        absaetze: [
+          "Die <b>Alarmrotte</b> (englisch QRA, Quick Reaction Alert) steht in <b>Wittmund</b> und <b>Neuburg</b> rund um die Uhr bereit und muss nach der Alarmierung binnen <b>15 Minuten</b> in der Luft sein. Herangeführt wird sie vom <b>Jägerleitoffizier</b> am Boden oder aus der Luft vom <b>AWACS</b>, der NATO-<b>E-3A</b>-Flotte aus <b>Geilenkirchen</b>. Dann folgt die <b>Sichtidentifizierung</b>, das Begleiten und notfalls das Abdrängen. Kooperiert ein ziviles Flugzeug nicht mehr (Fall <b>Renegade</b>), entscheidet die nationale politische Führung über das weitere Vorgehen.",
+        ],
+      },
+      {
+        titel: "Selbstschutz",
+        absaetze: [
+          "Gegen anfliegende Flugkörper wehren sich Kampfflugzeuge mit Täuschkörpern: <b>Flares</b> täuschen Infrarotsucher, <b>Düppel</b> (Chaff) täuschen Radar. Dazu kommen harte Ausweichmanöver und die elektronische Störung durch das Selbstschutzsystem, beim Eurofighter das <b>DASS</b>.",
+        ],
+      },
+      {
+        titel: "Große Übungen",
+        absaetze: [
+          "Geübt wird der Luftkampf im Verbund: <b>Air Defender 2023</b> war die größte Verlegeübung von Luftstreitkräften in der Geschichte der NATO, geführt von der deutschen Luftwaffe, mit rund <b>250 Flugzeugen</b> aus <b>25 Nationen</b>.",
+        ],
+      },
+    ],
+    fragen: [
+      {
+        frage: "Wofür steht BVR im Luftkampf?", form: "auswahl",
+        richtig: "Kampf jenseits der Sichtweite mit radargestützten Flugkörpern",
+        falsch: ["Den klassischen Kurvenkampf", "Das Betanken in der Luft", "Den Tiefflug unter dem Radar"],
+      },
+      {
+        frage: "Was beschreibt die Eckgeschwindigkeit (Corner Speed)?", form: "auswahl",
+        richtig: "Die langsamste Geschwindigkeit, bei der noch die volle Wendeleistung erflogen werden kann",
+        falsch: ["Die Höchstgeschwindigkeit im Sturzflug", "Die Mindestfahrt für den Geradeausflug", "Die Geschwindigkeit beim Eindrehen in die Landung"],
+      },
+      {
+        frage: "Was ist die kleinste taktische Einheit im Luftkampf?", form: "auswahl",
+        richtig: "Die Rotte aus Führer und Flügelmann",
+        falsch: ["Der Schwarm aus vier Flugzeugen", "Die Staffel", "Das Geschwader"],
+      },
+      {
+        frage: "Welche Täuschkörper wirken gegen infrarotgelenkte Flugkörper?", form: "auswahl",
+        richtig: "Flares",
+        falsch: ["Düppel (Chaff)", "Radarstörsender", "Schleppköder"],
+      },
+      {
+        frage: "Was war Air Defender 2023?", form: "auswahl",
+        richtig: "Die größte Verlegeübung von Luftstreitkräften in der NATO-Geschichte unter deutscher Führung",
+        falsch: ["Eine Marineübung in der Ostsee", "Ein Raketenabwehrtest in Israel", "Die jährliche Übung der Alarmrotte in Wittmund"],
+      },
+    ],
+  },
 };
 
 // Reihenfolge der Bereiche in Auswahl und Lexikon; die Flugzeugmuster
 // stehen als eigener Bereich davor (siehe uebung6.js).
-export const WISSEN6_REIHE = ["technik", "standorte", "ausbildung", "dienstgrade", "aufbau", "themen", "beschaffung", "persoenlich"];
+export const WISSEN6_REIHE = ["technik", "flugkoerper", "luftkampf", "standorte", "ausbildung", "dienstgrade", "aufbau", "themen", "beschaffung", "persoenlich"];
