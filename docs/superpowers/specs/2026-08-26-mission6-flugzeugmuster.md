@@ -1,8 +1,9 @@
 # Mission 6: Flugzeugmuster, Materialsammlung
 
 Stand 26.08.2026, mit Willi abgestimmt. Sammlung der Muster, die in
-Mission 6 vorkommen sollen. Keine Hubschrauber (Willis Vorgabe). Der
-Zweck der Mission ist noch offen, die Liste steht aber fest.
+Mission 6 vorkommen sollen. Ursprünglich ohne Hubschrauber (Willis
+Vorgabe vom 26.08.2026, am 29.08.2026 zurückgenommen, siehe Erweiterung
+unten). Der Zweck der Mission ist noch offen, die Liste steht aber fest.
 
 ## Bundeswehr, aktuell im Dienst
 
@@ -106,6 +107,23 @@ Kennzahl ist der selbst eingeschätzte Übungsstand in Prozent. Das Lexikon zeig
 je Bereich einen aufklappbaren Abschnitt, die Flugzeugmuster starten
 offen. Da sich aktuelle Zahlen ändern, sollten Themen und Beschaffungen
 vor der Prüfung im September 2026 noch einmal gegengelesen werden.
+
+## Erweiterung vom 29.08.2026: Hubschrauber der Bundeswehr
+
+Auf Willis Auftrag kamen die Hubschrauber zurück in die Musterliste,
+abgestimmt als "nur Bundeswehr" (ohne internationale Muster wie Apache
+oder Black Hawk). Acht Muster in den bestehenden Gruppen:
+
+- Im Dienst: Sikorsky CH-53, NHIndustries NH90 (mit Sea Lion und Sea
+  Tiger als Lösungen), Airbus H145M, Eurocopter Tiger
+- Im Zulauf: Boeing CH-47F Chinook
+- Außer Dienst: Westland Sea King Mk41
+- Klassiker der Bundeswehr: Bell UH-1D, MBB Bo 105
+
+Bilder wie gehabt von Wikimedia Commons (vier Ansichten je Muster,
+Quellen in bilder/muster/QUELLEN.md), Bundeswehr-Lackierung bevorzugt;
+beim Chinook gibt es noch keine deutschen Maschinen, dort stehen ILA-
+und US-Aufnahmen.
 
 ## Quellen für den aktuellen Stand
 

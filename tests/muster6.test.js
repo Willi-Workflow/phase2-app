@@ -46,8 +46,8 @@ test("anzeigenamen streicht Doppelformen und den vollen Namen", () => {
   assert.deepEqual(anzeigenamen(muster("rafale")), ["Rafale"]);
 });
 
-test("Datenbestand: 44 Muster, Kennungen eindeutig, Felder gefüllt, Gruppen gültig", () => {
-  assert.equal(MUSTER.length, 44);
+test("Datenbestand: 52 Muster, Kennungen eindeutig, Felder gefüllt, Gruppen gültig", () => {
+  assert.equal(MUSTER.length, 52);
   const ids = new Set(MUSTER.map((m) => m.id));
   assert.equal(ids.size, MUSTER.length);
   const gruppenIds = new Set(GRUPPEN.map((g) => g.id));
@@ -63,7 +63,8 @@ test("jede Gruppe hat Muster und die Aufteilung stimmt", () => {
     assert.ok(musterNachGruppe(g.id).length >= 1, `${g.id} ist leer`);
   }
   assert.equal(musterNachGruppe("klassiker").length, 13);
-  assert.equal(musterNachGruppe("bw-aktuell").length, 10);
+  assert.equal(musterNachGruppe("bw-aktuell").length, 14);
+  assert.equal(musterNachGruppe("bw-klassiker").length, 4);
 });
 
 test("bildpfad baut den Ablageort", () => {

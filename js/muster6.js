@@ -70,9 +70,34 @@ export const MUSTER = [
     steckbrief: "Unbemannte Aufklärungsdrohne mit großer Spannweite und langer Stehzeit.",
   },
   {
+    id: "ch53", name: "Sikorsky CH-53", gruppe: "bw-aktuell",
+    loesungen: ["CH-53", "CH 53", "CH-53G", "CH-53GS", "Sikorsky CH-53", "Sea Stallion"],
+    steckbrief: "Schwerer Transporthubschrauber der Luftwaffe seit den Siebzigern, wird durch den CH-47F abgelöst.",
+  },
+  {
+    id: "nh90", name: "NHIndustries NH90", gruppe: "bw-aktuell",
+    loesungen: ["NH90", "NH-90", "NH 90", "Sea Lion", "Sea Tiger"],
+    steckbrief: "Mittlerer Mehrzweckhubschrauber von Heer und Marine; die Marineversionen heißen Sea Lion und Sea Tiger.",
+  },
+  {
+    id: "h145m", name: "Airbus H145M", gruppe: "bw-aktuell",
+    loesungen: ["H145M", "H145", "H-145", "H 145"],
+    steckbrief: "Leichter Mehrzweckhubschrauber, bei der Luftwaffe für die Spezialkräfte, beim Heer als leichter Kampfhubschrauber.",
+  },
+  {
+    id: "tiger", name: "Eurocopter Tiger", gruppe: "bw-aktuell",
+    loesungen: ["Tiger", "Eurocopter Tiger", "EC665", "EC 665", "UHT", "Kampfhubschrauber Tiger"],
+    steckbrief: "Kampfhubschrauber des Heeres in der Version UHT, schmaler Rumpf mit Tandemcockpit, wird schrittweise abgelöst.",
+  },
+  {
     id: "f35", name: "Lockheed Martin F-35A Lightning II", gruppe: "bw-zulauf",
     loesungen: ["F-35", "F-35A", "Lightning II", "Lightning 2", "Lightning", "F-35 Lightning"],
     steckbrief: "Tarnkappenjet der fünften Generation, 35 Stück für Büchel, Auslieferung ab 2027.",
+  },
+  {
+    id: "ch47f", name: "Boeing CH-47F Chinook", gruppe: "bw-zulauf",
+    loesungen: ["Chinook", "CH-47", "CH-47F", "CH 47"],
+    steckbrief: "Schwerer Transporthubschrauber mit Tandemrotoren, 60 Stück als Nachfolger der CH-53 bestellt, Zulauf ab 2027.",
   },
   {
     id: "p3c", name: "Lockheed P-3C Orion", gruppe: "bw-ausser",
@@ -98,6 +123,11 @@ export const MUSTER = [
     id: "alphajet", name: "Dassault-Dornier Alpha Jet", gruppe: "bw-ausser",
     loesungen: ["Alpha Jet", "Alphajet"],
     steckbrief: "Leichter Schul- und Erdkampfjet, bis 2012 im Dienst der Luftwaffe.",
+  },
+  {
+    id: "seaking", name: "Westland Sea King Mk41", gruppe: "bw-ausser",
+    loesungen: ["Sea King", "Seaking", "Sea King Mk41", "Westland Sea King"],
+    steckbrief: "Seenotrettungshubschrauber der Marine über fast fünf Jahrzehnte, vom NH90 Sea Lion abgelöst.",
   },
   {
     id: "f16", name: "Lockheed Martin F-16 Fighting Falcon", gruppe: "kampf-aktuell",
@@ -173,6 +203,16 @@ export const MUSTER = [
     id: "g91", name: "Fiat G.91", gruppe: "bw-klassiker",
     loesungen: ["G.91", "G91", "Fiat G.91", "Gina"],
     steckbrief: "Kleiner Erdkämpfer aus Italien, bei der Truppe Gina genannt.",
+  },
+  {
+    id: "uh1d", name: "Bell UH-1D", gruppe: "bw-klassiker",
+    loesungen: ["UH-1D", "UH-1", "UH 1", "Huey", "Bell UH-1"],
+    steckbrief: "Leichter Transporthubschrauber, Jahrzehnte das Arbeitstier für SAR und Verbindungsflüge, 2021 außer Dienst.",
+  },
+  {
+    id: "bo105", name: "MBB Bo 105", gruppe: "bw-klassiker",
+    loesungen: ["Bo 105", "Bo105", "BO-105", "PAH-1", "PAH 1"],
+    steckbrief: "Leichter Hubschrauber des Heeres, als PAH-1 mit Panzerabwehrlenkflugkörpern, bis Ende 2016 im Dienst.",
   },
   {
     id: "f14", name: "Grumman F-14 Tomcat", gruppe: "klassiker",
