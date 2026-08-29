@@ -1,6 +1,6 @@
 // Gamepad-Anbindung: Anlernen über alle Geräte, Kurven, Tastatur-Ersatz.
 import { mitKurve, groessterAusschlag, mitEmpfindlichkeit, empfindlichkeitFuer } from "./kurve.js";
-import { geraeteListe } from "./geraetestand.js";
+import { geraeteListe, kurzname } from "./geraetestand.js";
 
 const ROLLEN = [
   ["stickX", "Stick quer"],
@@ -235,27 +235,37 @@ export function erzeugeControls(speicher) {
       schleier.className = "menueschleier";
       const dialog = document.createElement("div");
       dialog.className = "profilmenue controlsdialog";
+      // Symbolknöpfe (Willis Wunsch vom 29.08.2026): Joystick = Gerät
+      // zuweisen, Gegenpfeile = Achse umkehren. Die Funktion steht beim
+      // Daraufzeigen als eigener Tooltip (data-tipp) und im aria-label.
+      const geraetSymbol = `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6.5" r="2.7"/><path d="M12 9.2V15"/><rect x="5" y="15" width="14" height="5" rx="1.5"/></svg>`;
+      const umkehrSymbol = `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19V6M9 6L6 9M9 6l3 3"/><path d="M15 5v13M15 18l-3-3M15 18l3-3"/></svg>`;
       const rollenZeilen = ROLLEN.map(([rolle, titel]) => `
         <div class="rollenzeile" data-rolle="${rolle}">
           <span class="rollentitel">${titel}</span>
           <span class="rollenstand" id="stand-${rolle}"></span>
-          <button class="punkt klein" data-tat="zuweisen" data-rolle="${rolle}">Zuweisen</button>
-          <button class="punkt klein" data-tat="umkehren" data-rolle="${rolle}">Umkehren</button>
+          <button class="punkt klein symbol" data-tat="zuweisen" data-rolle="${rolle}" data-tipp="Zuweisen: klicken, dann Achse bewegen" aria-label="${titel} zuweisen">${geraetSymbol}</button>
+          <button class="punkt klein symbol" data-tat="umkehren" data-rolle="${rolle}" data-tipp="Achsrichtung umkehren" aria-label="${titel} umkehren">${umkehrSymbol}</button>
         </div>`).join("");
       dialog.innerHTML = `
         <h2>CONTROLS · ${(speicher.profil() ?? "").toUpperCase()}</h2>
+        <h3 class="abschnitt erst">GERÄTE</h3>
         <div class="geraeteliste" id="geraeteliste"></div>
         <p class="zustand">Gerät anschließen und eine Taste daran drücken, dann erscheint es hier.</p>
+        <h3 class="abschnitt">ZUORDNUNG</h3>
         ${rollenZeilen}
         <div class="rollenzeile">
           <span class="rollentitel">Schusstaste</span>
           <span class="rollenstand" id="stand-schuss"></span>
-          <button class="punkt klein" data-tat="schuss">Zuweisen</button>
+          <button class="punkt klein symbol" data-tat="schuss" data-tipp="Zuweisen: klicken, dann Knopf drücken" aria-label="Schusstaste zuweisen">${geraetSymbol}</button>
+          <span class="knopfplatz"></span>
         </div>
-        <label class="zustand">Totzone <input type="range" id="totzone" min="0" max="0.2" step="0.01"> <span class="reglerwert" id="totzone-wert"></span></label>
-        <label class="zustand">Expo <input type="range" id="expo" min="0" max="1" step="0.05"> <span class="reglerwert" id="expo-wert"></span></label>
-        <label class="zustand">Empfindlichkeit <input type="range" id="empfindlichkeit" min="0.5" max="2" step="0.05"> <span class="reglerwert" id="empfindlichkeit-wert"></span></label>
-        <label class="zustand"><input type="checkbox" id="empf-je-geraet"> Empfindlichkeit je Gerät (Regler in der Geräteliste, der allgemeine gilt dann nicht)</label>
+        <h3 class="abschnitt">STEUERGEFÜHL</h3>
+        <div class="reglerzeile"><span class="reglertitel">Totzone</span><input type="range" id="totzone" min="0" max="0.2" step="0.01"><span class="reglerwert" id="totzone-wert"></span></div>
+        <div class="reglerzeile"><span class="reglertitel">Expo</span><input type="range" id="expo" min="0" max="1" step="0.05"><span class="reglerwert" id="expo-wert"></span></div>
+        <div class="reglerzeile"><span class="reglertitel">Empfindlichkeit</span><input type="range" id="empfindlichkeit" min="0.5" max="2" step="0.05"><span class="reglerwert" id="empfindlichkeit-wert"></span></div>
+        <label class="hakenzeile"><input type="checkbox" id="empf-je-geraet"> Empfindlichkeit je Gerät</label>
+        <p class="reglerhinweis">Mit Haken bekommt jedes verbundene Gerät in der Geräteliste einen eigenen Regler, der allgemeine gilt dann nicht.</p>
         <button class="punkt" data-tat="schliessen">Fertig</button>
       `;
       const schliesse = () => { this.brichFangAb(); this.brichSchussFangAb(); schleier.remove(); dialog.remove(); halteAn = true; };
@@ -265,32 +275,36 @@ export function erzeugeControls(speicher) {
         for (const [rolle] of ROLLEN) {
           const z = this.zuordnungVon(rolle);
           dialog.querySelector(`#stand-${rolle}`).textContent =
-            z ? `${z.geraet.slice(0, 18)}… Achse ${z.achse}${z.invert ? " umgekehrt" : ""}` : "nicht zugewiesen";
+            z ? `${kurzname(z.geraet)} · Achse ${z.achse}${z.invert ? " · umgekehrt" : ""}` : "nicht zugewiesen";
         }
         const s = this.schusstasteVon();
         dialog.querySelector("#stand-schuss").textContent =
-          s ? `${s.geraet.slice(0, 18)}… Knopf ${s.knopf}` : "nicht zugewiesen · Leertaste";
+          s ? `${kurzname(s.geraet)} · Knopf ${s.knopf}` : "nicht zugewiesen · Leertaste";
       };
 
       dialog.addEventListener("click", (e) => {
-        const tat = e.target.dataset?.tat;
+        // closest statt e.target: Der Klick landet sonst auf dem SVG im Knopf.
+        const knopf = e.target.closest?.("[data-tat]");
+        if (!knopf) return;
+        const tat = knopf.dataset.tat;
+        // Beim Anlernen leuchtet der Knopf (Klasse fang) statt Textwechsel,
+        // damit das Symbol stehen bleibt.
+        const fangFrei = () => { for (const k of dialog.querySelectorAll(".punkt.fang")) k.classList.remove("fang"); };
         if (tat === "schliessen") schliesse();
-        if (tat === "umkehren") this.kehreUm(e.target.dataset.rolle).then(zeigeStand);
+        if (tat === "umkehren") this.kehreUm(knopf.dataset.rolle).then(zeigeStand);
         if (tat === "zuweisen") {
           this.brichFangAb();
           this.brichSchussFangAb();
-          for (const k of dialog.querySelectorAll('[data-tat="zuweisen"]')) k.textContent = "Zuweisen";
-          const schussKnopf = dialog.querySelector('[data-tat="schuss"]');
-          if (schussKnopf) schussKnopf.textContent = "Zuweisen";
-          e.target.textContent = "Bewegen…";
-          this.starteFang(e.target.dataset.rolle, () => { e.target.textContent = "Zuweisen"; zeigeStand(); });
+          fangFrei();
+          knopf.classList.add("fang");
+          this.starteFang(knopf.dataset.rolle, () => { knopf.classList.remove("fang"); zeigeStand(); });
         }
         if (tat === "schuss") {
           this.brichSchussFangAb();
           this.brichFangAb();
-          for (const k of dialog.querySelectorAll('[data-tat="zuweisen"]')) k.textContent = "Zuweisen";
-          e.target.textContent = "Drücken…";
-          this.starteSchussFang(() => { e.target.textContent = "Zuweisen"; zeigeStand(); });
+          fangFrei();
+          knopf.classList.add("fang");
+          this.starteSchussFang(() => { knopf.classList.remove("fang"); zeigeStand(); });
         }
       });
 
@@ -355,7 +369,7 @@ export function erzeugeControls(speicher) {
                 <div class="geraetename">${sicher(g.name)}</div>
                 <div class="geraeteinfo">${g.zustand === "fehlt" ? "nicht verbunden" : sicher(g.umfang)}${g.rollen.length ? ` · ${g.rollen.join(", ")}` : ""}</div>
                 <div class="geraeteachsen" data-kennung="${sicher(g.kennung)}"></div>
-                ${g.zustand === "fehlt" ? "" : `<label class="zustand geraeteempf">Empfindlichkeit <input type="range" class="geraete-empf" data-kennung="${sicher(g.kennung)}" min="0.5" max="2" step="0.05"> <span class="reglerwert"></span></label>`}
+                ${g.zustand === "fehlt" ? "" : `<div class="reglerzeile geraeteempf"><span class="reglertitel">Empfindlichkeit</span><input type="range" class="geraete-empf" data-kennung="${sicher(g.kennung)}" min="0.5" max="2" step="0.05"><span class="reglerwert"></span></div>`}
               </div>
             </div>`).join("") || `<p class="zustand">Kein Gerät erkannt.</p>`;
           for (const regler of geraeteFeld.querySelectorAll(".geraete-empf")) {

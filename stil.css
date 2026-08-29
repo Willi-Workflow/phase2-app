@@ -199,18 +199,91 @@ main { position: relative; z-index: 1; }
 .profilmenue .punkt:hover { background: #232c18; }
 .profilmenue .zustand { margin-top: 12px; font-size: 11px; letter-spacing: 0.1em; color: var(--gedeckt); }
 
-.controlsdialog { max-height: 86vh; overflow-y: auto; }
+/* Controls-Dialog: zentriertes Einstellungsmenü statt schmaler Randspalte,
+   drei Abschnitte (Geräte, Zuordnung, Steuergefühl) mit Trennlinien. */
+.controlsdialog {
+  top: 50%;
+  left: 50%;
+  right: auto;
+  transform: translate(-50%, -50%);
+  width: min(92vw, 620px);
+  max-height: 86vh;
+  overflow-y: auto;
+  border-top: 1px solid #39422c;
+  border-radius: 10px;
+  padding: 20px 24px;
+}
+.controlsdialog .abschnitt {
+  margin: 18px 0 6px;
+  padding-top: 14px;
+  border-top: 1px solid #2c3520;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  color: var(--gedeckt);
+  font-weight: 600;
+}
+.controlsdialog .abschnitt.erst { margin-top: 6px; padding-top: 0; border-top: 0; }
 .geraeteliste { display: grid; gap: 9px; margin-top: 10px; }
 .geraetezeile { display: flex; gap: 9px; align-items: flex-start; }
 .geraetezeile .rollenlampe { flex: none; margin-top: 5px; }
+.geraetezeile > div { flex: 1; }
 .geraetezeile .geraetename { font-size: 12px; letter-spacing: 0.08em; color: var(--hell); }
 .geraetezeile .geraeteinfo { font-size: 10px; letter-spacing: 0.06em; color: var(--gedeckt); margin-top: 2px; }
 .geraetezeile .geraeteachsen { font-size: 10px; color: var(--gedeckt); opacity: 0.85; margin-top: 2px; min-height: 12px; font-variant-numeric: tabular-nums; }
-.rollenzeile { display: grid; grid-template-columns: 1fr auto auto; gap: 6px; align-items: center; margin-top: 8px; font-size: 12px; }
+.rollenzeile { display: grid; grid-template-columns: 108px 1fr auto auto; gap: 8px; align-items: center; margin-top: 8px; font-size: 12px; }
 .rollenzeile .rollentitel { letter-spacing: 0.08em; }
-.rollenzeile .rollenstand { grid-column: 1 / -1; font-size: 10px; color: var(--gedeckt); }
+.rollenzeile .rollenstand { font-size: 10px; color: var(--gedeckt); overflow-wrap: anywhere; }
 .punkt.klein { width: auto; margin-top: 0; padding: 6px 10px; font-size: 11px; }
-.controlsdialog input[type="range"] { width: 100%; }
+/* Zuweisen und Umkehren als dezente Symbolknöpfe: Stift und Gegenpfeile in
+   quadratischen Geisterknöpfen, gedeckt; beim Überfahren hell, beim Anlernen
+   (Klasse fang) türkis. Tooltip und aria-label tragen den Text. */
+.rollenzeile .punkt.klein.symbol {
+  background: transparent;
+  border-color: #2c3520;
+  color: var(--gedeckt);
+  width: 34px;
+  height: 30px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+.rollenzeile .punkt.klein.symbol svg { width: 16px; height: 16px; display: block; }
+.rollenzeile .punkt.klein.symbol:hover { background: #1a2113; border-color: #39422c; color: var(--hell); }
+.rollenzeile .punkt.klein.symbol.fang { color: #35e0d0; border-color: #35e0d0; }
+/* Funktionsbeschriftung beim Daraufzeigen: eigener Tooltip aus data-tipp,
+   sofort sichtbar statt des trägen Browser-Tooltips. */
+.punkt.symbol { position: relative; }
+.punkt.symbol::after {
+  content: attr(data-tipp);
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  padding: 4px 8px;
+  background: #0c100a;
+  border: 1px solid #39422c;
+  border-radius: 5px;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--hell);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s;
+  z-index: 3;
+}
+.punkt.symbol:hover::after,
+.punkt.symbol:focus-visible::after { opacity: 1; }
+/* Platzhalter in der Schusstastenzeile: hält die Umkehren-Spalte frei, damit
+   ihr Zuweisen-Knopf bündig unter denen der anderen Zeilen steht. */
+.rollenzeile .knopfplatz { width: 34px; }
+/* Reglerzeilen: Name links, Schieber mittig, Wert rechtsbündig; nichts
+   rutscht mehr in die Nachbarzeile. Bedienelemente in Türkis der Anzeigen. */
+.reglerzeile { display: grid; grid-template-columns: 128px 1fr 3.2em; gap: 10px; align-items: center; margin-top: 10px; font-size: 12px; }
+.reglerzeile .reglertitel { letter-spacing: 0.08em; }
+.hakenzeile { display: flex; gap: 8px; align-items: center; margin-top: 14px; font-size: 12px; letter-spacing: 0.08em; color: var(--hell); cursor: pointer; }
+.reglerhinweis { margin-top: 4px; font-size: 10px; letter-spacing: 0.06em; color: var(--gedeckt); }
+.controlsdialog input[type="range"] { width: 100%; accent-color: #35e0d0; }
+.controlsdialog input[type="checkbox"] { accent-color: #35e0d0; }
 
 /* Mission 2: SMT-Bühne. Schwarzer Grund wie das Original, die SVG füllt das
    Fenster; Kopfzeile fest oben, Trefferaufblitzen als kurzes Aufhellen. */
@@ -264,7 +337,7 @@ main { position: relative; z-index: 1; }
 /* Empfindlichkeit je Gerät: die Zeilenregler erscheinen nur im Gerätemodus
    (Klasse je-geraet am Dialog), der allgemeine Regler ist dann stillgelegt. */
 .controlsdialog .geraeteempf { display: none; }
-.controlsdialog.je-geraet .geraeteempf { display: block; }
+.controlsdialog.je-geraet .geraeteempf { display: grid; }
 .controlsdialog #empfindlichkeit:disabled { opacity: 0.4; }
 .laufschleier.uebung1 .testkopf { position: absolute; top: 3vh; left: 50%; transform: translateX(-50%); z-index: 2; color: var(--gedeckt); letter-spacing: 0.25em; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8); }
 
