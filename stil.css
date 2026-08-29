@@ -231,18 +231,21 @@ main { position: relative; z-index: 1; }
 .laufschleier.uebung1 {
   /* Der Ton #c3d3e4 um die Horizonthöhe entspricht der Dunstfarbe der 3D-Szene. */
   background: linear-gradient(180deg, #4a7ac0 0%, #93b2d8 45%, #c3d3e4 55%, #dfe8f0 75%, #edf1f5 100%);
+  /* Im Flug lenkt der Mauszeiger ab und gehört nicht ins Bild. */
+  cursor: none;
 }
 .uebung1 .himmelbild { position: absolute; inset: 0; width: 100%; height: 100%; }
 .uebung1 .zielkreis {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 7%;
+  width: 5.5%;
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   stroke: #35e0d0;
   pointer-events: none;
 }
+/* width steuert die Zielkreisgröße; auf Willis Wunsch etwas kleiner (war 7 %). */
 .uebung1 .zielkreis.deckung { stroke: #e5312b; }
 .laufschleier.uebung1 .testkopf { position: absolute; top: 3vh; left: 50%; transform: translateX(-50%); z-index: 2; color: var(--gedeckt); letter-spacing: 0.25em; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8); }
 

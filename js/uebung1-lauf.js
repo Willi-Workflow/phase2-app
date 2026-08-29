@@ -319,8 +319,9 @@ export function erzeugeUebung1({ speicher, controls }) {
     // hinter der durchsichtigen Leinwand.
     const BODENHOEHE = 420;
     // Nach Willis Sichtung des Videos: Das Flugzeug wirkt dort deutlich
-    // kleiner, etwas unter der Kreisgröße (Spannweite rund 6 Prozent Breite).
-    const FLUGDISTANZ = 175;
+    // kleiner und weiter weg. Die Distanz staucht nur die scheinbare Größe,
+    // die Bildposition bleibt gleich (halbeBreite/halbeHoehe wachsen mit).
+    const FLUGDISTANZ = 215;
     let drei = null;
     try {
       const renderer = new THREE.WebGLRenderer({ canvas: leinwand, antialias: true, alpha: true });
