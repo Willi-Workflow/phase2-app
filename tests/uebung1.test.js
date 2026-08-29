@@ -139,7 +139,7 @@ test("inDeckung misst den Winkelabstand mit Bildverhältnis", () => {
   assert.equal(inDeckung(z), true);
 });
 
-test("Eine Sekunde Deckung gibt den Treffer, das Flugzeug springt", () => {
+test("Eine Sekunde Deckung gibt den Treffer, der Blick springt statt des Flugzeugs", () => {
   const z = erzeugeLaufzustand(halb);
   z.ziel = { x: 0.5, y: 0.5 };   // direkt unter dem Kreis
   let ereignisse = [];
@@ -148,12 +148,16 @@ test("Eine Sekunde Deckung gibt den Treffer, das Flugzeug springt", () => {
   assert.deepEqual(ereignisse, [{ treffer: true }]);
   assert.equal(z.ersterTrefferMs, 1000);
   assert.equal(z.letzterTrefferMs, 1000);
-  // Der Kreis bleibt fest in der Bildmitte, das Flugzeug wird neu gesetzt:
+  // Der Kreis bleibt fest in der Bildmitte, das Ziel steht neu gesetzt:
   // im Kegel und deutlich außerhalb der Deckung.
   assert.deepEqual(z.kreis, { x: 0.5, y: 0.5 });
   assert.ok(abstandFuerTest(z.ziel, z.kreis) >= MINDESTABSTAND);
   assert.ok(z.ziel.x >= KEGEL.xMin && z.ziel.x <= KEGEL.xMax);
   assert.ok(z.ziel.y >= KEGEL.yMin && z.ziel.y <= KEGEL.yMax);
+  // Der Sprung kommt aus der eigenen Blickrichtung: Kurs und Neigung springen
+  // passend zur Zielverschiebung mit (halb würfelt die Ersatzlage 0.25/0.3).
+  assert.ok(Math.abs(z.kurs - (0.5 - 0.25) * SICHTWINKEL) < 1e-9);
+  assert.ok(Math.abs(z.nick - (0.3 - 0.5) * 0.5) < 1e-9);
 });
 
 test("Verlorene Deckung setzt die Haltezeit zurück", () => {

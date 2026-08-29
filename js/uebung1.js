@@ -165,7 +165,16 @@ export function takt(z, eingaben, dtMs, rnd = Math.random) {
       if (z.ersterTrefferMs == null) z.ersterTrefferMs = z.testMs;
       z.letzterTrefferMs = z.testMs;
       z.halteMs = 0;
-      z.ziel = zufallsZiel(rnd);
+      // Blicksprung statt Teleport (Willis Festlegung vom 29.08.2026): Nach
+      // dem Treffer springt die eigene Blickrichtung, die Kulisse springt in
+      // der Darstellung mit, und das Zielflugzeug steht dadurch an neuer
+      // Stelle im Bild, ohne selbst zu springen. Senkrecht deckt der
+      // Nickbereich den Sprung fast immer ab; ein Rest jenseits des
+      // Anschlags verschiebt das Ziel direkt (kaum wahrnehmbar).
+      const neu = zufallsZiel(rnd);
+      z.kurs -= (neu.x - z.ziel.x) * SICHTWINKEL;
+      z.nick = begrenze(z.nick + (neu.y - z.ziel.y) * NICK_SICHT, -MAXNICK, MAXNICK);
+      z.ziel = neu;
       ereignisse.push({ treffer: true });
     }
   } else {
