@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  TESTDAUERN, HALTEZEIT_MS, KREIS_R, BILDVERHAELTNIS, MINDESTABSTAND, KEGEL, AUSSENGRENZE, MAXROLL, MAXNICK, TEMPOS, SICHTWINKEL, zielHinweis, PFEILRAND,
+  TESTDAUERN, HALTEZEIT_MS, KREIS_R, BILDVERHAELTNIS, MINDESTABSTAND, KEGEL, UMLAUF, MAXROLL, MAXNICK, TEMPOS, SICHTWINKEL, zielHinweis, PFEILRAND,
   zufallsZiel, erzeugeLaufzustand, takt, inDeckung,
   deckungsquote, ergebnisWerte,
   BUCHSTABEN_ABSTAND_MS, EREIGNIS_LUECKE_MIN, EREIGNIS_LUECKE_MAX, erzeugeBuchstabenreihe, erzeugeSlaZaehler,
@@ -62,16 +62,38 @@ test("Rollen baut sich auf, koppelt in die Kurve und bleibt begrenzt", () => {
   assert.ok(z.ziel.x < 0.6);
 });
 
-test("Das Ziel darf den Bildschirm verlassen, bleibt aber in der Außengrenze", () => {
+test("Das Ziel darf den Bildschirm verlassen, ohne je an einer Wand zu hängen", () => {
   const z = erzeugeLaufzustand(halb);
   z.ziel = { x: 0.5, y: 0.2 };
-  // Anhaltender Sturzflug schiebt das Ziel über den oberen Bildrand hinaus.
-  for (let i = 0; i < 400; i++) takt(z, { ...still, stickY: -1 }, 50, halb);
+  // Anhaltender Sturzflug schiebt das Ziel über den oberen Bildrand hinaus;
+  // gemessen mitten im Sturz, denn danach holt der Rückzug es wieder herein.
+  for (let i = 0; i < 60; i++) takt(z, { ...still, stickY: -1 }, 50, halb);
   assert.ok(z.ziel.y < 0);
-  for (let i = 0; i < 2000; i++) takt(z, { stickX: 1, stickY: 1, ruder: 1 }, 50, Math.random);
-  assert.ok(z.ziel.x >= AUSSENGRENZE.xMin && z.ziel.x <= AUSSENGRENZE.xMax);
-  assert.ok(z.ziel.y >= AUSSENGRENZE.yMin && z.ziel.y <= AUSSENGRENZE.yMax);
+  for (let i = 0; i < 340; i++) takt(z, { ...still, stickY: -1 }, 50, halb);
+  // Waagerecht ist die Welt rund: ziel.x bleibt im Umlauffenster um die
+  // Bildmitte, senkrecht hält der Rückzug das Ziel in erreichbarer Nähe.
+  for (let i = 0; i < 4000; i++) takt(z, { stickX: 1, stickY: 1, ruder: 1 }, 50, Math.random);
+  assert.ok(Math.abs(z.ziel.x - 0.5) <= UMLAUF / 2 + 1e-9);
+  assert.ok(z.ziel.y > -1 && z.ziel.y < 2.5);
   assert.ok(Math.abs(z.roll) <= MAXROLL);
+});
+
+test("Volle Eigendrehung bringt das Ziel von der anderen Seite herein", () => {
+  const z = erzeugeLaufzustand(halb);
+  // Ziel knapp vor der linken Umlaufkante: weiter nach rechts gieren
+  // (Ziel wandert nach links) lässt es rechts wieder auftauchen.
+  z.ziel = { x: 0.5 - UMLAUF / 2 + 0.01, y: 0.5 };
+  takt(z, { ...still, ruder: 1 }, 200, halb);
+  assert.ok(z.ziel.x > 0.5, `kam nicht herum: ${z.ziel.x}`);
+});
+
+test("Außerhalb des Bildes zieht das Ziel senkrecht sanft zurück", () => {
+  const z = erzeugeLaufzustand(halb);
+  z.ziel = { x: 0.5, y: 1.4 };
+  const vorher = z.ziel.y;
+  for (let i = 0; i < 20; i++) takt(z, still, 50, halb);
+  assert.ok(z.ziel.y < vorher);          // es kommt zurück
+  assert.ok(z.ziel.y > 1);               // aber nicht schlagartig
 });
 
 test("zielHinweis zeigt nur außerhalb des Bildes und klemmt an den Rand", () => {
@@ -155,8 +177,8 @@ test("Eine Sekunde Deckung gibt den Treffer, der Blick springt statt des Flugzeu
   assert.ok(z.ziel.x >= KEGEL.xMin && z.ziel.x <= KEGEL.xMax);
   assert.ok(z.ziel.y >= KEGEL.yMin && z.ziel.y <= KEGEL.yMax);
   // Der Sprung kommt aus der eigenen Blickrichtung: Kurs und Neigung springen
-  // passend zur Zielverschiebung mit (halb würfelt die Ersatzlage 0.25/0.3).
-  assert.ok(Math.abs(z.kurs - (0.5 - 0.25) * SICHTWINKEL) < 1e-9);
+  // passend zur Zielverschiebung mit (halb würfelt die Ersatzlage 0.15/0.3).
+  assert.ok(Math.abs(z.kurs - (0.5 - 0.15) * SICHTWINKEL) < 1e-9);
   assert.ok(Math.abs(z.nick - (0.3 - 0.5) * 0.5) < 1e-9);
 });
 

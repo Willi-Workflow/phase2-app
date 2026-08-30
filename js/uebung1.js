@@ -13,19 +13,25 @@ export const HALTEZEIT_MS = 1000;
 // etwas kleiner als das Original.
 export const KREIS_R = 0.032;          // Anteil der Bildbreite
 export const BILDVERHAELTNIS = 9 / 16; // Höhe zu Breite des Sichtfelds
-export const MINDESTABSTAND = 0.18;    // Kreis springt nie näher ans Ziel
+// Mindestabstand des Sprungziels zur Bildmitte; am 31.08.2026 auf Willis
+// Wunsch von 0,18 auf 0,3 angehoben, der Blicksprung fällt damit größer aus.
+export const MINDESTABSTAND = 0.3;
 // Startkegel: Neusetzung nach Treffer und Startlage liegen immer im Bild.
 export const KEGEL = { xMin: 0.12, xMax: 0.88, yMin: 0.15, yMax: 0.85 };
 // Im Flug darf das Ziel den Bildschirm verlassen (Willis Festlegung vom
-// 29.08.2026, der Pfeil am Bildrand zeigt dann die Richtung). Die Außengrenze
-// ist nur ein fernes Sicherheitsnetz, damit Drift und Dauerkurve das Ziel
-// nicht beliebig weit wegtragen; sie liegt unerreichbar weit außerhalb.
-export const AUSSENGRENZE = { xMin: -1.0, xMax: 2.0, yMin: -0.7, yMax: 1.7 };
+// 29.08.2026, der Pfeil am Bildrand zeigt dann die Richtung). Wände gibt es
+// seit dem 31.08.2026 keine mehr: Waagerecht ist die Welt rund, eine volle
+// Eigendrehung entspricht UMLAUF Bildbreiten, dahinter kommt das Ziel von
+// der anderen Seite wieder herein. Senkrecht zieht es außerhalb des Bildes
+// sanft zurück (RUECKZUG je Sekunde) statt frei wegzudriften.
+const RUECKZUG = 0.12;
 export const MAXROLL = 1.0;            // rad, etwa 57 Grad
 // Umrechnung von Bildanteil in Kurswinkel: das waagerechte Sichtfeld der
 // Kamera (62 Grad senkrecht bei 16:9 ergibt rund 94 Grad). Ziel und Kulisse
 // drehen damit aus derselben Gierbewegung und laufen nie auseinander.
 export const SICHTWINKEL = 1.64;       // rad
+// Bildbreiten je voller Eigendrehung: die waagerechte Rundum-Welt.
+export const UMLAUF = (2 * Math.PI) / SICHTWINKEL;
 
 // Raten bei Vollausschlag (je Sekunde) und Driftstärken. Steuerdynamik nach
 // Simulator-Art, abgeglichen mit dem Vorführlauf im Video (12:40 bis 13:10):
@@ -88,7 +94,7 @@ export function zufallsZiel(rnd) {
     };
     if (abstand(z, { x: 0.5, y: 0.5 }) >= MINDESTABSTAND) return z;
   }
-  return { x: 0.25, y: 0.3 };
+  return { x: 0.15, y: 0.3 }; // erfüllt den Mindestabstand von 0,3
 }
 // Die Funktion dient auch der Neusetzung nach einem Treffer: Der Mindest-
 // abstand zur Mitte liegt über dem Kreisradius, das Flugzeug landet also
@@ -155,8 +161,22 @@ export function takt(z, eingaben, dtMs, rnd = Math.random) {
   const gierBewegung = (z.gierRate + Math.sin(z.roll) * KOPPLUNG) * dt;
   z.kurs += gierBewegung * SICHTWINKEL;
 
-  z.ziel.x = begrenze(z.ziel.x - gierBewegung + taktDrift(z.drift.zx, dtMs, rnd) * dt, AUSSENGRENZE.xMin, AUSSENGRENZE.xMax);
-  z.ziel.y = begrenze(z.ziel.y + nickAngewandt + taktDrift(z.drift.zy, dtMs, rnd) * dt, AUSSENGRENZE.yMin, AUSSENGRENZE.yMax);
+  // Waagerecht ohne Wand: Der Umlauf wickelt die Position um die Bildmitte,
+  // eine volle Eigendrehung bringt das Ziel von der anderen Seite herein.
+  const gewickelt = (x) => {
+    let w = (x - 0.5) % UMLAUF;
+    if (w > UMLAUF / 2) w -= UMLAUF;
+    if (w < -UMLAUF / 2) w += UMLAUF;
+    return 0.5 + w;
+  };
+  z.ziel.x = gewickelt(z.ziel.x - gierBewegung + taktDrift(z.drift.zx, dtMs, rnd) * dt);
+  // Senkrecht ohne Wand: Im Bild driftet das Ziel frei, außerhalb zieht es
+  // sanft Richtung Bildmitte zurück, damit es nie unerreichbar wegwandert
+  // (die eigene Nase endet am Nickanschlag).
+  const senkrecht = (z.ziel.y >= 0 && z.ziel.y <= 1)
+    ? taktDrift(z.drift.zy, dtMs, rnd) * dt
+    : Math.sign(0.5 - z.ziel.y) * RUECKZUG * dt;
+  z.ziel.y = z.ziel.y + nickAngewandt + senkrecht;
 
   z.testMs += dtMs;
   const ereignisse = [];
