@@ -263,7 +263,7 @@ export function erzeugeControls(speicher) {
         <h3 class="abschnitt">STEUERGEFÜHL</h3>
         <div class="reglerzeile"><span class="reglertitel">Totzone</span><input type="range" id="totzone" min="0" max="0.2" step="0.01"><span class="reglerwert" id="totzone-wert"></span></div>
         <div class="reglerzeile"><span class="reglertitel">Expo</span><input type="range" id="expo" min="0" max="1" step="0.05"><span class="reglerwert" id="expo-wert"></span></div>
-        <div class="reglerzeile"><span class="reglertitel">Empfindlichkeit</span><input type="range" id="empfindlichkeit" min="0.5" max="2" step="0.05"><span class="reglerwert" id="empfindlichkeit-wert"></span></div>
+        <div class="reglerzeile"><span class="reglertitel">Empfindlichkeit</span><input type="range" id="empfindlichkeit" min="0.5" max="3" step="0.05"><span class="reglerwert" id="empfindlichkeit-wert"></span></div>
         <label class="hakenzeile"><input type="checkbox" id="empf-je-geraet"> Empfindlichkeit je Gerät</label>
         <p class="reglerhinweis">Mit Haken bekommt jedes verbundene Gerät in der Geräteliste einen eigenen Regler, der allgemeine gilt dann nicht.</p>
         <button class="punkt" data-tat="schliessen">Fertig</button>
@@ -369,7 +369,7 @@ export function erzeugeControls(speicher) {
                 <div class="geraetename">${sicher(g.name)}</div>
                 <div class="geraeteinfo">${g.zustand === "fehlt" ? "nicht verbunden" : sicher(g.umfang)}${g.rollen.length ? ` · ${g.rollen.join(", ")}` : ""}</div>
                 <div class="geraeteachsen" data-kennung="${sicher(g.kennung)}"></div>
-                ${g.zustand === "fehlt" ? "" : `<div class="reglerzeile geraeteempf"><span class="reglertitel">Empfindlichkeit</span><input type="range" class="geraete-empf" data-kennung="${sicher(g.kennung)}" min="0.5" max="2" step="0.05"><span class="reglerwert"></span></div>`}
+                ${g.zustand === "fehlt" ? "" : `<div class="reglerzeile geraeteempf"><span class="reglertitel">Empfindlichkeit</span><input type="range" class="geraete-empf" data-kennung="${sicher(g.kennung)}" min="0.5" max="3" step="0.05"><span class="reglerwert"></span></div>`}
               </div>
             </div>`).join("") || `<p class="zustand">Kein Gerät erkannt.</p>`;
           for (const regler of geraeteFeld.querySelectorAll(".geraete-empf")) {
