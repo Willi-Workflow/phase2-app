@@ -44,7 +44,10 @@ export const SICHTWINKEL = 1.64;       // rad
 const RATE_NICK = 0.31;
 const RATE_GIER = 0.29;
 const ROLLRATE = 0.62;
-const ANLAUF_MS = 300;    // Trägheit, bis eine Steuerrate voll anliegt
+// Am 30.08.2026 von 300 auf 180 zurück (Willi: zu gedämpft, direkter):
+// weiter kein hartes Anreißen wie vor der Kalibrierung, aber spürbar
+// unmittelbarerer Steuereinsatz.
+const ANLAUF_MS = 180;    // Trägheit, bis eine Steuerrate voll anliegt
 const STABIL = 0.12;      // schwache Eigenstabilität je Sekunde
 const NICK_SICHT = 0.5;   // rad Blickneigung je Einheit Nickbewegung
 export const MAXNICK = 0.3; // rad
