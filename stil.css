@@ -278,8 +278,10 @@ main { position: relative; z-index: 1; }
 .rollenzeile .knopfplatz { width: 34px; }
 /* Reglerzeilen: Name links, Schieber mittig, Wert rechtsbündig; nichts
    rutscht mehr in die Nachbarzeile. Bedienelemente in Türkis der Anzeigen. */
-.reglerzeile { display: grid; grid-template-columns: 128px 1fr 3.2em; gap: 10px; align-items: center; margin-top: 10px; font-size: 12px; }
+.reglerzeile { display: grid; grid-template-columns: 118px auto 1fr auto 3.2em; gap: 8px; align-items: center; margin-top: 10px; font-size: 12px; }
 .reglerzeile .reglertitel { letter-spacing: 0.08em; }
+/* Skalenenden links und rechts am Schieber: machen den Stellbereich sichtbar. */
+.reglerzeile .skala { font-size: 9px; color: var(--gedeckt); opacity: 0.85; font-variant-numeric: tabular-nums; }
 .hakenzeile { display: flex; gap: 8px; align-items: center; margin-top: 14px; font-size: 12px; letter-spacing: 0.08em; color: var(--hell); cursor: pointer; }
 .reglerhinweis { margin-top: 4px; font-size: 10px; letter-spacing: 0.06em; color: var(--gedeckt); }
 .controlsdialog input[type="range"] { width: 100%; accent-color: #35e0d0; }
