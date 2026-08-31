@@ -36,21 +36,45 @@ export function istGleich(id, a, b) {
 // Vier Antwortmöglichkeiten: der wahre Wert und drei Ablenker aus dem
 // Werteraster, gemischt. Beim Kurs zählt der Abstand über die Nordgrenze
 // hinweg. Seit dem 31.08.2026 halten die Ablenker einen Mindestabstand
-// (Willis Vorgabe, 105 neben 110 Grad war zu dicht): mindestens drei
-// Rasterschritte, dafür reicht der Kandidatenring bis neun Schritte.
+// (Willis Vorgabe, 105 neben 110 Grad war zu dicht) und kommen als guter
+// Mix (ebenfalls Willis Vorgabe): je einer aus dem nahen, mittleren und
+// fernen Drittel der zulässigen Kandidaten, damit neben naheliegenden auch
+// klar verschiedene Werte zur Auswahl stehen.
 export const ABLENKER_MIN_SCHRITTE = 3;
+
+// Je ein Element aus dem nahen, mittleren und fernen Drittel der nach
+// Abstand sortierten Kandidaten; bei sehr kleinen Mengen füllt der Rest auf.
+function mixAusDritteln(kandidaten, abstandVon, rnd) {
+  const sortiert = [...kandidaten].sort((a, b) => abstandVon(a) - abstandVon(b));
+  const drittel = Math.max(1, Math.floor(sortiert.length / 3));
+  const baender = [
+    sortiert.slice(0, drittel),
+    sortiert.slice(drittel, 2 * drittel),
+    sortiert.slice(2 * drittel),
+  ].filter((band) => band.length > 0);
+  const gewaehlt = [];
+  for (const band of baender) {
+    const wahl = band[Math.floor(rnd() * band.length)];
+    if (!gewaehlt.includes(wahl)) gewaehlt.push(wahl);
+  }
+  for (const k of mische(sortiert, rnd)) {
+    if (gewaehlt.length >= 3) break;
+    if (!gewaehlt.includes(k)) gewaehlt.push(k);
+  }
+  return gewaehlt.slice(0, 3);
+}
+
 export function antwortmoeglichkeiten(id, wert, rnd = Math.random) {
   if (id === "horizont") return horizontMoeglichkeiten(wert, rnd);
   const raster = RASTER[id];
-  const kandidaten = [];
-  for (let k = -9; k <= 9; k++) {
-    if (Math.abs(k) < ABLENKER_MIN_SCHRITTE) continue;
-    let w = wert + k * raster.schritt;
-    if (id === "kurs") w = ((w % 360) + 360) % 360;
-    if (w < raster.min || w > raster.max) continue;
-    if (!kandidaten.includes(w)) kandidaten.push(w);
-  }
-  const falsche = mische(kandidaten, rnd).slice(0, 3);
+  const abstandVon = (w) => {
+    let d = Math.abs(w - wert);
+    if (id === "kurs") d = Math.min(d, 360 - d);
+    return d;
+  };
+  const kandidaten = rasterwerte(raster)
+    .filter((w) => abstandVon(w) >= ABLENKER_MIN_SCHRITTE * raster.schritt);
+  const falsche = mixAusDritteln(kandidaten, abstandVon, rnd);
   return mische([wert, ...falsche], rnd);
 }
 
@@ -63,11 +87,12 @@ function horizontMoeglichkeiten(wert, rnd) {
       if (roll === wert.roll && nick === wert.nick) continue;
       const abstand = Math.abs(rolls.indexOf(roll) - rolls.indexOf(wert.roll))
         + Math.abs(nicks.indexOf(nick) - nicks.indexOf(wert.nick));
-      // Mindestens zwei Rasterschritte kombinierter Lageabstand, höchstens
-      // vier: deutlich unterscheidbar, aber noch verwechselbar genug.
-      if (abstand >= 2 && abstand <= 4) kandidaten.push({ roll, nick });
+      // Mindestens zwei Rasterschritte kombinierter Lageabstand, damit die
+      // Lagen deutlich unterscheidbar sind; die Drittelung mischt nah und fern.
+      if (abstand >= 2) kandidaten.push({ roll, nick, abstand });
     }
   }
-  const falsche = mische(kandidaten, rnd).slice(0, 3);
+  const falsche = mixAusDritteln(kandidaten, (k) => k.abstand, rnd)
+    .map(({ roll, nick }) => ({ roll, nick }));
   return mische([wert, ...falsche], rnd);
 }

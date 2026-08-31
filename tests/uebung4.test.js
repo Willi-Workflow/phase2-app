@@ -99,3 +99,22 @@ test("antwortmoeglichkeiten: auch Horizontlagen liegen deutlich auseinander", ()
     }
   }
 });
+
+test("antwortmoeglichkeiten: guter Mix, auch ferne Werte sind dabei", () => {
+  // Willis Vorgabe vom 31.08.2026: nicht nur naheliegende Ablenker, je einer
+  // aus dem nahen, mittleren und fernen Drittel der Kandidaten.
+  const schritte = { fahrt: 10, hoehe: 100, vario: 100, kurs: 5 };
+  const rnd = saatZufall(41);
+  for (const [id, wert] of [["fahrt", 230], ["hoehe", 5000], ["vario", 0], ["kurs", 110]]) {
+    for (let i = 0; i < 30; i++) {
+      const auswahl = antwortmoeglichkeiten(id, wert, rnd);
+      const abstaende = auswahl.filter((w) => w !== wert).map((w) => {
+        let d = Math.abs(w - wert);
+        if (id === "kurs") d = Math.min(d, 360 - d);
+        return d;
+      });
+      assert.ok(Math.max(...abstaende) >= 9 * schritte[id], `${id}: kein ferner Wert dabei`);
+      assert.ok(Math.min(...abstaende) >= 3 * schritte[id], `${id}: Mindestabstand verletzt`);
+    }
+  }
+});
