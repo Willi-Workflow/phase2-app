@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   TESTDAUERN, HALTEZEIT_MS, KREIS_R, BILDVERHAELTNIS, MINDESTABSTAND, KEGEL, UMLAUF, MAXROLL, MAXNICK, TEMPOS, SICHTWINKEL, zielHinweis, PFEILRAND,
+  wuerfleSprung, SPRUNGWEITE,
   zufallsZiel, erzeugeLaufzustand, takt, inDeckung,
   deckungsquote, ergebnisWerte,
   BUCHSTABEN_ABSTAND_MS, EREIGNIS_LUECKE_MIN, EREIGNIS_LUECKE_MAX, erzeugeBuchstabenreihe, erzeugeSlaZaehler,
@@ -170,16 +171,28 @@ test("Eine Sekunde Deckung gibt den Treffer, der Blick springt statt des Flugzeu
   assert.deepEqual(ereignisse, [{ treffer: true }]);
   assert.equal(z.ersterTrefferMs, 1000);
   assert.equal(z.letzterTrefferMs, 1000);
-  // Der Kreis bleibt fest in der Bildmitte, das Ziel steht neu gesetzt:
-  // im Kegel und deutlich außerhalb der Deckung.
+  // Der Kreis bleibt fest in der Bildmitte, das Ziel springt im Umkreis um
+  // seine alte Lage (halb würfelt Winkel Pi und mittlere Weite 0,375):
+  // deutlich außerhalb der Deckung und noch im Bild.
   assert.deepEqual(z.kreis, { x: 0.5, y: 0.5 });
-  assert.ok(abstandFuerTest(z.ziel, z.kreis) >= MINDESTABSTAND);
-  assert.ok(z.ziel.x >= KEGEL.xMin && z.ziel.x <= KEGEL.xMax);
-  assert.ok(z.ziel.y >= KEGEL.yMin && z.ziel.y <= KEGEL.yMax);
+  assert.ok(Math.hypot(z.ziel.x - 0.5, z.ziel.y - 0.5) >= MINDESTABSTAND - 1e-9);
+  assert.ok(z.ziel.x >= 0 && z.ziel.x <= 1 && z.ziel.y >= 0 && z.ziel.y <= 1);
+  assert.ok(Math.abs(z.ziel.x - 0.125) < 1e-9);
   // Der Sprung kommt aus der eigenen Blickrichtung: Kurs und Neigung springen
-  // passend zur Zielverschiebung mit (halb würfelt die Ersatzlage 0.15/0.3).
-  assert.ok(Math.abs(z.kurs - (0.5 - 0.15) * SICHTWINKEL) < 1e-9);
-  assert.ok(Math.abs(z.nick - (0.3 - 0.5) * 0.5) < 1e-9);
+  // passend zur Zielverschiebung mit.
+  assert.ok(Math.abs(z.kurs - 0.375 * SICHTWINKEL) < 1e-9);
+  assert.ok(Math.abs(z.nick) < 1e-9);
+});
+
+test("wuerfleSprung: Weite im Ring, alle Richtungen kommen vor", () => {
+  const quadranten = new Set();
+  for (let i = 0; i < 500; i++) {
+    const s = wuerfleSprung(Math.random);
+    const weite = Math.hypot(s.dx, s.dy);
+    assert.ok(weite >= MINDESTABSTAND - 1e-9 && weite <= SPRUNGWEITE + 1e-9);
+    quadranten.add(`${s.dx >= 0 ? "r" : "l"}${s.dy >= 0 ? "u" : "o"}`);
+  }
+  assert.equal(quadranten.size, 4);
 });
 
 test("Verlorene Deckung setzt die Haltezeit zurück", () => {

@@ -50,9 +50,9 @@ export const UMLAUF = (2 * Math.PI) / SICHTWINKEL;
 const RATE_NICK = 0.31;
 const RATE_GIER = 0.29;
 const ROLLRATE = 0.62;
-// Am 30.08.2026 von 300 auf 180 zurück (Willi: zu gedämpft, direkter):
-// weiter kein hartes Anreißen wie vor der Kalibrierung, aber spürbar
-// unmittelbarerer Steuereinsatz.
+// Am 30.08.2026 von 300 auf 180 zurück (Willi: zu gedämpft, direkter);
+// das Zappeln beim spitzen Expo behebt seit dem 31.08. die endliche
+// Mittensteigung der Kennlinie in kurve.js, nicht die Anlaufzeit.
 const ANLAUF_MS = 180;    // Trägheit, bis eine Steuerrate voll anliegt
 const STABIL = 0.12;      // schwache Eigenstabilität je Sekunde
 const NICK_SICHT = 0.5;   // rad Blickneigung je Einheit Nickbewegung
@@ -96,9 +96,19 @@ export function zufallsZiel(rnd) {
   }
   return { x: 0.15, y: 0.3 }; // erfüllt den Mindestabstand von 0,3
 }
-// Die Funktion dient auch der Neusetzung nach einem Treffer: Der Mindest-
-// abstand zur Mitte liegt über dem Kreisradius, das Flugzeug landet also
-// immer außerhalb der Deckung und muss neu eingefangen werden.
+// zufallsZiel setzt nur noch die Startlage; nach einem Treffer springt der
+// Blick stattdessen um wuerfleSprung im Umkreis um das Flugzeug.
+
+// Sprung nach dem Treffer (Willis Festlegung vom 31.08.2026): zufällige
+// Richtung und Weite im Ring um die aktuelle Zielposition, nicht um die
+// Bildmitte, denn der Blick springt mit. Da Treffer immer in der Bildmitte
+// fallen, landet das Ziel trotzdem stets im Bild.
+export const SPRUNGWEITE = 0.45;
+export function wuerfleSprung(rnd = Math.random) {
+  const winkel = rnd() * 2 * Math.PI;
+  const weite = MINDESTABSTAND + rnd() * (SPRUNGWEITE - MINDESTABSTAND);
+  return { dx: Math.cos(winkel) * weite, dy: Math.sin(winkel) * weite };
+}
 
 export function inDeckung(z) {
   return abstand(z.ziel, z.kreis) <= KREIS_R;
@@ -191,10 +201,12 @@ export function takt(z, eingaben, dtMs, rnd = Math.random) {
       // Blicksprung statt Teleport (Willis Festlegung vom 29.08.2026): Nach
       // dem Treffer springt die eigene Blickrichtung, die Kulisse springt in
       // der Darstellung mit, und das Zielflugzeug steht dadurch an neuer
-      // Stelle im Bild, ohne selbst zu springen. Senkrecht deckt der
-      // Nickbereich den Sprung fast immer ab; ein Rest jenseits des
-      // Anschlags verschiebt das Ziel direkt (kaum wahrnehmbar).
-      const neu = zufallsZiel(rnd);
+      // Stelle im Bild, ohne selbst zu springen. Das Sprungziel liegt seit
+      // dem 31.08.2026 im Ring um das Flugzeug (wuerfleSprung), nicht mehr
+      // im Bildschirmkegel. Senkrecht deckt der Nickbereich den Sprung fast
+      // immer ab; ein Rest jenseits des Anschlags verschiebt das Ziel direkt.
+      const sprung = wuerfleSprung(rnd);
+      const neu = { x: z.ziel.x + sprung.dx, y: z.ziel.y + sprung.dy };
       z.kurs -= (neu.x - z.ziel.x) * SICHTWINKEL;
       z.nick = begrenze(z.nick + (neu.y - z.ziel.y) * NICK_SICHT, -MAXNICK, MAXNICK);
       z.ziel = neu;
@@ -231,14 +243,16 @@ export function ergebnisWerte(z) {
 // bevor der nächste Buchstabe angesagt wird. Die Fülltakte wiederholen nie
 // einen Buchstaben im Drückabstand, ungeplante Ziele entstehen nicht.
 // Die Ereignisse kommen zufällig verteilt, aber verlässlich wiederkehrend:
-// Lücke zwischen den Ereignissen 6 bis 20 Buchstaben, höchstens zwei
+// Lücke zwischen den Ereignissen 3 bis 10 Buchstaben, höchstens zwei
 // Fallen nacheinander (Willis Festlegung vom 25.08.2026 gegen
-// minutenlanges Zuhören ohne Ereignis). Fallen sind Beinahe-Doppelungen
-// ohne Versatz (K, K) oder mit zwei dazwischen (K, F, G, K); bei ihnen
-// darf nicht gedrückt werden.
+// minutenlanges Zuhören ohne Ereignis; Lücken und Fallenanteil am
+// 31.08.2026 auf Willis Wunsch verdichtet, es kamen ihm zu wenige echte
+// Doppelungen). Fallen sind Beinahe-Doppelungen ohne Versatz (K, K) oder
+// mit zwei dazwischen (K, F, G, K); bei ihnen darf nicht gedrückt werden.
 export const BUCHSTABEN_ABSTAND_MS = 2000;
-export const EREIGNIS_LUECKE_MIN = 6;
-export const EREIGNIS_LUECKE_MAX = 20;
+export const EREIGNIS_LUECKE_MIN = 3;
+export const EREIGNIS_LUECKE_MAX = 10;
+export const FALLENANTEIL = 0.35;
 // Wählbare Tempostufen für den Buchstabenabstand; 2000 ms entspricht dem
 // Original, schnellere Stufen erhöhen die Schwierigkeit. Das Tempo ist
 // zugleich das Antwortfenster: mit der nächsten Ansage ist es zu.
@@ -261,7 +275,7 @@ export function erzeugeBuchstabenreihe(dauerMin, rnd = Math.random, abstandMs = 
   let fallenNacheinander = 0;
   while (stelle + 4 <= laenge) {
     const b = FUELLER[Math.floor(rnd() * FUELLER.length)];
-    const falle = fallenNacheinander < 2 && rnd() < 0.5;
+    const falle = fallenNacheinander < 2 && rnd() < FALLENANTEIL;
     let breite;
     if (!falle) {
       plan[stelle] = b; plan[stelle + 2] = b; ziel[stelle + 2] = true;
