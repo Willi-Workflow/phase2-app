@@ -282,15 +282,16 @@ export function svgHorizont(wert) {
   };
   let leiter = "";
   for (const p of [-20, -15, -10, -5, 5, 10, 15, 20]) leiter += leitersprosse(p);
-  // Rollskala und ihr Nullpfeil sitzen auf der Kugel und drehen mit der Rolllage,
-  // der Ablesezeiger oben ist fest am Gehäuse: so steht die Anzeige bei Linkslage
-  // links vom Zeiger, wie am echten Gerät. Die Nickleiter ist auf ein inneres
-  // Sichtfenster begrenzt, damit sie bei starken Lagen nicht in die Rollskala
-  // und die Pfeile läuft.
-  let rollskala = `<polygon points="60,19 56,26.5 64,26.5" fill="#f4f2ea"/>`;
+  // Rollskala fest am Gehäuse (Willis Vorgabe vom 31.08.2026: die Striche am
+  // oberen Rand drehen nicht mit), nur der Rollzeiger dreht mit der Kugel und
+  // zeigt auf der festen Skala die Querlage an. Die Nickleiter ist auf ein
+  // inneres Sichtfenster begrenzt, damit sie bei starken Lagen nicht in die
+  // Rollskala und die Pfeile läuft.
+  let rollskala = "";
   for (const g of [-60, -45, -30, -20, -10, 10, 20, 30, 45, 60]) {
     rollskala += strich(g, g % 30 === 0 ? 41 : 43.5, 47.5, g % 30 === 0 ? 1.8 : 1.1, "#f4f2ea");
   }
+  const rollzeiger = `<polygon points="60,19 56,26.5 64,26.5" fill="#f4f2ea"/>`;
   const kugeldrehung = `rotate(${S(-roll)} 60 60)`;
   return svgRahmen(`${GEHAEUSE}
     <defs>
@@ -304,11 +305,12 @@ export function svgHorizont(wert) {
           <rect x="-45" y="60" width="210" height="165" fill="#7d5a33"/>
           <line x1="-45" y1="60" x2="165" y2="60" stroke="#f4f2ea" stroke-width="2.4"/>
         </g>
-        ${rollskala}
       </g>
       <g clip-path="url(#ins-hzleiter)">
         <g transform="${kugeldrehung}"><g transform="translate(0 ${S(versatz)})">${leiter}</g></g>
       </g>
+      ${rollskala}
+      <g transform="${kugeldrehung}">${rollzeiger}</g>
     </g>
     <polygon points="60,13.5 55.5,7 64.5,7" fill="#f4f2ea" stroke="#141516" stroke-width="0.7"/>
     <path d="M32 60 L50 60 L56 65 L60 60 L64 65 L70 60 L88 60" stroke="#141516" stroke-width="3.4" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
