@@ -33,14 +33,18 @@ export function istGleich(id, a, b) {
   return id === "horizont" ? a.roll === b.roll && a.nick === b.nick : a === b;
 }
 
-// Vier Antwortmöglichkeiten: der wahre Wert und drei nahe Ablenker aus dem
-// Werteraster, gemischt. Beim Kurs zählt der Abstand über die Nordgrenze hinweg.
+// Vier Antwortmöglichkeiten: der wahre Wert und drei Ablenker aus dem
+// Werteraster, gemischt. Beim Kurs zählt der Abstand über die Nordgrenze
+// hinweg. Seit dem 31.08.2026 halten die Ablenker einen Mindestabstand
+// (Willis Vorgabe, 105 neben 110 Grad war zu dicht): mindestens drei
+// Rasterschritte, dafür reicht der Kandidatenring bis neun Schritte.
+export const ABLENKER_MIN_SCHRITTE = 3;
 export function antwortmoeglichkeiten(id, wert, rnd = Math.random) {
   if (id === "horizont") return horizontMoeglichkeiten(wert, rnd);
   const raster = RASTER[id];
   const kandidaten = [];
-  for (let k = -6; k <= 6; k++) {
-    if (k === 0) continue;
+  for (let k = -9; k <= 9; k++) {
+    if (Math.abs(k) < ABLENKER_MIN_SCHRITTE) continue;
     let w = wert + k * raster.schritt;
     if (id === "kurs") w = ((w % 360) + 360) % 360;
     if (w < raster.min || w > raster.max) continue;
@@ -59,7 +63,9 @@ function horizontMoeglichkeiten(wert, rnd) {
       if (roll === wert.roll && nick === wert.nick) continue;
       const abstand = Math.abs(rolls.indexOf(roll) - rolls.indexOf(wert.roll))
         + Math.abs(nicks.indexOf(nick) - nicks.indexOf(wert.nick));
-      if (abstand <= 2) kandidaten.push({ roll, nick });
+      // Mindestens zwei Rasterschritte kombinierter Lageabstand, höchstens
+      // vier: deutlich unterscheidbar, aber noch verwechselbar genug.
+      if (abstand >= 2 && abstand <= 4) kandidaten.push({ roll, nick });
     }
   }
   const falsche = mische(kandidaten, rnd).slice(0, 3);

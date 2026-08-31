@@ -68,3 +68,34 @@ test("mische: gleiche Elemente, andere Ordnung möglich, Quelle unberührt", () 
   assert.deepEqual([...gemischt].sort(), [1, 2, 3, 4, 5]);
   assert.deepEqual(quelle, [1, 2, 3, 4, 5]);
 });
+
+test("antwortmoeglichkeiten: Ablenker halten Mindestabstand von drei Rasterschritten", () => {
+  // Willis Vorgabe vom 31.08.2026: 105 neben 110 Grad war zu dicht, die
+  // Auswahlen sollen eindeutig unterscheidbar sein.
+  const schritte = { fahrt: 10, hoehe: 100, vario: 100, kurs: 5 };
+  const rnd = saatZufall(7);
+  for (const [id, wert] of [["fahrt", 230], ["hoehe", 5000], ["vario", 0], ["kurs", 110]]) {
+    for (let i = 0; i < 50; i++) {
+      const auswahl = antwortmoeglichkeiten(id, wert, rnd);
+      for (const w of auswahl) {
+        if (w === wert) continue;
+        let d = Math.abs(w - wert);
+        if (id === "kurs") d = Math.min(d, 360 - d);
+        assert.ok(d >= 3 * schritte[id], `${id}: ${w} zu nah an ${wert}`);
+      }
+    }
+  }
+});
+
+test("antwortmoeglichkeiten: auch Horizontlagen liegen deutlich auseinander", () => {
+  const rnd = saatZufall(13);
+  const wert = { roll: 0, nick: 0 };
+  for (let i = 0; i < 50; i++) {
+    const auswahl = antwortmoeglichkeiten("horizont", wert, rnd);
+    for (const a of auswahl) {
+      if (a.roll === wert.roll && a.nick === wert.nick) continue;
+      const abstand = Math.abs(a.roll - wert.roll) / 15 + Math.abs(a.nick - wert.nick) / 10;
+      assert.ok(abstand >= 2, `Lage ${a.roll}/${a.nick} zu nah`);
+    }
+  }
+});
