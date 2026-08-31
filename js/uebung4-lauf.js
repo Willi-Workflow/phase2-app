@@ -1,7 +1,7 @@
 // Ablauf Mission 4 (Instrumente merken) im Vollbild: Merkphase ohne Countdown,
 // Fragen mit Ablaufbalken und kurzer Rückmeldung, Runden bis zum Ende der
 // Testdauer, danach die Ergebnistafel. Oben läuft dezent die Test-Restzeit.
-import { INSTRUMENTE, zufallswerte, formatiere, tafelHtml, svgLage } from "./instrumente.js";
+import { INSTRUMENTE, zufallswerte, formatiere, tafelHtml, svgLage, svgInstrument } from "./instrumente.js";
 import {
   ANZEIGEZEITEN, FRAGENANZAHLEN, TESTDAUERN, ANTWORTZEIT,
   schwierigkeitsfaktor, kennzahlAus, waehleInstrumente, antwortmoeglichkeiten, istGleich,
@@ -12,11 +12,16 @@ import {
 const RUECKMELDEDAUER_RICHTIG = 700;
 const RUECKMELDEDAUER_FALSCH = 1800;
 
+// Zahlen erscheinen in der Oberfläche mit Komma (1,5 statt 1.5).
+const zahlText = (w) => String(w).replace(".", ",");
+
 export function erzeugeUebung4({ speicher }) {
-  let einstellung = { zeit: 5, fragen: 3, dauer: 5 };
+  let einstellung = { zeit: 5, fragen: 3, dauer: 5, uebungszeit: 2 };
+  let uebungsStart = false; // der Übungsknopf startet den nächsten Lauf als Blitzübung
   const hinweis = "Die fünf Instrumente erscheinen mit zufälligen Werten für die eingestellte Zeit. "
     + "Danach fragt der Test einzelne Instrumente ab: vier Antworten, zehn Sekunden Zeit. "
-    + "Runden folgen am Stück, bis die Testdauer um ist.";
+    + "Runden folgen am Stück, bis die Testdauer um ist. Die Blitzübung zeigt ein einzelnes "
+    + "Instrument für ein bis drei Sekunden und fragt nur dieses ab; sie zählt nie zur Statistik.";
 
   async function ladeEinstellung() {
     const gespeichert = await speicher.ladeEinstellung("uebung4-einstellung", {});
@@ -27,21 +32,37 @@ export function erzeugeUebung4({ speicher }) {
     const zeile = (titel, name, werte, aktiv, einheit) => `
       <div class="wahlzeile"><span class="wahltitel">${titel}</span>
         <select class="wahlliste" data-name="${name}">${werte.map((w) =>
-          `<option value="${w}" ${w === aktiv ? "selected" : ""}>${w}${einheit}</option>`).join("")}</select></div>`;
+          `<option value="${w}" ${w === aktiv ? "selected" : ""}>${zahlText(w)}${einheit}</option>`).join("")}</select></div>`;
     feld.innerHTML =
       zeile("ANZEIGEZEIT", "zeit", ANZEIGEZEITEN, einstellung.zeit, " s")
       + zeile("FRAGEN JE RUNDE", "fragen", FRAGENANZAHLEN, einstellung.fragen, "")
-      + zeile("TESTDAUER", "dauer", TESTDAUERN, einstellung.dauer, " min");
+      + zeile("TESTDAUER", "dauer", TESTDAUERN, einstellung.dauer, " min")
+      + zeile("BLITZÜBUNG", "uebungszeit", [1, 1.5, 2, 3], einstellung.uebungszeit, " s")
+      + `<div class="wahlzeile"><span class="wahltitel">ÜBUNG</span>
+        <button type="button" class="wahlknopf" data-element="ueben">NUR ÜBEN</button></div>`;
     feld.onchange = (e) => {
       const liste = e.target.closest(".wahlliste");
       if (!liste) return;
       einstellung[liste.dataset.name] = Number(liste.value);
       speicher.setzeEinstellung("uebung4-einstellung", einstellung);
     };
+    feld.onclick = (e) => {
+      const knopf = e.target.closest(".wahlknopf");
+      if (!knopf || knopf.dataset.element !== "ueben") return;
+      // Blitzübung über den normalen Startweg, damit Tür, Vollbild und
+      // Abbruch wie bei jedem Lauf funktionieren (Muster aus Mission 1).
+      knopf.blur();
+      uebungsStart = true;
+      document.getElementById("start")?.click();
+    };
   }
 
   function starte({ tuer, beiEnde, registriereAbbruch }) {
-    const { zeit, fragen, dauer } = einstellung;
+    const { zeit, fragen, dauer, uebungszeit } = einstellung;
+    // Blitzübung (Willis Auftrag vom 31.08.2026): ein einzelnes Instrument
+    // für 1 bis 3 Sekunden, danach genau eine Auswahlfrage, endlos bis Esc.
+    const uebung = uebungsStart;
+    uebungsStart = false;
     // Der Aufrufer hat die Hangartür bereits geschlossen: der Testbildschirm
     // baut sich verdeckt auf, die Tür öffnet in die laufende Mission.
     const schleier = document.createElement("div");
@@ -96,10 +117,23 @@ export function erzeugeUebung4({ speicher }) {
       spaeter(() => frageFolge(werte, waehleInstrumente(fragen), 0), zeit * 1000);
     };
 
+    // Blitzrunde: ein zufälliges Instrument groß vor verwischter Bühne,
+    // danach die eine Frage dazu; die Folge ruft wieder naechsteRunde.
+    const uebungsrunde = () => {
+      if (beendet || ergebnisOffen) return;
+      const werte = zufallswerte();
+      const [id] = waehleInstrumente(1);
+      const wert = id === "horizont" ? werte.horizont : werte[id];
+      buehne.classList.add("verwischt");
+      mitte.innerHTML = `<div class="blitzanzeige">${svgInstrument(id, wert)}</div>`;
+      spaeter(() => frageFolge(werte, [id], 0), uebungszeit * 1000);
+    };
+    const naechsteRunde = () => (uebung ? uebungsrunde() : runde());
+
     const frageFolge = (werte, ids, index) => {
       if (beendet || ergebnisOffen) return;
       if (index >= ids.length) {
-        if (performance.now() < testende) runde();
+        if (performance.now() < testende) naechsteRunde();
         else zeigeErgebnis(true);
         return;
       }
@@ -175,18 +209,22 @@ export function erzeugeUebung4({ speicher }) {
       const faktor = schwierigkeitsfaktor(zeit, fragen);
       const quote = gestellt ? Math.round((richtig / gestellt) * 100) : 0;
       const wert = kennzahlAus(richtig, gestellt, faktor);
-      const abbruchzeile = gewertet ? "" : `<span class="abgebrochen">ABGEBROCHEN · DER LAUF ZÄHLT NICHT ZUR STATISTIK</span>`;
+      const abbruchzeile = gewertet || uebung ? "" : `<span class="abgebrochen">ABGEBROCHEN · DER LAUF ZÄHLT NICHT ZUR STATISTIK</span>`;
+      const titel = uebung ? "ÜBUNG BEENDET" : (gewertet ? "TEST BEENDET" : "TEST ABGEBROCHEN");
+      const fuss = uebung
+        ? `Blitzübung · ${zahlText(uebungszeit)} s Anzeige · zählt nicht zur Statistik`
+        : `Einstellung: ${zeit} s Anzeige · ${fragen} ${fragen === 1 ? "Frage" : "Fragen"} je Runde · ${dauer} min · Faktor ${faktor.toFixed(2)}`;
       const tafel = document.createElement("div");
       tafel.className = "ergebnisschicht";
       tafel.innerHTML = `
-        <div class="frage">${gewertet ? "TEST BEENDET" : "TEST ABGEBROCHEN"}</div>
-        <div class="ergebnisgross">${wert} %</div>
+        <div class="frage">${titel}</div>
+        <div class="ergebnisgross">${uebung ? quote : wert} %</div>
         <div class="ergebniszeilen">
           <span class="trefferzeile">${richtig} von ${gestellt} Aufgaben richtig (${quote} %)</span>
         </div>
         <button class="punkt" id="u4-fertig">ZURÜCK ZUR MISSION</button>
         <div class="ergebnisfuss">
-          <span>Einstellung: ${zeit} s Anzeige · ${fragen} ${fragen === 1 ? "Frage" : "Fragen"} je Runde · ${dauer} min · Faktor ${faktor.toFixed(2)}</span>
+          <span>${fuss}</span>
           ${abbruchzeile}
         </div>`;
       document.body.append(tafel);
@@ -201,7 +239,7 @@ export function erzeugeUebung4({ speicher }) {
         tuer.verwische(false);
         raeumeAuf();
         if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
-        await beiEnde(gewertet ? {
+        await beiEnde(gewertet && !uebung ? {
           kennzahl: wert,
           daten: {
             art: "instrumente-merken",
@@ -224,6 +262,11 @@ export function erzeugeUebung4({ speicher }) {
     (async () => {
       await tuer.oeffne();
       if (beendet || ergebnisOffen) return;
+      if (uebung) {
+        restfeld.textContent = "BLITZÜBUNG · ESC BEENDET";
+        uebungsrunde();
+        return;
+      }
       testende = performance.now() + dauer * 60_000;
       restuhr = setInterval(() => {
         const rest = Math.max(0, testende - performance.now());
