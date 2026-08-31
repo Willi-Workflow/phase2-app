@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   TESTDAUERN, HALTEZEIT_MS, KREIS_R, BILDVERHAELTNIS, MINDESTABSTAND, KEGEL, UMLAUF, MAXROLL, MAXNICK, TEMPOS, SICHTWINKEL, zielHinweis, PFEILRAND,
-  wuerfleSprung, SPRUNGWEITE,
+  wuerfleSprung, SPRUNGWEITE, trefferErfuellung, letterErfuellung, erfuellung1, TREFFER_BESTWERT,
   zufallsZiel, erzeugeLaufzustand, takt, inDeckung,
   deckungsquote, ergebnisWerte,
   BUCHSTABEN_ABSTAND_MS, EREIGNIS_LUECKE_MIN, EREIGNIS_LUECKE_MAX, erzeugeBuchstabenreihe, erzeugeSlaZaehler,
@@ -339,4 +339,23 @@ test("Antwortfenster endet mit der nächsten Ansage, auch bei schnellem Tempo", 
   const z2 = erzeugeSlaZaehler(reihe, 1000);
   z2.sprich(2, 4000);
   assert.equal(z2.druck(4900), true);  // knapp davor: erkannt
+});
+
+test("Erfüllung Mission 1: Abschüsse je Minute am Bestwert gemessen, Buchstaben fließen ein", () => {
+  // Willis Festlegung vom 31.08.2026: Es zählt, wie oft das Flugzeug
+  // abgeschossen wurde; 5 je Minute sind die vollen 100. Mit Letter-Task
+  // 70/30, jeder Fehlalarm kostet 15 Punkte.
+  assert.equal(TREFFER_BESTWERT, 5);
+  assert.equal(trefferErfuellung(15, 3), 100);
+  assert.equal(trefferErfuellung(99, 3), 100);                // Deckel
+  assert.ok(Math.abs(trefferErfuellung(6, 3) - 40) < 1e-9);
+  assert.equal(trefferErfuellung(0, 3), 0);
+  assert.equal(trefferErfuellung(5, 0), 0);                   // ohne Dauer keine Wertung
+  assert.equal(letterErfuellung({ erkannt: 4, verpasst: 0, fehlalarm: 0 }), 100);
+  assert.equal(letterErfuellung({ erkannt: 3, verpasst: 1, fehlalarm: 0 }), 75);
+  assert.equal(letterErfuellung({ erkannt: 4, verpasst: 0, fehlalarm: 2 }), 70);
+  assert.equal(letterErfuellung({ erkannt: 0, verpasst: 0, fehlalarm: 8 }), 0); // nie unter 0
+  // Ohne Letter-Task zählen nur die Abschüsse, mit ihr die 70/30-Mischung.
+  assert.equal(erfuellung1(15, 3, null), 100);
+  assert.ok(Math.abs(erfuellung1(15, 3, { erkannt: 1, verpasst: 1, fehlalarm: 0 }) - (0.7 * 100 + 0.3 * 50)) < 1e-9);
 });

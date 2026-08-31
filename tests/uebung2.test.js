@@ -4,7 +4,7 @@ import {
   TESTDAUERN, ELEMENTE, HALTEZEIT_MS, NADEL_MIN, NADEL_MAX,
   ZIELKREIS_R, STRICH_TOLERANZ, NADEL_TOLERANZ, SOLL_KT, RAHMEN_VERHAELTNIS, FADEN_RAND,
   erzeugeLaufzustand, takt, zufallsFadenkreuz, zufallsStrich,
-  inDeckung, punkte, pruefeAuswahl, zufallsNadel, deckungsquote,
+  inDeckung, punkte, pruefeAuswahl, zufallsNadel, deckungsquote, erfuellung2,
 } from "../js/uebung2.js";
 
 function saatZufall(saat) {
@@ -210,4 +210,11 @@ test("takt: sammelt Deckungszeit und Testzeit", () => {
   takt(z, RUHE, 100, rnd);
   assert.equal(z.testMs, 400);
   assert.equal(z.deckungMs.ruder, 300);
+});
+
+test("Erfüllung Mission 2: Deckung am Bestwert 65 gemessen", () => {
+  assert.equal(erfuellung2(65), 100);
+  assert.equal(erfuellung2(100), 100);
+  assert.ok(Math.abs(erfuellung2(32.5) - 50) < 1e-9);
+  assert.equal(erfuellung2(0), 0);
 });

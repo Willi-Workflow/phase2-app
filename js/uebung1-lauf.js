@@ -4,6 +4,7 @@
 import {
   TESTDAUERN, TEMPOS, erzeugeLaufzustand, takt, ergebnisWerte, schwierigkeitsfaktor1,
   erzeugeBuchstabenreihe, erzeugeSlaZaehler, zielHinweis,
+  erfuellung1, trefferErfuellung, letterErfuellung, TREFFER_BESTWERT,
 } from "./uebung1.js";
 import { mitEmpfindlichkeit } from "./kurve.js";
 import * as THREE from "./fremd/three.module.js";
@@ -605,13 +606,16 @@ export function erzeugeUebung1({ speicher, controls }) {
       const werte = ergebnisWerte(zustand);
       const slaWerte = zaehler?.auswertung();
       const faktor = schwierigkeitsfaktor1(sla, tempo);
-      const wert = Math.round(werte.deckungsquote * faktor);
+      // Erfüllungsanteil aus den Abschüssen (Willis Festlegung vom
+      // 31.08.2026): je Minute am Bestwert gemessen, Buchstaben fließen ein.
+      const erfuellung = erfuellung1(werte.treffer, dauer, slaWerte ?? null);
+      const wert = Math.round(erfuellung * faktor);
       const zeilen = [
+        `<span>Abschüsse: ${werte.treffer} · Erfüllung ${Math.round(trefferErfuellung(werte.treffer, dauer))} % (Bestwert ${TREFFER_BESTWERT} je Minute)</span>`,
         `<span>Deckungsquote: ${werte.deckungsquote} %</span>`,
-        `<span>Treffer: ${werte.treffer}</span>`,
         `<span>Zeit bis zum ersten Treffer: ${werte.ersterTrefferS == null ? "–" : `${werte.ersterTrefferS} s`}</span>`,
         `<span>Mittlere Zeit je Treffer: ${werte.mittelS == null ? "–" : `${werte.mittelS} s`}</span>`,
-        slaWerte ? `<span>Letter-Task: ${slaWerte.erkannt} erkannt · ${slaWerte.verpasst} verpasst · ${slaWerte.fehlalarm} Fehlalarm</span>` : "",
+        slaWerte ? `<span>Letter-Task: ${slaWerte.erkannt} erkannt · ${slaWerte.verpasst} verpasst · ${slaWerte.fehlalarm} Fehlalarm · Erfüllung ${Math.round(letterErfuellung(slaWerte))} %</span>` : "",
       ].join("");
       const abbruchzeile = gewertet ? "" : `<span class="abgebrochen">ABGEBROCHEN · DER LAUF ZÄHLT NICHT ZUR STATISTIK</span>`;
       const tafel = document.createElement("div");
@@ -644,6 +648,7 @@ export function erzeugeUebung1({ speicher, controls }) {
             dauerMin: dauer,
             sla,
             faktor,
+            erfuellung: Math.round(erfuellung),
             wertung: wert,
             treffer: werte.treffer,
             deckungsquote: werte.deckungsquote,

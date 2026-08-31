@@ -10,7 +10,7 @@
 import {
   TESTDAUERN, STUFEN, FLUGZEIT_S, EINRICHTZEIT_S, RECHENTAKT_S,
   erzeugeVorgaben, erzeugeFlugzustand, takt, sollwert, winkelabstand,
-  momentanfehler, durchgangspunkte, kennzahl3, schwierigkeitsfaktor3,
+  momentanfehler, durchgangspunkte, kennzahl3, schwierigkeitsfaktor3, erfuellung3,
   erzeugeRechenaufgabe, antworten5, pedalwahl, RECHENSTUFEN_MAX,
 } from "./uebung3.js";
 import { mitEmpfindlichkeit } from "./kurve.js";
@@ -557,7 +557,12 @@ export function erzeugeUebung3({ speicher, controls }) {
 
       const genauigkeit = kennzahl3(punkteListe);
       const faktor = schwierigkeitsfaktor3(stufe);
-      const wert = Math.round(genauigkeit * faktor);
+      // Erfüllungsanteil (Willis Festlegung vom 31.08.2026): In Stufe 4
+      // fließt das Kopfrechnen mit 20 Prozent ein, verpasste zählen als falsch.
+      const rechnen = stufe4
+        ? { richtig: rechnenRichtig, gestellt: rechnenRichtig + rechnenFalsch + rechnenVerpasst }
+        : null;
+      const wert = Math.round(erfuellung3(genauigkeit, rechnen) * faktor);
       const mittel = (id, einheit) => abwZaehler[id]
         ? `${(abwSumme[id] / abwZaehler[id]).toFixed(1)} ${einheit}`
         : "–";

@@ -4,7 +4,7 @@ import {
   TESTDAUERN, STUFEN, FLUGZEIT_S, EINRICHTZEIT_S, RECHENTAKT_S,
   erzeugeVorgaben, erzeugeFlugzustand, takt, sollwert, winkelabstand,
   momentanfehler, durchgangspunkte, kennzahl3,
-  erzeugeRechenaufgabe, antworten5, pedalwahl, RECHENSTUFEN_MAX,
+  erzeugeRechenaufgabe, antworten5, pedalwahl, RECHENSTUFEN_MAX, erfuellung3,
 } from "../js/uebung3.js";
 import { svgUhr, svgSaeule, uhrwinkel, saeulenanteil } from "../js/uebung3-bild.js";
 
@@ -374,4 +374,11 @@ test("svgSaeule: Punkt steht auf der gerechneten Höhe, Aufschrift Fehlersäule"
   assert.ok(svgSaeule(120).includes('cy="28.00"'));
   assert.ok(svgSaeule(50).includes("FEHLERSÄULE"));
   assert.ok(svgSaeule(50).includes("<svg"));
+});
+
+test("Erfüllung Mission 3: Kopfrechnen fließt in Stufe 4 mit 20 Prozent ein", () => {
+  assert.equal(erfuellung3(90, null), 90);                    // ohne Rechenteil
+  assert.equal(erfuellung3(90, { richtig: 0, gestellt: 0 }), 90);
+  assert.ok(Math.abs(erfuellung3(90, { richtig: 5, gestellt: 10 }) - (0.8 * 90 + 0.2 * 50)) < 1e-9);
+  assert.ok(Math.abs(erfuellung3(100, { richtig: 10, gestellt: 10 }) - 100) < 1e-9);
 });

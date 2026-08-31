@@ -218,6 +218,33 @@ export function takt(z, eingaben, dtMs, rnd = Math.random) {
   return ereignisse;
 }
 
+// Erfüllungsanteil (Willis Festlegung vom 31.08.2026, noch am selben Tag
+// von der Deckungsquote auf Abschüsse umgestellt): Es zählt, wie oft das
+// Flugzeug abgeschossen (neu positioniert) wurde, gemessen je Minute am
+// erreichbaren Bestwert. Mit Letter-Task fließt die Buchstabenerfüllung mit
+// 30 Prozent ein, jeder Fehlalarm kostet 15 Punkte. Der Schwierigkeitsfaktor
+// kommt wie bisher obendrauf; die Deckungsquote bleibt reine Anzeige.
+export const TREFFER_BESTWERT = 5;    // Abschüsse je Minute für volle Erfüllung
+export const LETTER_GEWICHT = 0.3;
+export const FEHLALARM_ABZUG = 15;
+
+export function trefferErfuellung(treffer, dauerMin) {
+  if (!dauerMin) return 0;
+  return Math.min(100, (treffer / (dauerMin * TREFFER_BESTWERT)) * 100);
+}
+
+export function letterErfuellung({ erkannt, verpasst, fehlalarm }) {
+  const geplant = erkannt + verpasst;
+  const quote = geplant === 0 ? 100 : (erkannt / geplant) * 100;
+  return Math.max(0, quote - fehlalarm * FEHLALARM_ABZUG);
+}
+
+export function erfuellung1(treffer, dauerMin, slaWerte) {
+  const abschuss = trefferErfuellung(treffer, dauerMin);
+  if (!slaWerte) return abschuss;
+  return (1 - LETTER_GEWICHT) * abschuss + LETTER_GEWICHT * letterErfuellung(slaWerte);
+}
+
 // Führende Kennzahl: Anteil der Laufzeit, in der der Kreis auf dem Flugzeug
 // lag, in ganzen Prozent. Die Zeiten daneben folgen den Messgrößen des
 // Originals (Zeit bis zum ersten Treffer, mittlere Zeit je Treffer).

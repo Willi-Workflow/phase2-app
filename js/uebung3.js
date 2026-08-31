@@ -225,3 +225,14 @@ export function pedalwahl(ruder) {
   const zone = Math.floor(((r + 1) / 2) * PEDALZONEN);
   return begrenze(zone, 0, PEDALZONEN - 1);
 }
+
+// Erfüllungsanteil (Willis Festlegung vom 31.08.2026): In Stufe 4 fließt
+// das Kopfrechnen mit 20 Prozent in die Kennzahl ein (verpasste Aufgaben
+// zählen über gestellt als falsch); darunter bleibt es die Genauigkeit.
+export const RECHNEN_GEWICHT = 0.2;
+
+export function erfuellung3(genauigkeit, rechnen) {
+  if (!rechnen || rechnen.gestellt === 0) return genauigkeit;
+  const quote = (rechnen.richtig / rechnen.gestellt) * 100;
+  return (1 - RECHNEN_GEWICHT) * genauigkeit + RECHNEN_GEWICHT * quote;
+}
