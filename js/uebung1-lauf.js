@@ -5,6 +5,7 @@ import {
   TESTDAUERN, TEMPOS, erzeugeLaufzustand, takt, ergebnisWerte, schwierigkeitsfaktor1,
   erzeugeBuchstabenreihe, erzeugeSlaZaehler, zielHinweis,
 } from "./uebung1.js";
+import { mitEmpfindlichkeit } from "./kurve.js";
 import * as THREE from "./fremd/three.module.js";
 import { GLTFLoader } from "./fremd/GLTFLoader.js";
 
@@ -63,7 +64,7 @@ export function erzeugeUebung1({ speicher, controls }) {
     + "läuft die Letter-Task: Kommt ein Buchstabe mit genau einem Buchstaben Versatz "
     + "doppelt (etwa K, F, K), vor der nächsten Ansage die Schusstaste drücken.";
 
-  let einstellung = { dauer: 5, sla: false, tempo: 2000, rueckmeldung: true };
+  let einstellung = { dauer: 5, sla: false, tempo: 2000, rueckmeldung: true, empfindlichkeit: 1 };
   let uebungsStart = false; // der Übungsknopf startet den nächsten Lauf als reine Buchstabenübung
 
   async function ladeEinstellung() {
@@ -76,6 +77,9 @@ export function erzeugeUebung1({ speicher, controls }) {
       <div class="wahlzeile"><span class="wahltitel">TESTDAUER</span>
         <select class="wahlliste" data-name="dauer">${TESTDAUERN.map((w) =>
           `<option value="${w}" ${w === einstellung.dauer ? "selected" : ""}>${w} min</option>`).join("")}</select></div>
+      <div class="wahlzeile"><span class="wahltitel">EMPFINDLICHKEIT</span>
+        <select class="wahlliste" data-name="empfindlichkeit">${[0.25, 0.5, 0.75, 1, 1.25, 1.5].map((w) =>
+          `<option value="${w}" ${w === einstellung.empfindlichkeit ? "selected" : ""}>${Math.round(w * 100)} %</option>`).join("")}</select></div>
       <div class="wahlzeile"><span class="wahltitel">BUCHSTABEN</span>
         <button type="button" class="wahlknopf klapppfeil" data-element="klappe" aria-expanded="false"
           aria-label="Buchstabeneinstellungen ausklappen">▾</button></div>
@@ -558,10 +562,12 @@ export function erzeugeUebung1({ speicher, controls }) {
       if (beendet || ergebnisOffen || !laeuft) return;
       const dtMs = Math.min(50, jetzt - vorher || 16);
       vorher = jetzt;
+      // Missionsfaktor auf die Ratenachsen (Willis Auftrag vom 31.08.2026):
+      // skaliert das Steuergefühl nur für diese Mission, gedeckelt bei 1.
       const eingaben = {
-        stickX: controls.wert("stickX"),
-        stickY: controls.wert("stickY"),
-        ruder: controls.wert("ruder"),
+        stickX: mitEmpfindlichkeit(controls.wert("stickX"), einstellung.empfindlichkeit),
+        stickY: mitEmpfindlichkeit(controls.wert("stickY"), einstellung.empfindlichkeit),
+        ruder: mitEmpfindlichkeit(controls.wert("ruder"), einstellung.empfindlichkeit),
       };
       const ereignisse = takt(zustand, eingaben, dtMs);
       for (const e of ereignisse) {

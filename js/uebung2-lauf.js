@@ -4,6 +4,7 @@
 import {
   TESTDAUERN, ELEMENTE, erzeugeLaufzustand, takt, punkte, pruefeAuswahl, deckungsquote, schwierigkeitsfaktor2,
 } from "./uebung2.js";
+import { mitEmpfindlichkeit } from "./kurve.js";
 import { xImBild, yImBild, TACHO, gradFuerKnoten, buehneSvg } from "./uebung2-bild.js";
 
 const NAMEN = { stick: "STICK", ruder: "RUDER", schub: "SCHUB" };
@@ -14,7 +15,7 @@ export function erzeugeUebung2({ speicher, controls }) {
     + "Mittellinie und die Nadel mit dem Schub auf 95 Knoten. Eine Sekunde Deckung gibt "
     + "einen Treffer. Wähle unten, welche Controls geprüft werden.";
 
-  let einstellung = { dauer: 5, stick: true, ruder: true, schub: true };
+  let einstellung = { dauer: 5, stick: true, ruder: true, schub: true, empfindlichkeit: 1 };
 
   async function ladeEinstellung() {
     const gespeichert = await speicher.ladeEinstellung("uebung2-einstellung", {});
@@ -33,6 +34,9 @@ export function erzeugeUebung2({ speicher, controls }) {
       <div class="wahlzeile"><span class="wahltitel">TESTDAUER</span>
         <select class="wahlliste" data-name="dauer">${TESTDAUERN.map((w) =>
           `<option value="${w}" ${w === einstellung.dauer ? "selected" : ""}>${w} min</option>`).join("")}</select></div>
+      <div class="wahlzeile"><span class="wahltitel">EMPFINDLICHKEIT</span>
+        <select class="wahlliste" data-name="empfindlichkeit">${[0.25, 0.5, 0.75, 1, 1.25, 1.5].map((w) =>
+          `<option value="${w}" ${w === einstellung.empfindlichkeit ? "selected" : ""}>${Math.round(w * 100)} %</option>`).join("")}</select></div>
       <p class="wahlhinweis" id="u2-wahlhinweis" hidden>Mindestens ein Steuerelement wählen.</p>`;
 
     const zeigeSperre = () => {
@@ -121,9 +125,11 @@ export function erzeugeUebung2({ speicher, controls }) {
       const dtMs = Math.min(50, jetzt - vorher || 16);
       vorher = jetzt;
       const eingaben = {
-        stickX: controls.wert("stickX"),
-        stickY: controls.wert("stickY"),
-        ruder: controls.wert("ruder"),
+        // Missionsfaktor nur auf die Ratenachsen; der Schub ist eine
+        // Stellungsachse und bleibt unskaliert (sonst fehlt Vollgas).
+        stickX: mitEmpfindlichkeit(controls.wert("stickX"), einstellung.empfindlichkeit),
+        stickY: mitEmpfindlichkeit(controls.wert("stickY"), einstellung.empfindlichkeit),
+        ruder: mitEmpfindlichkeit(controls.wert("ruder"), einstellung.empfindlichkeit),
         schub: controls.wert("schub"),
       };
       const ereignisse = takt(zustand, eingaben, dtMs);

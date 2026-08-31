@@ -13,6 +13,7 @@ import {
   momentanfehler, durchgangspunkte, kennzahl3, schwierigkeitsfaktor3,
   erzeugeRechenaufgabe, antworten5, pedalwahl, RECHENSTUFEN_MAX,
 } from "./uebung3.js";
+import { mitEmpfindlichkeit } from "./kurve.js";
 import { svgUhr, svgSaeule } from "./uebung3-bild.js";
 import { svgKurs, svgFahrt, svgHoehe } from "./instrumente.js";
 
@@ -81,7 +82,7 @@ function erzeugeAufgabenSprecher() {
 }
 
 export function erzeugeUebung3({ speicher, controls }) {
-  let einstellung = { stufe: 1, testdauer: 5, fehlersaeule: true };
+  let einstellung = { stufe: 1, testdauer: 5, fehlersaeule: true, empfindlichkeit: 1 };
   let uebungsStart = false; // der Übungsknopf startet den nächsten Lauf als reine Rechenübung
   const hinweis = "Nachbau des Instrumententests der Eignungsfeststellung (ICT): Führe Kurs, Höhe "
     + "und Fahrt in 60 Sekunden gleichmäßig vom Start- zum Zielwert, wie es das Schild über jedem "
@@ -103,6 +104,9 @@ export function erzeugeUebung3({ speicher, controls }) {
       <div class="wahlzeile"><span class="wahltitel">TESTDAUER</span>
         <select class="wahlliste" data-name="testdauer">${TESTDAUERN.map((w) =>
           `<option value="${w}" ${w === einstellung.testdauer ? "selected" : ""}>${w} min</option>`).join("")}</select></div>
+      <div class="wahlzeile"><span class="wahltitel">EMPFINDLICHKEIT</span>
+        <select class="wahlliste" data-name="empfindlichkeit">${[0.25, 0.5, 0.75, 1, 1.25, 1.5].map((w) =>
+          `<option value="${w}" ${w === einstellung.empfindlichkeit ? "selected" : ""}>${Math.round(w * 100)} %</option>`).join("")}</select></div>
       <div class="wahlzeile"><span class="wahltitel">FEHLERSÄULE</span>
         <button type="button" class="wahlknopf ${einstellung.fehlersaeule ? "an" : ""}" data-element="fehlersaeule"
           aria-pressed="${einstellung.fehlersaeule}">${einstellung.fehlersaeule ? "EIN" : "AUS"}</button></div>
@@ -482,8 +486,10 @@ export function erzeugeUebung3({ speicher, controls }) {
       vorher = jetzt;
       const tS = Math.min((jetzt - durchgangStart) / 1000, FLUGZEIT_S);
       const achsen = {
-        stickX: controls.wert("stickX"),
-        stickY: controls.wert("stickY"),
+        // Missionsfaktor nur auf die Stickachsen; Schub ist Stellungsachse,
+        // die Pedale wählen Zonen, beide bleiben unskaliert.
+        stickX: mitEmpfindlichkeit(controls.wert("stickX"), einstellung.empfindlichkeit),
+        stickY: mitEmpfindlichkeit(controls.wert("stickY"), einstellung.empfindlichkeit),
         schub: controls.wert("schub"),
       };
       takt(zustand, achsen, dtMs);
