@@ -263,7 +263,7 @@ export function erzeugeControls(speicher) {
         <h3 class="abschnitt">STEUERGEFÜHL</h3>
         <div class="reglerzeile"><span class="reglertitel">Totzone</span><span class="skala">0</span><input type="range" id="totzone" min="0" max="0.2" step="0.01"><span class="skala">0,2</span><span class="reglerwert" id="totzone-wert"></span></div>
         <div class="reglerzeile"><span class="reglertitel">Expo</span><span class="skala">0</span><input type="range" id="expo" min="0" max="1" step="0.05"><span class="skala">1</span><span class="reglerwert" id="expo-wert"></span></div>
-        <div class="reglerzeile"><span class="reglertitel">Empfindlichkeit</span><span class="skala">0,5</span><input type="range" id="empfindlichkeit" min="0.5" max="3" step="0.05"><span class="skala">3</span><span class="reglerwert" id="empfindlichkeit-wert"></span></div>
+        <div class="reglerzeile"><span class="reglertitel">Empfindlichkeit</span><span class="skala">0,5</span><input type="range" id="empfindlichkeit" min="0.5" max="5" step="0.05"><span class="skala">5</span><span class="reglerwert" id="empfindlichkeit-wert"></span></div>
         <label class="hakenzeile"><input type="checkbox" id="empf-je-geraet"> Empfindlichkeit je Gerät</label>
         <p class="reglerhinweis">Mit Haken bekommt jedes verbundene Gerät in der Geräteliste einen eigenen Regler, der allgemeine gilt dann nicht.</p>
         <button class="punkt" data-tat="schliessen">Fertig</button>
@@ -369,7 +369,7 @@ export function erzeugeControls(speicher) {
                 <div class="geraetename">${sicher(g.name)}</div>
                 <div class="geraeteinfo">${g.zustand === "fehlt" ? "nicht verbunden" : sicher(g.umfang)}${g.rollen.length ? ` · ${g.rollen.join(", ")}` : ""}</div>
                 <div class="geraeteachsen" data-kennung="${sicher(g.kennung)}"></div>
-                ${g.zustand === "fehlt" ? "" : `<div class="reglerzeile geraeteempf"><span class="reglertitel">Empfindlichkeit</span><span class="skala">0,5</span><input type="range" class="geraete-empf" data-kennung="${sicher(g.kennung)}" min="0.5" max="3" step="0.05"><span class="skala">3</span><span class="reglerwert"></span></div>`}
+                ${g.zustand === "fehlt" ? "" : `<div class="reglerzeile geraeteempf"><span class="reglertitel">Empfindlichkeit</span><span class="skala">0,5</span><input type="range" class="geraete-empf" data-kennung="${sicher(g.kennung)}" min="0.5" max="5" step="0.05"><span class="skala">5</span><span class="reglerwert"></span></div>`}
               </div>
             </div>`).join("") || `<p class="zustand">Kein Gerät erkannt.</p>`;
           for (const regler of geraeteFeld.querySelectorAll(".geraete-empf")) {
@@ -380,10 +380,15 @@ export function erzeugeControls(speicher) {
         for (const feld of geraeteFeld.querySelectorAll(".geraeteachsen")) {
           const pad = pads().find((p) => p.id === feld.dataset.kennung);
           if (!pad) { feld.textContent = ""; continue; }
-          // Gedrückte Knopfnummern live anzeigen: So fallen klemmende oder
-          // flatternde Knöpfe (Phantomdrücke der Schusstaste) sofort auf.
+          // Wirksame Achswerte statt roher: Was hier steht, kommt nach
+          // Totzone, Expo und Empfindlichkeit wirklich bei den Missionen an.
+          // Ein Stick in Ruhe zeigt so 0.00, die Totzone wird sichtbar
+          // (Willis Rückmeldung vom 31.08.2026). Gedrückte Knopfnummern
+          // weiter live, so fallen klemmende Knöpfe sofort auf.
+          const stand = this.regler();
+          const faktor = empfindlichkeitFuer(stand.empfindlichkeitModus, stand.empfindlichkeit, stand.empfindlichkeitJeGeraet, pad.id);
           const gedrueckt = pad.buttons.map((k, i) => (k.pressed ? i : null)).filter((i) => i !== null);
-          feld.textContent = pad.axes.map((a) => a.toFixed(2)).join("  ")
+          feld.textContent = "wirksam  " + pad.axes.map((a) => mitEmpfindlichkeit(mitKurve(a, stand.totzone, stand.expo), faktor).toFixed(2)).join("  ")
             + (gedrueckt.length ? ` · Knöpfe: ${gedrueckt.join(", ")}` : "");
         }
         requestAnimationFrame(takt);

@@ -68,6 +68,8 @@ test("groessterAusschlag übersteht neu dazugekommene Geräte", () => {
 });
 
 test("mitKurve: expo wird auf den Bereich 0 bis 1 begrenzt", () => {
+  // Ein negatives Expo (spitze Mitte) war am 31.08.2026 kurz eingebaut und
+  // nach Willis Testflug wieder verworfen; negativ wirkt seither wie 0.
   assert.equal(mitKurve(0.5, 0, 2), 0.125);
   assert.equal(mitKurve(-0.5, 0, 2), -0.125);
   assert.equal(mitKurve(0.5, 0, -1), 0.5);

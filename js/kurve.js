@@ -1,5 +1,8 @@
 // Reine Steuerlogik: Totzone, Expo und das Anlernen der Achsen.
 
+// Ein negatives Expo (spitze Mitte) war am 31.08.2026 kurz eingebaut und
+// wurde nach Willis Testflug wieder verworfen: Das Handling verschlechterte
+// sich. Expo staucht seither wieder nur die Mitte (0 linear, 1 maximal weich).
 export function mitKurve(wert, totzone, expo) {
   const t = Math.min(Math.max(totzone, 0), 0.9);
   const e = Math.min(Math.max(expo, 0), 1);
