@@ -66,16 +66,16 @@ test("Rollen baut sich auf, koppelt in die Kurve und bleibt begrenzt", () => {
 test("Das Ziel darf den Bildschirm verlassen, ohne je an einer Wand zu hängen", () => {
   const z = erzeugeLaufzustand(halb);
   z.ziel = { x: 0.5, y: 0.2 };
-  // Anhaltender Sturzflug schiebt das Ziel über den oberen Bildrand hinaus;
-  // gemessen mitten im Sturz, denn danach holt der Rückzug es wieder herein.
+  // Anhaltender Sturzflug schiebt das Ziel über den oberen Bildrand hinaus.
   for (let i = 0; i < 60; i++) takt(z, { ...still, stickY: -1 }, 50, halb);
   assert.ok(z.ziel.y < 0);
   for (let i = 0; i < 340; i++) takt(z, { ...still, stickY: -1 }, 50, halb);
   // Waagerecht ist die Welt rund: ziel.x bleibt im Umlauffenster um die
-  // Bildmitte, senkrecht hält der Rückzug das Ziel in erreichbarer Nähe.
+  // Bildmitte. Senkrecht driftet das Ziel frei (kein Rückzug mehr), bleibt
+  // über lange Läufe aber in der Reichweite des weiten Nickbereichs.
   for (let i = 0; i < 4000; i++) takt(z, { stickX: 1, stickY: 1, ruder: 1 }, 50, Math.random);
   assert.ok(Math.abs(z.ziel.x - 0.5) <= UMLAUF / 2 + 1e-9);
-  assert.ok(z.ziel.y > -1 && z.ziel.y < 2.5);
+  assert.ok(Math.abs(z.ziel.y - 0.5) < MAXNICK / 0.5 + 6); // Drift wandert, läuft aber nicht davon
   assert.ok(Math.abs(z.roll) <= MAXROLL);
 });
 
@@ -88,13 +88,36 @@ test("Volle Eigendrehung bringt das Ziel von der anderen Seite herein", () => {
   assert.ok(z.ziel.x > 0.5, `kam nicht herum: ${z.ziel.x}`);
 });
 
-test("Außerhalb des Bildes zieht das Ziel senkrecht sanft zurück", () => {
+test("Das Ziel hält die Höhe der Kamera, nicht die Bildmitte", () => {
+  // Willis Auftrag vom 01.09.2026: kein Bildschirm-Rückzug mehr, aber das
+  // Ziel bleibt auf einer Ebene mit der Kamera. Bei Nicklage 0 liegt die
+  // Ebene in der Bildmitte, ein weggestiegenes Ziel kommt dorthin zurück.
   const z = erzeugeLaufzustand(halb);
   z.ziel = { x: 0.5, y: 1.4 };
-  const vorher = z.ziel.y;
+  for (const d of [z.drift.zx, z.drift.zy]) { d.ziel = 0; d.wert = 0; d.restMs = 1e9; }
   for (let i = 0; i < 20; i++) takt(z, still, 50, halb);
-  assert.ok(z.ziel.y < vorher);          // es kommt zurück
-  assert.ok(z.ziel.y > 1);               // aber nicht schlagartig
+  assert.ok(z.ziel.y < 1.4 && z.ziel.y > 0.5); // es kehrt zurück, nicht schlagartig
+
+  // Steht die eigene Nase hoch, liegt die Ebene unter der Bildmitte: Ein
+  // Ziel in der Bildmitte rutscht dann ehrlich nach unten weg, der Halt
+  // wirkt also an der Flugebene, nicht am Bildschirm.
+  const w = erzeugeLaufzustand(halb);
+  w.nick = 0.6;
+  w.ziel = { x: 0.5, y: 0.5 };
+  for (const d of [w.drift.zx, w.drift.zy]) { d.ziel = 0; d.wert = 0; d.restMs = 1e9; }
+  for (let i = 0; i < 20; i++) takt(w, still, 50, halb);
+  assert.ok(w.ziel.y > 0.5, `nicht zur Ebene gerutscht: ${w.ziel.y}`);
+});
+
+test("Rollen dreht das Ziel mit der Kulisse um die Bildmitte", () => {
+  // Das Ziel gehört zur Welt: Baut sich rechts herum Querlage auf, wandert
+  // ein Ziel rechts der Mitte mit dem Horizont nach oben, statt am
+  // Bildschirm zu kleben (Willis Befund vom 01.09.2026).
+  const z = erzeugeLaufzustand(halb);
+  z.ziel = { x: 0.7, y: 0.5 };
+  for (const d of [z.drift.zx, z.drift.zy]) { d.ziel = 0; d.wert = 0; d.restMs = 1e9; }
+  for (let i = 0; i < 10; i++) takt(z, { ...still, stickX: 1 }, 50, halb);
+  assert.ok(z.ziel.y < 0.5, `nicht mitgedreht: ${z.ziel.y}`);
 });
 
 test("zielHinweis zeigt nur außerhalb des Bildes und klemmt an den Rand", () => {
@@ -110,24 +133,31 @@ test("zielHinweis zeigt nur außerhalb des Bildes und klemmt an den Rand", () =>
 
 test("Am Nickanschlag schiebt der Stick das Ziel nicht weiter", () => {
   const z = erzeugeLaufzustand(halb);
-  for (let i = 0; i < 400; i++) takt(z, { ...still, stickY: -1 }, 50, halb);
+  // Der weite Nickbereich (MAXNICK 1,2) braucht gegen die Eigenstabilität
+  // rund 25 Sekunden Dauerziehen bis zum Anschlag.
+  for (let i = 0; i < 800; i++) takt(z, { ...still, stickY: -1 }, 50, halb);
   assert.equal(z.nick, -MAXNICK);           // Nase steht am Anschlag
-  z.ziel = { x: 0.5, y: 0.5 };              // frei von der Kegelgrenze
+  // Ziel auf der Flugebene: So misst der Takt nur den Stickeffekt, der
+  // Höhenhalt ist dort kräftefrei.
+  z.ziel = { x: 0.5, y: 0.5 + z.nick / 0.5 };
+  const vorher = z.ziel.y;
   takt(z, { ...still, stickY: -1 }, 100, halb);
   // Die Nase bewegt sich nicht mehr, also darf sich auch der Relativwinkel
   // zum Ziel nicht mehr ändern: keine unsichtbare Wand am Kegelrand.
-  assert.ok(Math.abs(z.ziel.y - 0.5) < 1e-9);
+  assert.ok(Math.abs(z.ziel.y - vorher) < 1e-9);
 });
 
 test("Das Aufrichten der Eigenstabilität nimmt das Ziel mit", () => {
   const z = erzeugeLaufzustand(halb);
   for (let i = 0; i < 400; i++) takt(z, { ...still, stickY: -1 }, 50, halb);
-  z.ziel = { x: 0.5, y: 0.5 };
+  // Ziel auf der Flugebene, damit nur der Stabilitätseffekt misst.
+  z.ziel = { x: 0.5, y: 0.5 + z.nick / 0.5 };
   z.nickRate = 0;                           // Stick losgelassen, Rate schon abgeklungen
   const nickVorher = z.nick;
+  const zielVorher = z.ziel.y;
   takt(z, still, 100, halb);
   assert.ok(z.nick > nickVorher);           // Nase richtet sich langsam auf
-  assert.ok(z.ziel.y > 0.5);                // und das Ziel wandert entsprechend
+  assert.ok(z.ziel.y > zielVorher);         // und das Ziel wandert entsprechend
 });
 
 test("Gieren summiert den Kurs auf, entgegengesetzt zur Zielverschiebung", () => {

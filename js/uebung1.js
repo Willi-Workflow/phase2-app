@@ -20,11 +20,14 @@ export const MINDESTABSTAND = 0.3;
 export const KEGEL = { xMin: 0.12, xMax: 0.88, yMin: 0.15, yMax: 0.85 };
 // Im Flug darf das Ziel den Bildschirm verlassen (Willis Festlegung vom
 // 29.08.2026, der Pfeil am Bildrand zeigt dann die Richtung). Wände gibt es
-// seit dem 31.08.2026 keine mehr: Waagerecht ist die Welt rund, eine volle
-// Eigendrehung entspricht UMLAUF Bildbreiten, dahinter kommt das Ziel von
-// der anderen Seite wieder herein. Senkrecht zieht es außerhalb des Bildes
-// sanft zurück (RUECKZUG je Sekunde) statt frei wegzudriften.
-const RUECKZUG = 0.12;
+// keine mehr: Waagerecht ist die Welt rund, eine volle Eigendrehung
+// entspricht UMLAUF Bildbreiten, dahinter kommt das Ziel von der anderen
+// Seite wieder herein. Senkrecht hält das Ziel seit 01.09.2026 die Höhe
+// der Kamera (Willis Auftrag "auf einer Ebene bleiben"): Es pendelt mit
+// der Drift um die eigene Flugebene statt um die Bildmitte, der alte
+// Bildschirm-Rückzug ist raus. Die Ebene liegt bei Nicklage 0 in der
+// Bildmitte und wandert mit der eigenen Nase (siehe takt).
+const HOEHENHALT = 0.15; // je Sekunde Richtung Kamerahöhe
 export const MAXROLL = 1.0;            // rad, etwa 57 Grad
 // Umrechnung von Bildanteil in Kurswinkel: das waagerechte Sichtfeld der
 // Kamera (62 Grad senkrecht bei 16:9 ergibt rund 94 Grad). Ziel und Kulisse
@@ -56,7 +59,10 @@ const ROLLRATE = 0.62;
 const ANLAUF_MS = 180;    // Trägheit, bis eine Steuerrate voll anliegt
 const STABIL = 0.12;      // schwache Eigenstabilität je Sekunde
 const NICK_SICHT = 0.5;   // rad Blickneigung je Einheit Nickbewegung
-export const MAXNICK = 0.3; // rad
+// Nickbereich seit 01.09.2026 weit geöffnet (Willis Auftrag, die unsichtbare
+// Barriere oben und unten ist weg): fast senkrechter Blick nach oben und
+// unten, nur der Überschlag bleibt gesperrt.
+export const MAXNICK = 1.2; // rad, etwa 69 Grad
 const KOPPLUNG = 0.3;     // Kurvenzug bei vollem Rollen, Einheiten je Sekunde
 const DRIFT_ZIEL = 0.05;
 const DRIFTWECHSEL_MIN_MS = 1500;
@@ -84,6 +90,19 @@ function taktDrift(d, dtMs, rnd) {
 }
 
 const abstand = (a, b) => Math.hypot(a.x - b.x, (a.y - b.y) * BILDVERHAELTNIS);
+
+// Dreht einen Bildpunkt um die Bildmitte, in Breiteneinheiten gerechnet,
+// damit der Bogen auf dem Schirm rund ist (y trägt das Seitenverhältnis).
+// Positive Winkel drehen gegen den Uhrzeigersinn, wie die Kulisse beim
+// Rollen nach rechts.
+export function dreheUmMitte(p, winkel) {
+  if (!winkel) return;
+  const u = p.x - 0.5;
+  const w = -(p.y - 0.5) * BILDVERHAELTNIS; // y nach oben
+  const c = Math.cos(winkel), s = Math.sin(winkel);
+  p.x = 0.5 + u * c - w * s;
+  p.y = 0.5 - (u * s + w * c) / BILDVERHAELTNIS;
+}
 
 // Startlage des Zielflugzeugs: im Kegel, deutlich außerhalb der Mitte.
 export function zufallsZiel(rnd) {
@@ -159,7 +178,12 @@ export function takt(z, eingaben, dtMs, rnd = Math.random) {
   z.nickRate += (eingaben.stickY * RATE_NICK - z.nickRate) * glatt;
   z.gierRate += (eingaben.ruder * RATE_GIER - z.gierRate) * glatt;
 
+  const rollVorher = z.roll;
   z.roll = begrenze(z.roll + (z.rollRate - z.roll * STABIL) * dt, -MAXROLL, MAXROLL);
+  // Rollen dreht die Welt um die Blickachse: Das Ziel gehört zur Welt und
+  // dreht mit der Kulisse um die Bildmitte, statt am Bildschirm zu kleben
+  // (Willis Befund vom 01.09.2026, "bewegt sich unrealistisch mit").
+  dreheUmMitte(z.ziel, z.roll - rollVorher);
   const nickBewegung = z.nickRate * dt;
   const nickVorher = z.nick;
   z.nick = begrenze(nickVorher + nickBewegung * NICK_SICHT - nickVorher * STABIL * dt, -MAXNICK, MAXNICK);
@@ -180,13 +204,14 @@ export function takt(z, eingaben, dtMs, rnd = Math.random) {
     return 0.5 + w;
   };
   z.ziel.x = gewickelt(z.ziel.x - gierBewegung + taktDrift(z.drift.zx, dtMs, rnd) * dt);
-  // Senkrecht ohne Wand: Im Bild driftet das Ziel frei, außerhalb zieht es
-  // sanft Richtung Bildmitte zurück, damit es nie unerreichbar wegwandert
-  // (die eigene Nase endet am Nickanschlag).
-  const senkrecht = (z.ziel.y >= 0 && z.ziel.y <= 1)
-    ? taktDrift(z.drift.zy, dtMs, rnd) * dt
-    : Math.sign(0.5 - z.ziel.y) * RUECKZUG * dt;
-  z.ziel.y = z.ziel.y + nickAngewandt + senkrecht;
+  // Senkrecht hält das Ziel die eigene Flugebene: "eben" ist die Bildzeile,
+  // auf der ein höhengleiches Flugzeug bei der aktuellen Nicklage steht
+  // (Nase hoch schiebt sie nach unten). Die Drift lässt es darum pendeln,
+  // der Höhenhalt zieht es dorthin zurück, nie zur Bildmitte: Wer die Nase
+  // oben hält, sieht das Ziel darum ehrlich unter sich durchrutschen.
+  const eben = 0.5 + z.nick / NICK_SICHT;
+  z.ziel.y = z.ziel.y + nickAngewandt
+    + (taktDrift(z.drift.zy, dtMs, rnd) + (eben - z.ziel.y) * HOEHENHALT) * dt;
 
   z.testMs += dtMs;
   const ereignisse = [];

@@ -339,6 +339,11 @@ export function erzeugeUebung1({ speicher, controls }) {
     const BODENWEITE = 60000;
     const BODENKACHELN = 48;
     const KACHEL = BODENWEITE / BODENKACHELN;
+    // Wiederverwendete Rechenobjekte der Ziel-Fluglage, keine Anlage je Bild.
+    const ZIEL_LAGE = new THREE.Quaternion();
+    const LAGE_HILF = new THREE.Quaternion();
+    const ACHSE_X = new THREE.Vector3(1, 0, 0);
+    const ACHSE_Z = new THREE.Vector3(0, 0, 1);
     let drei = null;
     try {
       const renderer = new THREE.WebGLRenderer({ canvas: leinwand, antialias: true, alpha: true });
@@ -533,7 +538,15 @@ export function erzeugeUebung1({ speicher, controls }) {
         -(zustand.ziel.y - 0.5) * 2 * halbeHoehe,
         -FLUGDISTANZ,
       );
-      flugzeug.rotation.z = -zustand.drift.zx.wert * 6; // eigene Kurve neigt die Flächen
+      // Fluglage des Ziels in Weltachsen: Als Kamerakind erbt es sonst die
+      // eigene Blickdrehung und dreht sich sichtbar mit dem Joystick mit
+      // (Willis Befund vom 01.09.2026). Z(roll) und X(-nick) heben Roll- und
+      // Nicklage der Kamera exakt auf (der Kurs bleibt bewusst drin, das
+      // Ziel fliegt voraus), dann neigt die eigene Kurve die Flächen.
+      ZIEL_LAGE.setFromAxisAngle(ACHSE_Z, zustand.roll);
+      ZIEL_LAGE.multiply(LAGE_HILF.setFromAxisAngle(ACHSE_X, -zustand.nick));
+      ZIEL_LAGE.multiply(LAGE_HILF.setFromAxisAngle(ACHSE_Z, -zustand.drift.zx.wert * 6));
+      flugzeug.quaternion.copy(ZIEL_LAGE);
       renderer.render(szene, kamera);
 
       // Der Kreis steht fest in der Bildmitte (stil.css), hier wechselt nur die Farbe.
@@ -564,7 +577,8 @@ export function erzeugeUebung1({ speicher, controls }) {
       const dtMs = Math.min(50, jetzt - vorher || 16);
       vorher = jetzt;
       // Missionsfaktor auf die Ratenachsen (Willis Auftrag vom 31.08.2026):
-      // skaliert das Steuergefühl nur für diese Mission, gedeckelt bei 1.
+      // skaliert das Steuergefühl nur für diese Mission. Seit dem 01.09.2026
+      // ohne Deckel: 150 Prozent heißt wirklich anderthalbfache Rate.
       const eingaben = {
         stickX: mitEmpfindlichkeit(controls.wert("stickX"), einstellung.empfindlichkeit),
         stickY: mitEmpfindlichkeit(controls.wert("stickY"), einstellung.empfindlichkeit),
