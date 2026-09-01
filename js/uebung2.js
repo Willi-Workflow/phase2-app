@@ -24,9 +24,13 @@ export const FADEN_RAND = 0.06;
 const RATE_STICK = 0.56;
 const RATE_RUDER = 0.5;
 const RATE_NADEL = 30;
-const DRIFT_STICK = 0.075;
-const DRIFT_RUDER = 0.075;
-const DRIFT_NADEL = 5;
+// Driftstärken am 01.09.2026 auf Willis Rückmeldung durchgehend um rund
+// 40 Prozent zurückgenommen ("das Gegensteuern soll nicht so doll sein"):
+// erst das Ruder (auf der einspurigen Strichbahn wirkt dieselbe Drift
+// unerbittlicher als in der Fläche), dann Fadenkreuz und Nadel nach.
+const DRIFT_STICK = 0.045;
+const DRIFT_RUDER = 0.045;
+const DRIFT_NADEL = 3;
 const DRIFTWECHSEL_MIN_MS = 1500;
 const DRIFTWECHSEL_MAX_MS = 3000;
 // Trägheit der Steuerrate: Sie bestimmt beides, den Aufbau der Bewegung und
