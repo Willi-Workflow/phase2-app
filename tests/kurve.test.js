@@ -1,13 +1,54 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mitKurve, groessterAusschlag, mitEmpfindlichkeit, empfindlichkeitFuer } from "../js/kurve.js";
+import { mitKurve, groessterAusschlag, mitEmpfindlichkeit, empfindlichkeitFuer, mitRuhelage, glaette } from "../js/kurve.js";
 
-test("mitEmpfindlichkeit: skaliert und bleibt im Achsenbereich", () => {
+test("glaette: Zeitkonstante 0 heißt aus, der neue Wert gilt sofort", () => {
+  assert.equal(glaette(0, 1, 16, 0), 1);
+  assert.equal(glaette(0.8, -0.3, 16, 0), -0.3);
+});
+
+test("glaette: folgt mit der Zeitkonstante, bildratenunabhängig", () => {
+  // Nach genau einer Zeitkonstante sind rund 63 Prozent des Wegs geschafft.
+  const einSchritt = glaette(0, 1, 100, 100);
+  assert.ok(Math.abs(einSchritt - (1 - Math.exp(-1))) < 1e-12);
+  // Zwei halbe Schritte ergeben denselben Stand wie ein ganzer: die Wirkung
+  // hängt an der vergangenen Zeit, nicht an der Zahl der Aufrufe.
+  const zweiHalbe = glaette(glaette(0, 1, 50, 100), 1, 50, 100);
+  assert.ok(Math.abs(zweiHalbe - einSchritt) < 1e-12);
+  // Sehr großes dt (etwa nach Tabwechsel) landet praktisch auf dem Ziel.
+  assert.ok(Math.abs(glaette(0, 1, 10000, 100) - 1) < 1e-12);
+});
+
+test("mitEmpfindlichkeit: skaliert ohne Kappung, Faktor heißt Rate", () => {
+  // Seit 01.09.2026 (Willis Auftrag): Der Faktor skaliert die Missionsrate,
+  // Werte über 1 sind erlaubt. Die alte Kappung bei ±1 hatte ab dem
+  // Sättigungspunkt eine Wand in die Kennlinie gebaut.
   assert.equal(mitEmpfindlichkeit(0.4, 1), 0.4);
   assert.equal(mitEmpfindlichkeit(0.4, 1.5), 0.6000000000000001);
-  assert.equal(mitEmpfindlichkeit(0.8, 2), 1);    // Deckel bei 1
-  assert.equal(mitEmpfindlichkeit(-0.8, 2), -1);  // und bei -1
+  assert.equal(mitEmpfindlichkeit(0.8, 2), 1.6);
+  assert.equal(mitEmpfindlichkeit(-0.8, 2), -1.6);
   assert.equal(mitEmpfindlichkeit(1, 0.5), 0.5);
+});
+
+test("mitRuhelage: verschobene Mitte wird zur neuen Null, Enden bleiben voll", () => {
+  assert.equal(mitRuhelage(0.04, 0.04), 0);   // Ruhe liegt genau auf der Messung
+  assert.equal(mitRuhelage(1, 0.04), 1);      // Vollausschlag bleibt erreichbar
+  assert.equal(mitRuhelage(-1, 0.04), -1);
+  assert.equal(mitRuhelage(0, 0), 0);         // ohne Versatz neutral
+  assert.equal(mitRuhelage(0.5, 0), 0.5);
+  // Beide Seiten strecken linear: die Hälfte des Restwegs ist der halbe Wert.
+  assert.ok(Math.abs(mitRuhelage(0.52, 0.04) - 0.5) < 1e-12);
+  assert.ok(Math.abs(mitRuhelage(-0.48, 0.04) - (-0.5)) < 1e-12);
+});
+
+test("mitRuhelage: Fehlmessungen über 0,5 Betrag wirken neutral", () => {
+  // Eine beim Messen gegriffene Achse oder ein Hebel mit Endlagen-Ruhe
+  // (etwa ein Schubregler auf Anschlag) darf die Mitte nicht verschieben.
+  assert.equal(mitRuhelage(0.3, 0.9), 0.3);
+  assert.equal(mitRuhelage(0.3, -1), 0.3);
+  // Und das Ergebnis bleibt im Achsenbereich, auch wenn das Gerät leicht
+  // über 1 meldet.
+  assert.equal(mitRuhelage(1.02, 0.04), 1);
 });
 
 test("empfindlichkeitFuer: Modus alle nimmt den allgemeinen Wert", () => {

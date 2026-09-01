@@ -1,5 +1,5 @@
 // Gamepad-Anbindung: Anlernen über alle Geräte, Kurven, Tastatur-Ersatz.
-import { mitKurve, groessterAusschlag, mitEmpfindlichkeit, empfindlichkeitFuer } from "./kurve.js";
+import { mitKurve, groessterAusschlag, mitEmpfindlichkeit, empfindlichkeitFuer, mitRuhelage, glaette } from "./kurve.js";
 import { geraeteListe, kurzname } from "./geraetestand.js";
 
 const ROLLEN = [
@@ -8,6 +8,11 @@ const ROLLEN = [
   ["schub", "Schubregler"],
   ["ruder", "Seitenruder"],
 ];
+
+// Ratenachsen: selbstzentrierend, sie bekommen Ruhelage und Empfindlichkeit.
+// Der Schub ist eine Stellungsachse: seine Ruhelage ist keine Mitte, und ein
+// Faktor über 1 würde Fahrten jenseits des Bandes kommandieren.
+const RATENROLLEN = new Set(["stickX", "stickY", "ruder"]);
 
 // Vorgaben der Empfindlichkeitskurve (Willis Rückmeldung vom 28.08.2026,
 // Steuerung insgesamt zu empfindlich; im Referenzvideo fliegt der Bewerber
@@ -25,6 +30,10 @@ const EXPO_VORGABE = 0.4;
 // "je Gerät" schaltet um, dann zählt nur noch der je Gerät gespeicherte
 // Faktor und der allgemeine Regler ist stillgelegt.
 const EMPFINDLICHKEIT_VORGABE = 1;
+// Glättung: Zeitkonstante in ms, mit der der Kurvenwert dem Stick folgt.
+// 0 heißt aus (der Wert gilt sofort). Nur Ratenachsen, der Schub bleibt
+// unverzögert. Vorgabe 0, damit sich ohne Verstellen nichts ändert.
+const GLAETTUNG_VORGABE = 0;
 
 export function erzeugeControls(speicher) {
   let zuordnung = {};        // rolle -> {geraet, achse, invert}
@@ -33,6 +42,9 @@ export function erzeugeControls(speicher) {
   let empfindlichkeit = EMPFINDLICHKEIT_VORGABE;
   let empfindlichkeitJeGeraet = {};   // geraetekennung -> faktor
   let empfindlichkeitModus = "alle";  // "alle" | "geraet"
+  let ruhelagen = {};                 // geraetekennung -> [achswerte in Ruhe]
+  let glaettung = GLAETTUNG_VORGABE;  // ms
+  const geglaettet = {};              // rolle -> {wert, zeitMs}, Zustand der Glättung
   let knopfPadAlt = false;
   let knopfRaumAlt = false;
   let fang = null;           // {rolle, basen, beiTreffer}
@@ -76,6 +88,8 @@ export function erzeugeControls(speicher) {
       empfindlichkeit = await speicher.ladeEinstellung("empfindlichkeit", EMPFINDLICHKEIT_VORGABE);
       empfindlichkeitJeGeraet = await speicher.ladeEinstellung("empfindlichkeitJeGeraet", {});
       empfindlichkeitModus = await speicher.ladeEinstellung("empfindlichkeitModus", "alle");
+      ruhelagen = await speicher.ladeEinstellung("ruhelagen", {});
+      glaettung = await speicher.ladeEinstellung("glaettung", GLAETTUNG_VORGABE);
       schusstaste = await speicher.ladeEinstellung("schusstaste", null);
     },
 
@@ -83,21 +97,57 @@ export function erzeugeControls(speicher) {
       return pads().map((p) => ({ kennung: p.id, achsen: p.axes.length, knoepfe: p.buttons.length }));
     },
 
+    // Kette je Achse: Ruhelage (nur Ratenachsen) → Umkehrung → Totzone und
+    // Expo → Empfindlichkeitsfaktor (nur Ratenachsen, seit 01.09.2026 ohne
+    // Kappung: über 1 heißt mehr als Missionsrate) → Glättung (nur
+    // Ratenachsen). Der Schub verlässt die Kette nach der Kurve und bleibt
+    // so immer im Bereich ±1 und unverzögert.
     wert(rolle) {
+      // Glättung als letzter Schritt, zeitbasiert je Rolle: Mehrfachabrufe
+      // im selben Bild schaden nicht, weil dt dann nahe 0 ist.
+      const geglaettetes = (wert) => {
+        const jetztMs = performance.now();
+        const alt = geglaettet[rolle];
+        const neu = alt ? glaette(alt.wert, wert, jetztMs - alt.zeitMs, glaettung) : wert;
+        geglaettet[rolle] = { wert: neu, zeitMs: jetztMs };
+        return neu;
+      };
       const z = zuordnung[rolle];
       if (z) {
         const pad = pads().find((p) => p.id === z.geraet);
         if (pad && z.achse < pad.axes.length) {
-          const roh = pad.axes[z.achse] * (z.invert ? -1 : 1);
+          const ruhe = RATENROLLEN.has(rolle) ? (ruhelagen[z.geraet]?.[z.achse] ?? 0) : 0;
+          const roh = mitRuhelage(pad.axes[z.achse], ruhe) * (z.invert ? -1 : 1);
+          const kurvenwert = mitKurve(roh, totzone, expo);
+          if (!RATENROLLEN.has(rolle)) return kurvenwert;
           const faktor = empfindlichkeitFuer(empfindlichkeitModus, empfindlichkeit, empfindlichkeitJeGeraet, z.geraet);
-          return mitEmpfindlichkeit(mitKurve(roh, totzone, expo), faktor);
+          return geglaettetes(mitEmpfindlichkeit(kurvenwert, faktor));
         }
       }
       // Tastatur-Ersatz: im Modus "alle" wirkt der allgemeine Faktor mit,
       // im Gerätemodus bleibt die Tastatur neutral (sie ist kein Gerät).
+      if (!RATENROLLEN.has(rolle)) return tastaturWert(rolle);
       const faktor = empfindlichkeitFuer(empfindlichkeitModus, empfindlichkeit, empfindlichkeitJeGeraet, undefined);
-      return mitEmpfindlichkeit(tastaturWert(rolle), faktor);
+      return geglaettetes(mitEmpfindlichkeit(tastaturWert(rolle), faktor));
     },
+
+    // Ruhelagen-Messung (Willis Auftrag vom 01.09.2026): Hände weg von den
+    // Geräten, dann festhalten, wo jede Achse in Ruhe steht. Die Totzone
+    // rechnet danach um diese echte Mitte statt um den rohen Nullpunkt.
+    // Gemessen wird je verbundenem Gerät; nicht verbundene behalten ihre
+    // gespeicherte Messung. Werte über 0,5 Betrag verwirft mitRuhelage als
+    // Fehlmessung, sie werden aber mitgespeichert, damit die Messung eines
+    // Hebels mit Endlagen-Ruhe nicht wandert.
+    async messeRuhelagen() {
+      const stand = alsFeld();
+      for (const g of stand) {
+        ruhelagen = { ...ruhelagen, [g.geraet]: g.achsen.map((a) => Math.round(a * 1000) / 1000) };
+      }
+      await speicher.setzeEinstellung("ruhelagen", ruhelagen);
+      return stand.length;
+    },
+
+    ruhelagenVon() { return ruhelagen; },
 
     // Flanken je Quelle getrennt: Ein dauerhaft gedrückt gemeldeter
     // Geräteknopf (etwa ein Schalter oder ein klemmender Knopf) darf frische
@@ -200,9 +250,7 @@ export function erzeugeControls(speicher) {
     },
 
     async setzeRegler(name, wert) {
-      if (name === "totzone") totzone = wert;
-      if (name === "expo") expo = wert;
-      if (name === "empfindlichkeit") empfindlichkeit = wert;
+      this.setzeReglerFluechtig(name, wert);
       await speicher.setzeEinstellung(name, wert);
     },
 
@@ -210,6 +258,7 @@ export function erzeugeControls(speicher) {
       if (name === "totzone") totzone = wert;
       if (name === "expo") expo = wert;
       if (name === "empfindlichkeit") empfindlichkeit = wert;
+      if (name === "glaettung") glaettung = wert;
     },
 
     async setzeEmpfindlichkeitModus(modus) {
@@ -226,7 +275,7 @@ export function erzeugeControls(speicher) {
       await speicher.setzeEinstellung("empfindlichkeitJeGeraet", empfindlichkeitJeGeraet);
     },
 
-    regler() { return { totzone, expo, empfindlichkeit, empfindlichkeitModus, empfindlichkeitJeGeraet }; },
+    regler() { return { totzone, expo, empfindlichkeit, glaettung, empfindlichkeitModus, empfindlichkeitJeGeraet }; },
 
     // Dialog-Rückrufe erben das this von controls lexikalisch. oeffneDialog muss daher
     // immer als controls.oeffneDialog() gerufen werden, nicht entnommen.
@@ -264,8 +313,16 @@ export function erzeugeControls(speicher) {
         <div class="reglerzeile"><span class="reglertitel">Totzone</span><span class="skala">0</span><input type="range" id="totzone" min="0" max="0.2" step="0.01"><span class="skala">0,2</span><span class="reglerwert" id="totzone-wert"></span></div>
         <div class="reglerzeile"><span class="reglertitel">Expo</span><span class="skala">0</span><input type="range" id="expo" min="0" max="1" step="0.05"><span class="skala">1</span><span class="reglerwert" id="expo-wert"></span></div>
         <div class="reglerzeile"><span class="reglertitel">Empfindlichkeit</span><span class="skala">0,5</span><input type="range" id="empfindlichkeit" min="0.5" max="5" step="0.05"><span class="skala">5</span><span class="reglerwert" id="empfindlichkeit-wert"></span></div>
+        <div class="reglerzeile"><span class="reglertitel">Glättung</span><span class="skala">aus</span><input type="range" id="glaettung" min="0" max="250" step="10"><span class="skala">250</span><span class="reglerwert" id="glaettung-wert"></span></div>
         <label class="hakenzeile"><input type="checkbox" id="empf-je-geraet"> Empfindlichkeit je Gerät</label>
         <p class="reglerhinweis">Mit Haken bekommt jedes verbundene Gerät in der Geräteliste einen eigenen Regler, der allgemeine gilt dann nicht.</p>
+        <div class="rollenzeile">
+          <span class="rollentitel">Ruhelage</span>
+          <span class="rollenstand" id="stand-ruhelage"></span>
+          <button class="punkt klein" data-tat="ruhelage">MESSEN</button>
+          <span class="knopfplatz"></span>
+        </div>
+        <p class="reglerhinweis">Hände weg von Stick, Ruder und Schub, dann messen: Die Totzone liegt danach um die echte Ruhelage jeder Achse statt um den Nullpunkt.</p>
         <button class="punkt" data-tat="schliessen">Fertig</button>
       `;
       const schliesse = () => { this.brichFangAb(); this.brichSchussFangAb(); schleier.remove(); dialog.remove(); halteAn = true; };
@@ -280,6 +337,9 @@ export function erzeugeControls(speicher) {
         const s = this.schusstasteVon();
         dialog.querySelector("#stand-schuss").textContent =
           s ? `${kurzname(s.geraet)} · Knopf ${s.knopf}` : "nicht zugewiesen · Leertaste";
+        const gemessen = Object.keys(this.ruhelagenVon()).length;
+        dialog.querySelector("#stand-ruhelage").textContent =
+          gemessen ? `${gemessen} ${gemessen === 1 ? "Gerät" : "Geräte"} gemessen` : "nicht gemessen";
       };
 
       dialog.addEventListener("click", (e) => {
@@ -291,6 +351,7 @@ export function erzeugeControls(speicher) {
         // damit das Symbol stehen bleibt.
         const fangFrei = () => { for (const k of dialog.querySelectorAll(".punkt.fang")) k.classList.remove("fang"); };
         if (tat === "schliessen") schliesse();
+        if (tat === "ruhelage") this.messeRuhelagen().then(zeigeStand);
         if (tat === "umkehren") this.kehreUm(knopf.dataset.rolle).then(zeigeStand);
         if (tat === "zuweisen") {
           this.brichFangAb();
@@ -314,6 +375,7 @@ export function erzeugeControls(speicher) {
         dialog.querySelector("#totzone-wert").textContent = alsZahl(stand.totzone);
         dialog.querySelector("#expo-wert").textContent = alsZahl(stand.expo);
         dialog.querySelector("#empfindlichkeit-wert").textContent = alsZahl(stand.empfindlichkeit);
+        dialog.querySelector("#glaettung-wert").textContent = stand.glaettung > 0 ? `${stand.glaettung} ms` : "aus";
       };
       // Der Modus schaltet die Klasse am Dialog: Sie blendet die Geräteregler
       // ein und legt den allgemeinen Empfindlichkeitsregler still.
@@ -326,6 +388,7 @@ export function erzeugeControls(speicher) {
       dialog.querySelector("#totzone").value = this.regler().totzone;
       dialog.querySelector("#expo").value = this.regler().expo;
       dialog.querySelector("#empfindlichkeit").value = this.regler().empfindlichkeit;
+      dialog.querySelector("#glaettung").value = this.regler().glaettung;
       zeigeRegler();
       zeigeModus();
       dialog.querySelector("#totzone").addEventListener("input", (e) => { this.setzeReglerFluechtig("totzone", Number(e.target.value)); zeigeRegler(); });
@@ -334,6 +397,8 @@ export function erzeugeControls(speicher) {
       dialog.querySelector("#expo").addEventListener("change", (e) => this.setzeRegler("expo", Number(e.target.value)));
       dialog.querySelector("#empfindlichkeit").addEventListener("input", (e) => { this.setzeReglerFluechtig("empfindlichkeit", Number(e.target.value)); zeigeRegler(); });
       dialog.querySelector("#empfindlichkeit").addEventListener("change", (e) => this.setzeRegler("empfindlichkeit", Number(e.target.value)));
+      dialog.querySelector("#glaettung").addEventListener("input", (e) => { this.setzeReglerFluechtig("glaettung", Number(e.target.value)); zeigeRegler(); });
+      dialog.querySelector("#glaettung").addEventListener("change", (e) => this.setzeRegler("glaettung", Number(e.target.value)));
       dialog.querySelector("#empf-je-geraet").addEventListener("change", (e) => {
         this.setzeEmpfindlichkeitModus(e.target.checked ? "geraet" : "alle").then(zeigeModus);
       });
@@ -381,14 +446,21 @@ export function erzeugeControls(speicher) {
           const pad = pads().find((p) => p.id === feld.dataset.kennung);
           if (!pad) { feld.textContent = ""; continue; }
           // Wirksame Achswerte statt roher: Was hier steht, kommt nach
-          // Totzone, Expo und Empfindlichkeit wirklich bei den Missionen an.
-          // Ein Stick in Ruhe zeigt so 0.00, die Totzone wird sichtbar
-          // (Willis Rückmeldung vom 31.08.2026). Gedrückte Knopfnummern
-          // weiter live, so fallen klemmende Knöpfe sofort auf.
+          // Ruhelage, Totzone, Expo und Empfindlichkeit wirklich bei den
+          // Missionen an. Ein Stick in Ruhe zeigt so 0.00, die Totzone wird
+          // sichtbar (Willis Rückmeldung vom 31.08.2026). Eine als Schub
+          // zugeordnete Achse rechnet ohne Ruhelage und Faktor, wie in wert().
+          // Gedrückte Knopfnummern weiter live, so fallen klemmende Knöpfe
+          // sofort auf.
           const stand = this.regler();
           const faktor = empfindlichkeitFuer(stand.empfindlichkeitModus, stand.empfindlichkeit, stand.empfindlichkeitJeGeraet, pad.id);
+          const ruhen = this.ruhelagenVon()[pad.id] ?? [];
           const gedrueckt = pad.buttons.map((k, i) => (k.pressed ? i : null)).filter((i) => i !== null);
-          feld.textContent = "wirksam  " + pad.axes.map((a) => mitEmpfindlichkeit(mitKurve(a, stand.totzone, stand.expo), faktor).toFixed(2)).join("  ")
+          feld.textContent = "wirksam  " + pad.axes.map((a, i) => {
+            const stellung = zuordnung.schub?.geraet === pad.id && zuordnung.schub?.achse === i;
+            const k = mitKurve(mitRuhelage(a, stellung ? 0 : (ruhen[i] ?? 0)), stand.totzone, stand.expo);
+            return (stellung ? k : mitEmpfindlichkeit(k, faktor)).toFixed(2);
+          }).join("  ")
             + (gedrueckt.length ? ` · Knöpfe: ${gedrueckt.join(", ")}` : "");
         }
         requestAnimationFrame(takt);

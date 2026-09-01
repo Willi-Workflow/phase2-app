@@ -12,12 +12,27 @@ export function mitKurve(wert, totzone, expo) {
   return (1 - e) * gestreckt + e * gestreckt ** 3;
 }
 
-// Empfindlichkeit: Faktor auf den fertigen Kurvenwert. Über 1 ist der volle
-// Ausschlag früher erreicht, unter 1 später; der Wert bleibt im Achsenbereich.
-// Der Faktor sitzt bewusst hinter der Kurve, damit Totzone und Expo ihre
-// Form behalten und die drei Regler unabhängig bleiben.
+// Empfindlichkeit: Faktor auf den fertigen Kurvenwert, seit 01.09.2026 ohne
+// Kappung (Willis Auftrag). Der Faktor skaliert damit die Missionsrate:
+// 1,5 heißt anderthalbfache Maximalrate bei Vollausschlag. Die alte Kappung
+// bei ±1 hatte stattdessen die Kennlinie verbogen: Ab Faktor mal Kurvenwert
+// gleich 1 war eine Wand, dahinter fühlte sich jeder Stickweg gleich an.
+// Nur für Ratenachsen verwenden; Stellungsachsen wie der Schub dürfen nie
+// über ihren Bereich hinaus skaliert werden.
 export function mitEmpfindlichkeit(wert, faktor) {
-  return Math.max(-1, Math.min(1, wert * faktor));
+  return wert * faktor;
+}
+
+// Ruhelage: Der Stick meldet in Ruhe selten exakt 0. Die gemessene Ruhelage
+// wird zur neuen Mitte, beide Seiten strecken sich zurück auf den vollen
+// Bereich, damit die Totzone symmetrisch um die echte Mitte liegt und der
+// Vollausschlag erreichbar bleibt. Eine Ruhelage über 0,5 Betrag wird als
+// Fehlmessung verworfen (etwa eine Achse, die beim Messen gegriffen war,
+// oder ein Hebel mit Endlagen-Ruhe): dann wirkt die Funktion neutral.
+export function mitRuhelage(wert, ruhe) {
+  const r = Math.abs(ruhe) > 0.5 ? 0 : ruhe;
+  const spanne = wert >= r ? 1 - r : 1 + r;
+  return Math.max(-1, Math.min(1, (wert - r) / spanne));
 }
 
 // Wahl des Faktors nach Modus: "alle" nimmt den allgemeinen Wert, "geraet"
@@ -26,6 +41,16 @@ export function mitEmpfindlichkeit(wert, faktor) {
 export function empfindlichkeitFuer(modus, allgemein, jeGeraet, geraet) {
   if (modus === "geraet") return (geraet != null ? jeGeraet?.[geraet] : null) ?? 1;
   return allgemein;
+}
+
+// Glättung: Der Kurvenwert folgt dem Stick nicht sprunghaft, sondern mit
+// einer Zeitkonstante (Willis Rückmeldung vom 01.09.2026, "zu direkt";
+// große Simulatoren filtern das Eingangssignal genauso). Zeitbasiert über
+// exp(-dt/tau), damit die Wirkung von der Bildrate unabhängig ist.
+// zeitMs 0 heißt aus: der neue Wert gilt sofort.
+export function glaette(alt, neu, dtMs, zeitMs) {
+  if (!(zeitMs > 0)) return neu;
+  return alt + (neu - alt) * (1 - Math.exp(-Math.max(dtMs, 0) / zeitMs));
 }
 
 export function groessterAusschlag(basen, jetzt, schwelle) {
