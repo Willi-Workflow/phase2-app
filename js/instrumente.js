@@ -291,7 +291,9 @@ export function svgHorizont(wert) {
   for (const g of [-60, -45, -30, -20, -10, 10, 20, 30, 45, 60]) {
     rollskala += strich(g, g % 30 === 0 ? 41 : 43.5, 47.5, g % 30 === 0 ? 1.8 : 1.1, "#f4f2ea");
   }
-  const rollzeiger = `<polygon points="60,19 56,26.5 64,26.5" fill="#f4f2ea"/>`;
+  // Der Zeiger endet bei Radius 39, die Skala beginnt erst bei 41: so bleibt
+  // beim Drehen immer eine Lücke und nichts verdeckt sich gegenseitig.
+  const rollzeiger = `<polygon points="60,21 56.2,28.5 63.8,28.5" fill="#f4f2ea"/>`;
   const kugeldrehung = `rotate(${S(-roll)} 60 60)`;
   return svgRahmen(`${GEHAEUSE}
     <defs>
