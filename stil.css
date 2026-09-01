@@ -284,6 +284,10 @@ main { position: relative; z-index: 1; }
 .reglerzeile .skala { font-size: 9px; color: var(--gedeckt); opacity: 0.85; font-variant-numeric: tabular-nums; }
 .hakenzeile { display: flex; gap: 8px; align-items: center; margin-top: 14px; font-size: 12px; letter-spacing: 0.08em; color: var(--hell); cursor: pointer; }
 .reglerhinweis { margin-top: 4px; font-size: 10px; letter-spacing: 0.06em; color: var(--gedeckt); }
+/* Blitzübung der Mission 4: das einzelne Instrument groß und mittig vor der
+   verwischten Bühne. */
+.uebung4 .blitzanzeige { width: min(52vh, 330px); margin: 8vh auto 0; }
+.uebung4 .blitzanzeige svg { width: 100%; height: auto; display: block; }
 .controlsdialog input[type="range"] { width: 100%; accent-color: #35e0d0; }
 .controlsdialog input[type="checkbox"] { accent-color: #35e0d0; }
 
@@ -497,6 +501,9 @@ main { position: relative; z-index: 1; }
 
 /* Übungseinstellungen (Wahlzeilen) und Testablauf Mission 4 */
 .wahlzeile { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; font-size: 10px; letter-spacing: 0.12em; color: var(--gedeckt); }
+/* Abgesetzter Übungsblock im Einstellungsfeld: Trennlinie und Teilüberschrift
+   nach dem Muster der Abschnitte im Controls-Dialog. */
+.wahlabschnitt { margin-top: 16px; padding-top: 12px; border-top: 1px solid #2c3520; font-size: 10px; letter-spacing: 0.22em; color: var(--gedeckt); font-weight: 600; }
 .wahlliste { font-family: inherit; font-size: 11px; letter-spacing: 0.08em; color: var(--hell); background: #1a2113; border: 1px solid #39422c; border-radius: 4px; padding: 6px 10px; cursor: pointer; color-scheme: dark; min-width: 96px; }
 .wahlliste:hover { border-color: var(--gedeckt); }
 .wahlliste:focus-visible { outline: 1px dashed var(--gedeckt); outline-offset: 2px; }

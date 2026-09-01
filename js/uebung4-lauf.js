@@ -33,12 +33,16 @@ export function erzeugeUebung4({ speicher }) {
       <div class="wahlzeile"><span class="wahltitel">${titel}</span>
         <select class="wahlliste" data-name="${name}">${werte.map((w) =>
           `<option value="${w}" ${w === aktiv ? "selected" : ""}>${zahlText(w)}${einheit}</option>`).join("")}</select></div>`;
+    // Die Blitzübung bekommt einen abgesetzten Block mit Trennlinie und
+    // eigener Überschrift, damit ihre Anzeigezeit nicht wie eine Einstellung
+    // des normalen Tests wirkt.
     feld.innerHTML =
       zeile("ANZEIGEZEIT", "zeit", ANZEIGEZEITEN, einstellung.zeit, " s")
       + zeile("FRAGEN JE RUNDE", "fragen", FRAGENANZAHLEN, einstellung.fragen, "")
       + zeile("TESTDAUER", "dauer", TESTDAUERN, einstellung.dauer, " min")
-      + zeile("BLITZÜBUNG", "uebungszeit", [1, 1.5, 2, 3], einstellung.uebungszeit, " s")
-      + `<div class="wahlzeile"><span class="wahltitel">ÜBUNG</span>
+      + `<div class="wahlabschnitt">BLITZÜBUNG</div>`
+      + zeile("ANZEIGEZEIT", "uebungszeit", [1, 1.5, 2, 3], einstellung.uebungszeit, " s")
+      + `<div class="wahlzeile"><span class="wahltitel">START</span>
         <button type="button" class="wahlknopf" data-element="ueben">NUR ÜBEN</button></div>`;
     feld.onchange = (e) => {
       const liste = e.target.closest(".wahlliste");
