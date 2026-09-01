@@ -1,10 +1,10 @@
 import { KONFIG } from "./konfig.js";
 import { erzeugeSpeicher } from "./speicher.js";
 import { MISSIONEN } from "./missionen.js";
-import { bestwert, durchschnitt, vergleich } from "./auswertung.js";
+import { bestwert, durchschnitt, vergleich, sortiertNeueste } from "./auswertung.js";
 import { erzeugeControls } from "./controls.js";
 import { rollenStand } from "./geraetestand.js";
-import { PROFILFARBEN, reihe, skala, punkte, pfad, laufnummern } from "./diagramm.js";
+import { PROFILFARBEN } from "./diagramm.js";
 import { erzeugeUebung1 } from "./uebung1-lauf.js";
 import { erzeugeUebung2 } from "./uebung2-lauf.js";
 import { erzeugeUebung3 } from "./uebung3-lauf.js";
@@ -27,7 +27,7 @@ let alleLaeufe = [];
 
 function zeichneStatistik() {
   const laeufe = alleLaeufe;
-  zeichneDiagramm(laeufe);
+  zeichneHistorie(laeufe);
   const eigene = laeufe.filter((l) => l.profil === speicher.profil());
   // Bei fester 100er-Skala lesen sich die Werte als Prozent, sonst nackte Zahl.
   const einheit = mission.maximal === 100 ? " %" : "";
@@ -52,129 +52,32 @@ async function zeichneAuswertung() {
   zeichneStatistik();
 }
 
-// Verlauf beider Profile über der Laufnummer; das eigene Profil liegt oben und
-// trägt den Endwert, Identität sichern Legende, Endbeschriftung und Werkzeugtipp
-// gemeinsam, nie die Farbe allein. Gerechnet wird in Bildpunkten: ab elf Läufen
-// behält das Diagramm den Punktabstand und rollt nach rechts, die Y-Achse steht.
-const TAFELGRUND = "#0d1109";
-// Gezeichnet wird in Einheiten eines festen Rasters (Grundbreite 310, Höhe 172),
-// die Größe regelt CSS rein prozentual. Beim Rollen wächst nur die Einheitenzahl
-// in der Breite, der Maßstab bleibt gleich, darum braucht es keine Pixelmessung.
-const DIAGRAMM = { hoehe: 172, oben: 10, zeichenhoehe: 144, rand: 7, grundbreite: 310, sichtbareLaeufe: 10 };
-
-function zeichneDiagramm(laeufe) {
-  const behaelter = document.getElementById("diagramm");
+// Historie je Profil (Willis Auftrag vom 01.09.2026, ersetzt das
+// Verlaufsdiagramm): zwei Spalten, das eigene Profil links, je Lauf Datum,
+// Uhrzeit und Kennzahl, der neueste oben. Der beste Lauf eines Profils
+// trägt die Markierung BEST; bei Gleichstand tragen sie alle betroffenen
+// Läufe, denn sie sind gleich gut.
+function zeichneHistorie(laeufe) {
   const eigenes = speicher.profil();
-  const anderes = eigenes === "willi" ? "luigi" : "willi";
-  const reihen = [
-    { profil: anderes, werte: reihe(laeufe, anderes) },
-    { profil: eigenes, werte: reihe(laeufe, eigenes) },
-  ];
-  const maxAnzahl = Math.max(...reihen.map((r) => r.werte.length));
-  behaelter.hidden = false;
-
-  // Das Raster steht auch ohne Läufe: mindestens zehn Plätze, der erste Lauf
-  // sitzt links auf Platz 1.
-  const plaetze = Math.max(maxAnzahl, DIAGRAMM.sichtbareLaeufe);
-  const rollen = document.getElementById("diagrammrollen");
-  const rollbar = plaetze > DIAGRAMM.sichtbareLaeufe;
-  const schrittBreite = (DIAGRAMM.grundbreite - 2 * DIAGRAMM.rand) / (DIAGRAMM.sichtbareLaeufe - 1);
-  const gesamtBreite = rollbar
-    ? (plaetze - 1) * schrittBreite + 2 * DIAGRAMM.rand
-    : DIAGRAMM.grundbreite;
-  const feld = { x: DIAGRAMM.rand, y: DIAGRAMM.oben, breite: gesamtBreite - 2 * DIAGRAMM.rand, hoehe: DIAGRAMM.zeichenhoehe };
-  const xVon = (index) => feld.x + (index / (plaetze - 1)) * feld.breite;
-  const yVon = (w, maxWert) => feld.y + feld.hoehe - (w / maxWert) * feld.hoehe;
-
-  const y = skala(reihen.flatMap((r) => r.werte), mission.maximal === 100);
-  document.getElementById("achsensvg").innerHTML = y.schritte.map((w) =>
-    `<text class="achse" x="28" y="${(yVon(w, y.max) + 3).toFixed(1)}" text-anchor="end">${w}</text>`).join("");
-
-  const gitter = y.schritte.map((w) =>
-    `<line class="gitter" x1="0" y1="${yVon(w, y.max).toFixed(1)}" x2="${gesamtBreite.toFixed(1)}" y2="${yVon(w, y.max).toFixed(1)}"></line>`).join("");
-
-  const nummern = rollbar ? Array.from({ length: plaetze }, (_, i) => i + 1) : laufnummern(plaetze);
-  const unten = nummern.map((n) =>
-    `<text class="achse" x="${xVon(n - 1).toFixed(1)}" y="${feld.y + feld.hoehe + 15}" text-anchor="middle">${n}</text>`).join("");
-
-  const linien = reihen.filter((r) => r.werte.length).map((r) => {
-    const p = punkte(r.werte, feld, plaetze, y.max);
-    const kreise = p.map((pt) =>
-      `<circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="4" fill="${PROFILFARBEN[r.profil]}" stroke="${TAFELGRUND}" stroke-width="2"></circle>`).join("");
-    const spitze = p[p.length - 1];
-    const endwert = r.profil === eigenes
-      ? `<text class="endwert" x="${Math.max(spitze.x, 12).toFixed(1)}" y="${Math.max(spitze.y - 9, 9).toFixed(1)}" text-anchor="middle">${r.werte[r.werte.length - 1]}</text>`
-      : "";
-    return `<path d="${pfad(p)}" fill="none" stroke="${PROFILFARBEN[r.profil]}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>${kreise}${endwert}`;
-  }).join("");
-
-  document.getElementById("diagrammlegende").innerHTML = [eigenes, anderes].map((profil) =>
-    `<span class="schluessel"><i style="background:${PROFILFARBEN[profil]}"></i>${profil.toUpperCase()}</span>`).join("");
-
-  const flaeche = document.getElementById("diagrammflaeche");
-  flaeche.style.width = `${(gesamtBreite / DIAGRAMM.grundbreite) * 100}%`;
-  flaeche.innerHTML = `
-    <svg viewBox="0 0 ${gesamtBreite.toFixed(1)} ${DIAGRAMM.hoehe}" role="img" aria-label="Verlauf der Läufe beider Profile">
-      ${gitter}${unten}${linien}
-      <line class="fadenkreuz" y1="${feld.y}" y2="${feld.y + feld.hoehe}" style="display:none"></line>
-    </svg>
-    <div class="werkzeugtipp" hidden></div>`;
-  rollen.scrollLeft = rollen.scrollWidth;
-
-  if (maxAnzahl > 0) verdrahteWerkzeugtipp(flaeche, reihen, maxAnzahl, plaetze, xVon, gesamtBreite);
-}
-
-function verdrahteWerkzeugtipp(flaeche, reihen, maxAnzahl, plaetze, xVon, gesamtBreite) {
-  const svg = flaeche.querySelector("svg");
-  const kreuz = svg.querySelector(".fadenkreuz");
-  const tipp = flaeche.querySelector(".werkzeugtipp");
-  let index = maxAnzahl - 1;
-
-  const zeige = () => {
-    const xImBild = xVon(index);
-    kreuz.setAttribute("x1", xImBild);
-    kreuz.setAttribute("x2", xImBild);
-    kreuz.style.display = "";
-    tipp.hidden = false;
-    tipp.textContent = "";
-    const titel = document.createElement("b");
-    titel.textContent = `LAUF ${index + 1}`;
-    tipp.append(titel);
-    for (const r of [...reihen].reverse()) {
-      if (index >= r.werte.length) continue;
-      const zeile = document.createElement("span");
-      const schluessel = document.createElement("i");
-      schluessel.style.background = PROFILFARBEN[r.profil];
-      const wert = document.createElement("b");
-      wert.textContent = String(r.werte[index]);
-      zeile.append(schluessel, wert, document.createTextNode(` ${r.profil.toUpperCase()}`));
-      tipp.append(zeile);
-    }
-    const links = (xImBild / gesamtBreite) * flaeche.clientWidth;
-    tipp.style.left = `${Math.min(Math.max(links, 44), flaeche.clientWidth - 44)}px`;
+  const anderes = eigenes === "luigi" ? "willi" : "luigi";
+  const einheit = mission.maximal === 100 ? " %" : "";
+  const spalte = (profil) => {
+    const eigene = sortiertNeueste(laeufe.filter((l) => l.profil === profil));
+    const best = bestwert(eigene);
+    const zwei = (n) => String(n).padStart(2, "0");
+    const zeilen = eigene.map((l) => {
+      const d = new Date(l.zeitpunkt);
+      const datum = `${zwei(d.getDate())}.${zwei(d.getMonth() + 1)}. ${zwei(d.getHours())}:${zwei(d.getMinutes())}`;
+      const istBest = l.kennzahl === best;
+      return `<div class="historienzeile${istBest ? " best" : ""}">
+        <span>${datum}</span><b>${l.kennzahl}${einheit}${istBest ? `<i>BEST</i>` : ""}</b></div>`;
+    }).join("");
+    return `<div class="historienspalte">
+      <div class="historienkopf"><i style="background:${PROFILFARBEN[profil]}"></i>${profil.toUpperCase()}</div>
+      <div class="historienliste">${zeilen || `<p class="historienleer">Noch keine Läufe.</p>`}</div>
+    </div>`;
   };
-  const verberge = () => { kreuz.style.display = "none"; tipp.hidden = true; };
-
-  svg.addEventListener("pointermove", (e) => {
-    // clientX gegen die tatsächliche SVG-Box statt offsetX: offsetX ist beim
-    // Überfahren eines Datenpunkts relativ zum Kindelement (circle/text) und
-    // ließ Fadenkreuz und Tipp auf Lauf 1 zurückspringen (Q5).
-    const kasten = svg.getBoundingClientRect();
-    const einheit = ((e.clientX - kasten.left) / kasten.width) * gesamtBreite;
-    const stelle = (einheit - DIAGRAMM.rand) / (gesamtBreite - 2 * DIAGRAMM.rand);
-    index = Math.min(Math.max(Math.round(stelle * (plaetze - 1)), 0), maxAnzahl - 1);
-    zeige();
-  });
-  svg.addEventListener("pointerleave", verberge);
-  flaeche.tabIndex = 0;
-  flaeche.addEventListener("focus", zeige);
-  flaeche.addEventListener("blur", verberge);
-  flaeche.addEventListener("keydown", (e) => {
-    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
-    e.preventDefault();
-    index = Math.min(Math.max(index + (e.key === "ArrowRight" ? 1 : -1), 0), maxAnzahl - 1);
-    zeige();
-  });
+  document.getElementById("historie").innerHTML = spalte(eigenes) + spalte(anderes);
 }
 
 function zeichneGeraete() {

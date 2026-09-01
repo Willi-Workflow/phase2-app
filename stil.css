@@ -433,25 +433,17 @@ main { position: relative; z-index: 1; }
 .balken.willi span { background: #4a83c4; }
 .balken.luigi span { background: #b58e2e; }
 
-/* Verlaufsdiagramm der Läufe */
-.diagramm { margin-bottom: 14px; }
-.diagrammlegende { display: flex; gap: 14px; font-size: 10px; letter-spacing: 0.14em; color: var(--gedeckt); margin-bottom: 6px; }
-.diagrammlegende .schluessel { display: inline-flex; align-items: center; gap: 5px; }
-.diagrammlegende i, .werkzeugtipp i { display: inline-block; width: 14px; height: 2px; }
-.diagrammkoerper { display: flex; align-items: flex-start; }
-.achsensvg { flex: none; width: calc(34 / 344 * 100%); height: auto; }
-.diagrammrollen { flex: 1; min-width: 0; overflow-x: auto; }
-.diagrammflaeche { position: relative; outline: none; }
-.diagrammflaeche:focus-visible { outline: 1px dashed var(--gedeckt); outline-offset: 3px; }
-.diagrammflaeche svg { display: block; width: 100%; height: auto; }
-.diagramm .gitter { stroke: #1e2517; stroke-width: 1; }
-.diagramm .achse { fill: var(--gedeckt); font-size: 9px; letter-spacing: 0.05em; }
-.diagramm .endwert { fill: var(--hell); font-size: 10px; }
-.diagramm .fadenkreuz { stroke: #39422c; stroke-width: 1; }
-.werkzeugtipp { position: absolute; top: 6px; transform: translateX(-50%); background: #12170e; border: 1px solid #39422c; border-radius: 4px; padding: 6px 9px; display: grid; gap: 3px; font-size: 10px; letter-spacing: 0.08em; color: var(--gedeckt); pointer-events: none; z-index: 2; }
-.werkzeugtipp[hidden] { display: none; }
-.werkzeugtipp b { color: var(--hell); }
-.werkzeugtipp span { display: inline-flex; align-items: center; gap: 5px; }
+/* Lauf-Historie je Profil, ersetzt seit 01.09.2026 das Verlaufsdiagramm */
+.historie { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; margin-top: 10px; border-top: 1px dashed #39422c; padding-top: 10px; }
+.historienkopf { display: flex; align-items: center; gap: 6px; font-size: 10px; letter-spacing: 0.14em; color: var(--gedeckt); margin-bottom: 5px; }
+.historienkopf i { display: inline-block; width: 14px; height: 3px; }
+.historienliste { max-height: 190px; overflow-y: auto; }
+.historienzeile { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; font-size: 11px; letter-spacing: 0.04em; padding: 2px 0; color: var(--gedeckt); }
+.historienzeile b { color: var(--hell); white-space: nowrap; }
+/* BEST in Türkis wie der Anlern-Akzent: bewusst keine der beiden
+   Profilfarben, die Markierung gehört zum Lauf, nicht zur Person. */
+.historienzeile b i { font-style: normal; font-size: 8px; letter-spacing: 0.12em; color: #35e0d0; margin-left: 5px; vertical-align: 1px; }
+.historienleer { font-size: 11px; letter-spacing: 0.05em; color: var(--gedeckt); }
 /* Rücksprung als vertieft eingelassenes Feld im Grund, bewusst ohne Aufbau und ohne Metall */
 .zurueck {
   position: fixed;
