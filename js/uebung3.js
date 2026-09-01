@@ -14,12 +14,13 @@ export const RECHENTAKT_S = 12;       // Abstand der Rechenaufgaben in Stufe 4
 
 const INSTRUMENTE = ["kurs", "hoehe", "fahrt"]; // feste Reihenfolge im Ergebnis
 
-// Festes Standardszenario (Willis Vorgabe vom 28.08.2026): keine gewürfelten
-// Zielvorgaben mehr, jeder Durchgang fliegt dieselbe Standardaufgabe.
-const HOEHE_BASIS = 5000;      // Fuß, Starthöhe des Steigflugs
-const HOEHE_STEIGFLUG = 1000;  // Fuß, immer steigen
-const FAHRT_ZIEL_START = 100;  // Knoten, Startvorgabe der Fahrt
-const FAHRT_ZIEL_ZIEL = 140;   // Knoten, Zielvorgabe der Fahrt
+// Gewürfelte Vorgaben seit 01.09.2026 (Willis Auftrag): Kurs und Höhe aus
+// festen Rastern, die Fahrt frei über dem Fahrtmesserband. Nur der Startpunkt
+// bleibt fest: Norden und 5000 Fuß.
+const HOEHE_BASIS = 5000;                   // Fuß, feste Starthöhe
+const HOEHEN_BETRAEGE = [500, 1000, 1500];  // Fuß, gewürfelter Betrag je Richtung
+const FAHRT_RASTER = 10;                    // Knoten, Schrittweite der Fahrtvorgaben
+const FAHRT_MINDESTAENDERUNG = 40;          // Knoten, kleinster Abstand Start zu Ziel
 
 // Physischer Fahrtbereich, den der Schub kommandiert (bleibt breiter als die
 // Aufgabe, die Nadel läuft von 60 bis 320 kt).
@@ -44,27 +45,36 @@ const mod360 = (grad) => ((grad % 360) + 360) % 360;
 const begrenze = (wert, min, max) => Math.min(max, Math.max(min, wert));
 const wuerfelIndex = (anzahl, rnd) => Math.floor(rnd() * anzahl);
 
-// Kurs seit 29.08.2026 (Willis Auftrag): Richtung und Betrag wechseln je
-// Durchgang, minus dreht gegen den Uhrzeigersinn, auch Teil- und
-// Doppeldrehungen. Der Start bleibt Norden (Festlegung vom 28.08.2026).
-const KURS_BETRAEGE = [180, 270, 360, 720];
+// Kurs: Richtung und Betrag wechseln je Durchgang, minus dreht gegen den
+// Uhrzeigersinn. Seit 01.09.2026 nur noch halbe, ganze und doppelte Drehung
+// (270 raus, Willis Auftrag). Der Start bleibt Norden.
+const KURS_BETRAEGE = [180, 360, 720];
 function wuerfleKurs(rnd = Math.random) {
   const betrag = KURS_BETRAEGE[wuerfelIndex(KURS_BETRAEGE.length, rnd)];
   const aenderung = rnd() < 0.5 ? -betrag : betrag;
   return { start: 0, aenderung, ziel: mod360(aenderung) };
 }
 
-// Höhe: fester Steigflug um 1000 Fuß ab 5000 Fuß (festes Standardszenario,
-// Willis Vorgabe vom 28.08.2026, Höhenmesser zeigt Fuß).
-function wuerfleHoehe() {
-  return { start: HOEHE_BASIS, aenderung: HOEHE_STEIGFLUG, ziel: HOEHE_BASIS + HOEHE_STEIGFLUG };
+// Höhe: Steig- oder Sinkflug um 500, 1000 oder 1500 Fuß ab fest 5000 Fuß
+// (Willis Auftrag vom 01.09.2026, Höhenmesser zeigt Fuß). Alle Ziele liegen
+// damit zwischen 3500 und 6500 Fuß, sicher innerhalb des Anzeigebereichs.
+function wuerfleHoehe(rnd = Math.random) {
+  const betrag = HOEHEN_BETRAEGE[wuerfelIndex(HOEHEN_BETRAEGE.length, rnd)];
+  const aenderung = rnd() < 0.5 ? -betrag : betrag;
+  return { start: HOEHE_BASIS, aenderung, ziel: HOEHE_BASIS + aenderung };
 }
 
-// Fahrt: fest von 100 auf 140 Knoten (festes Standardszenario, Willis Vorgabe
-// vom 28.08.2026). Die Zelle beginnt weiter bei 60 kt und wird in der
-// Einrichtzeit auf den Startwert hochgezogen (siehe erzeugeFlugzustand).
-function wuerfleFahrt() {
-  return { start: FAHRT_ZIEL_START, ziel: FAHRT_ZIEL_ZIEL };
+// Fahrt: Start und Ziel frei über dem ganzen Fahrtmesserband 60 bis 320 kt
+// im Zehnerraster, mindestens 40 kt auseinander (Willis Auftrag vom
+// 01.09.2026, "die Geschwindigkeit kann alles sein"). Die Nadel beginnt
+// weiter bei 60 kt und wird in der Einrichtzeit auf den Startwert
+// hochgezogen (siehe erzeugeFlugzustand).
+function wuerfleFahrt(rnd = Math.random) {
+  const werte = [];
+  for (let kt = FAHRT_MIN; kt <= FAHRT_MAX; kt += FAHRT_RASTER) werte.push(kt);
+  const start = werte[wuerfelIndex(werte.length, rnd)];
+  const ziele = werte.filter((kt) => Math.abs(kt - start) >= FAHRT_MINDESTAENDERUNG);
+  return { start, ziel: ziele[wuerfelIndex(ziele.length, rnd)] };
 }
 
 // Stufe 1 nimmt eines der drei Instrumente, Stufe 2 zwei, ab Stufe 3 alle

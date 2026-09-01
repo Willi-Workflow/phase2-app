@@ -21,18 +21,18 @@ test("Konstanten des Instrumentenflugs", () => {
   assert.equal(RECHENTAKT_S, 12);
 });
 
-test("erzeugeVorgaben: Kurs würfelt Richtung und Betrag, Höhe und Fahrt bleiben fest", () => {
-  // Willis Auftrag vom 29.08.2026: Die Kursdrehung wechselt in Richtung
-  // (minus = gegen den Uhrzeigersinn) und Betrag (180, 270, 360, 720).
-  // Höhe und Fahrt bleiben das feste Standardszenario vom 28.08.2026.
-  const v = erzeugeVorgaben(3, folge([0.1, 0.7, 0.5, 0.5]));
+test("erzeugeVorgaben: Kurs, Höhe und Fahrt würfeln je Durchgang", () => {
+  // Willis Auftrag vom 01.09.2026: Kursbeträge 180, 360, 720, Höhenbeträge
+  // 500, 1000, 1500 Fuß (beide mit Richtung), die Fahrt frei im Zehnerraster.
+  // Je Größe zwei Züge: erst der Betrag oder Startwert, dann Richtung oder Ziel.
+  const v = erzeugeVorgaben(3, folge([0.1, 0.7, 0.5, 0.5, 0.5, 0.5]));
   assert.deepEqual(v.kurs, { start: 0, aenderung: 180, ziel: 180 });
   assert.deepEqual(v.hoehe, { start: 5000, aenderung: 1000, ziel: 6000 });
-  assert.deepEqual(v.fahrt, { start: 100, ziel: 140 });
-  const w = erzeugeVorgaben(3, folge([0.8, 0.3, 0.5, 0.5]));
+  assert.deepEqual(v.fahrt, { start: 190, ziel: 230 });
+  const w = erzeugeVorgaben(3, folge([0.8, 0.3, 0.9, 0.2, 0.0, 0.99]));
   assert.deepEqual(w.kurs, { start: 0, aenderung: -720, ziel: 0 });
-  assert.deepEqual(w.hoehe, v.hoehe);
-  assert.deepEqual(w.fahrt, v.fahrt);
+  assert.deepEqual(w.hoehe, { start: 5000, aenderung: -1500, ziel: 3500 });
+  assert.deepEqual(w.fahrt, { start: 60, ziel: 320 });
 });
 
 test("erzeugeVorgaben: Raster und Erreichbarkeit über viele Zufallszüge", () => {
@@ -42,17 +42,14 @@ test("erzeugeVorgaben: Raster und Erreichbarkeit über viele Zufallszüge", () =
       const v = erzeugeVorgaben(stufe, Math.random);
 
       assert.equal(v.kurs.start, 0); // Start bleibt Norden
-      assert.ok([180, 270, 360, 720].includes(Math.abs(v.kurs.aenderung)));
+      assert.ok([180, 360, 720].includes(Math.abs(v.kurs.aenderung)));
       assert.equal(v.kurs.ziel, ((v.kurs.aenderung % 360) + 360) % 360);
       gesehen.add(v.kurs.aenderung);
 
-      assert.ok(v.hoehe.start >= 2000 && v.hoehe.start <= 8000);
-      assert.equal(v.hoehe.start % 500, 0);
-      const hoeheBetrag = Math.abs(v.hoehe.aenderung);
-      assert.ok(hoeheBetrag >= 500 && hoeheBetrag <= 3000);
-      assert.equal(hoeheBetrag % 500, 0);
+      assert.equal(v.hoehe.start, 5000); // Starthöhe bleibt fest
+      assert.ok([500, 1000, 1500].includes(Math.abs(v.hoehe.aenderung)));
       assert.equal(v.hoehe.ziel, v.hoehe.start + v.hoehe.aenderung);
-      assert.ok(v.hoehe.ziel >= 500 && v.hoehe.ziel <= 9900);
+      gesehen.add(`h${v.hoehe.aenderung}`);
 
       assert.ok(v.fahrt.start >= 60 && v.fahrt.start <= 320);
       assert.equal(v.fahrt.start % 10, 0);
@@ -61,8 +58,9 @@ test("erzeugeVorgaben: Raster und Erreichbarkeit über viele Zufallszüge", () =
       assert.ok(Math.abs(v.fahrt.ziel - v.fahrt.start) >= 40);
     }
   }
-  // Über 2000 Züge müssen beide Richtungen und alle vier Beträge vorkommen.
-  assert.equal(gesehen.size, 8);
+  // Über 2000 Züge müssen bei Kurs und Höhe beide Richtungen und alle
+  // Beträge vorkommen: sechs Kurswerte plus sechs Höhenwerte.
+  assert.equal(gesehen.size, 12);
 });
 
 test("erzeugeVorgaben: aktive je Stufe, feste Reihenfolge im Ergebnis", () => {
