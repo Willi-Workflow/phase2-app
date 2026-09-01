@@ -27,6 +27,32 @@ test("Rahmenwerte des Nachbaus", () => {
   assert.equal(SOLL_KT, 95);
 });
 
+test("takt: Stickrate läuft an statt sofort voll anzuliegen", () => {
+  // Willis Rückmeldung vom 01.09.2026 ("zu direkt, gerade bei Mission 2"):
+  // Die Sollrate baut sich wie in Mission 1 über die Anlaufzeit auf. Drift
+  // stillgelegt, damit nur die Eingabe misst.
+  const rnd = saatZufall(7);
+  const z = erzeugeLaufzustand(ALLE, rnd);
+  for (const d of [z.drift.fx, z.drift.fy, z.drift.strich, z.drift.nadel]) { d.ziel = 0; d.wert = 0; d.restMs = 1e9; }
+  z.fadenkreuz = { x: 0.5, y: 0.5 };
+  takt(z, { ...RUHE, stickX: 1 }, 50, rnd);
+  const erster = z.fadenkreuz.x - 0.5;
+  assert.ok(erster > 0 && erster < 0.015); // ein Drittel der vollen Rate
+  for (let i = 0; i < 100; i++) takt(z, { ...RUHE, stickX: 1 }, 50, rnd);
+  z.fadenkreuz.x = 0.5; // von der Randbegrenzung lösen
+  takt(z, { ...RUHE, stickX: 1 }, 50, rnd);
+  const voll = z.fadenkreuz.x - 0.5;
+  assert.ok(voll > 0.025); // volle Rate: 0,56 je Sekunde mal 0,05 s
+
+  // Nachschwenken (Willis Videobefund vom 01.09.2026): Nach dem Loslassen
+  // trägt das Fadenkreuz Restschwung und läuft spürbar weiter, statt sofort
+  // zu stehen. Eine halbe Sekunde Auslauf muss deutlich Weg machen.
+  z.fadenkreuz.x = 0.5;
+  for (let i = 0; i < 10; i++) takt(z, RUHE, 50, rnd);
+  const auslauf = z.fadenkreuz.x - 0.5;
+  assert.ok(auslauf > 0.05, `Auslauf ${auslauf} zu kurz`);
+});
+
 test("erzeugeLaufzustand: Startlage gültig und außerhalb der Deckung", () => {
   const rnd = saatZufall(7);
   for (let i = 0; i < 50; i++) {

@@ -29,6 +29,16 @@ const DRIFT_RUDER = 0.075;
 const DRIFT_NADEL = 5;
 const DRIFTWECHSEL_MIN_MS = 1500;
 const DRIFTWECHSEL_MAX_MS = 3000;
+// Trägheit der Steuerrate: Sie bestimmt beides, den Aufbau der Bewegung und
+// das Nachschwenken nach dem Loslassen (der Restschwung klingt mit derselben
+// Zeitkonstante ab). Am 01.09.2026 nach Willis Videobefund von 150 auf 400
+// angehoben: Im SMT-Original läuft das rote Fadenkreuz beim Einfangen rund
+// 40 Prozent über das Ziel hinaus und pendelt zurück (Reportage 3:26 bis
+// 3:28), das ist ein Schwenken mit Masse, keine direkte Geschwindigkeit.
+// Auslaufweg im Video etwa 0,08 Feldbreiten bei 0,25 je Sekunde Einlauf,
+// also rund 0,3 bis 0,4 s Zeitkonstante. Tracking-Aufgaben der Literatur
+// unterlegen dem Cursor genauso bewusst ein träges System.
+const ANLAUF_MS = 400;
 
 const begrenze = (w, min, max) => Math.min(max, Math.max(min, w));
 
@@ -84,6 +94,7 @@ export function erzeugeLaufzustand(auswahl, rnd = Math.random) {
     fadenkreuz: zufallsFadenkreuz(rnd),
     strich: zufallsStrich(rnd),
     nadel: zufallsNadel(rnd),
+    rate: { fx: 0, fy: 0, strich: 0 },
     soll: SOLL_KT,
     drift: {
       fx: neueDrift(DRIFT_STICK, rnd),
@@ -106,18 +117,28 @@ export function inDeckung(z, element) {
 }
 
 // Ein Zeitschritt: Eingaben wirken als Rate, die Drift kommt obendrauf.
+// Stick- und Ruderrate laufen seit 01.09.2026 mit derselben Trägheit an
+// wie in Mission 1 (Willis Rückmeldung "zu direkt, gerade bei Mission 2"):
+// Die Sollrate liegt erst nach der Anlaufzeit voll an, die Kennlinie und
+// damit die Anfangsempfindlichkeit bleiben unverändert. Der Schub bleibt
+// unverzögert, er ist ein Stellhebel. Die Drift umgeht den Anlauf bewusst,
+// sie ist Störung, keine Eingabe.
 // Rückgabe: Trefferereignisse dieses Takts, je Element höchstens eines.
 export function takt(z, eingaben, dtMs, rnd = Math.random) {
   const dt = dtMs / 1000;
   const aktiv = z.auswahl;
   const ereignisse = [];
 
+  const glatt = Math.min(1, dtMs / ANLAUF_MS);
   if (aktiv.includes("stick")) {
-    z.fadenkreuz.x = begrenze(z.fadenkreuz.x + (eingaben.stickX * RATE_STICK + taktDrift(z.drift.fx, dtMs, rnd)) * dt, FADEN_RAND, 1 - FADEN_RAND);
-    z.fadenkreuz.y = begrenze(z.fadenkreuz.y + (eingaben.stickY * RATE_STICK + taktDrift(z.drift.fy, dtMs, rnd)) * dt, FADEN_RAND, 1 - FADEN_RAND);
+    z.rate.fx += (eingaben.stickX * RATE_STICK - z.rate.fx) * glatt;
+    z.rate.fy += (eingaben.stickY * RATE_STICK - z.rate.fy) * glatt;
+    z.fadenkreuz.x = begrenze(z.fadenkreuz.x + (z.rate.fx + taktDrift(z.drift.fx, dtMs, rnd)) * dt, FADEN_RAND, 1 - FADEN_RAND);
+    z.fadenkreuz.y = begrenze(z.fadenkreuz.y + (z.rate.fy + taktDrift(z.drift.fy, dtMs, rnd)) * dt, FADEN_RAND, 1 - FADEN_RAND);
   }
   if (aktiv.includes("ruder")) {
-    z.strich.x = begrenze(z.strich.x + (eingaben.ruder * RATE_RUDER + taktDrift(z.drift.strich, dtMs, rnd)) * dt, 0, 1);
+    z.rate.strich += (eingaben.ruder * RATE_RUDER - z.rate.strich) * glatt;
+    z.strich.x = begrenze(z.strich.x + (z.rate.strich + taktDrift(z.drift.strich, dtMs, rnd)) * dt, 0, 1);
   }
   if (aktiv.includes("schub")) {
     z.nadel = begrenze(z.nadel + (eingaben.schub * RATE_NADEL + taktDrift(z.drift.nadel, dtMs, rnd)) * dt, NADEL_MIN, NADEL_MAX);
