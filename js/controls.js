@@ -25,6 +25,13 @@ const RATENROLLEN = new Set(["stickX", "stickY", "ruder"]);
 // und werden je Profil gespeichert.
 const TOTZONE_VORGABE = 0.10;
 const EXPO_VORGABE = 0.4;
+// Festes Rauschtor unter dem Totzonen-Regler (Willis Auftrag vom
+// 01.09.2026, der Drift darf nicht mit der Sensibilität skalieren): Eine
+// ruhende Achse muss exakt 0 liefern, sonst verstärkt der Faktor den
+// Restwert aus Sensorzittern und wirkt wie zusätzliche Drift. 0,015 liegt
+// unter jeder fühlbaren Mitte; der Regler kann die Totzone nur vergrößern,
+// nie unter das Tor senken. Größere Ruhelagen-Versätze fängt die Messung.
+const RAUSCHTOR = 0.015;
 // Empfindlichkeit: Faktor hinter der Kurve (Willis Auftrag vom 29.08.2026).
 // Entweder gilt ein allgemeiner Wert für alle Geräte, oder der Haken
 // "je Gerät" schaltet um, dann zählt nur noch der je Gerät gespeicherte
@@ -42,6 +49,12 @@ export function erzeugeControls(speicher) {
   let empfindlichkeit = EMPFINDLICHKEIT_VORGABE;
   let empfindlichkeitJeGeraet = {};   // geraetekennung -> faktor
   let empfindlichkeitModus = "alle";  // "alle" | "geraet"
+  // Schubweg: eigener Faktor nur für den Schub (Willis Auftrag vom
+  // 01.09.2026, Ruder und Schub hängen am selben Gerät). Ab 1: über 1
+  // liegen Leerlauf und Vollgas früher im Hebelweg, das Ergebnis bleibt
+  // gedeckelt bei ±1. Unter 1 wäre das Fahrtband unerreichbar, darum
+  // beginnt die Skala bei 1.
+  let empfindlichkeitSchub = 1;
   let ruhelagen = {};                 // geraetekennung -> [achswerte in Ruhe]
   let glaettung = GLAETTUNG_VORGABE;  // ms
   const geglaettet = {};              // rolle -> {wert, zeitMs}, Zustand der Glättung
@@ -87,6 +100,7 @@ export function erzeugeControls(speicher) {
       expo = await speicher.ladeEinstellung("expo", EXPO_VORGABE);
       empfindlichkeit = await speicher.ladeEinstellung("empfindlichkeit", EMPFINDLICHKEIT_VORGABE);
       empfindlichkeitJeGeraet = await speicher.ladeEinstellung("empfindlichkeitJeGeraet", {});
+      empfindlichkeitSchub = await speicher.ladeEinstellung("empfindlichkeitSchub", 1);
       empfindlichkeitModus = await speicher.ladeEinstellung("empfindlichkeitModus", "alle");
       ruhelagen = await speicher.ladeEinstellung("ruhelagen", {});
       glaettung = await speicher.ladeEinstellung("glaettung", GLAETTUNG_VORGABE);
@@ -98,10 +112,11 @@ export function erzeugeControls(speicher) {
     },
 
     // Kette je Achse: Ruhelage (nur Ratenachsen) → Umkehrung → Totzone und
-    // Expo → Empfindlichkeitsfaktor (nur Ratenachsen, seit 01.09.2026 ohne
-    // Kappung: über 1 heißt mehr als Missionsrate) → Glättung (nur
-    // Ratenachsen). Der Schub verlässt die Kette nach der Kurve und bleibt
-    // so immer im Bereich ±1 und unverzögert.
+    // Expo → Empfindlichkeitsfaktor (Ratenachsen ohne Kappung: über 1 heißt
+    // mehr als Missionsrate) → Glättung (nur Ratenachsen). Der Schub bleibt
+    // unverzögert und hat statt der Empfindlichkeit den eigenen
+    // Schubweg-Faktor, gedeckelt bei ±1: über 1 liegen Leerlauf und Vollgas
+    // früher im Hebelweg, der Fahrtbereich selbst wächst nie.
     wert(rolle) {
       // Glättung als letzter Schritt, zeitbasiert je Rolle: Mehrfachabrufe
       // im selben Bild schaden nicht, weil dt dann nahe 0 ist.
@@ -112,21 +127,23 @@ export function erzeugeControls(speicher) {
         geglaettet[rolle] = { wert: neu, zeitMs: jetztMs };
         return neu;
       };
+      const mitSchubweg = (wert) =>
+        Math.max(-1, Math.min(1, wert * Math.max(1, empfindlichkeitSchub)));
       const z = zuordnung[rolle];
       if (z) {
         const pad = pads().find((p) => p.id === z.geraet);
         if (pad && z.achse < pad.axes.length) {
           const ruhe = RATENROLLEN.has(rolle) ? (ruhelagen[z.geraet]?.[z.achse] ?? 0) : 0;
           const roh = mitRuhelage(pad.axes[z.achse], ruhe) * (z.invert ? -1 : 1);
-          const kurvenwert = mitKurve(roh, totzone, expo);
-          if (!RATENROLLEN.has(rolle)) return kurvenwert;
+          const kurvenwert = mitKurve(roh, Math.max(totzone, RAUSCHTOR), expo);
+          if (!RATENROLLEN.has(rolle)) return mitSchubweg(kurvenwert);
           const faktor = empfindlichkeitFuer(empfindlichkeitModus, empfindlichkeit, empfindlichkeitJeGeraet, z.geraet);
           return geglaettetes(mitEmpfindlichkeit(kurvenwert, faktor));
         }
       }
       // Tastatur-Ersatz: im Modus "alle" wirkt der allgemeine Faktor mit,
       // im Gerätemodus bleibt die Tastatur neutral (sie ist kein Gerät).
-      if (!RATENROLLEN.has(rolle)) return tastaturWert(rolle);
+      if (!RATENROLLEN.has(rolle)) return mitSchubweg(tastaturWert(rolle));
       const faktor = empfindlichkeitFuer(empfindlichkeitModus, empfindlichkeit, empfindlichkeitJeGeraet, undefined);
       return geglaettetes(mitEmpfindlichkeit(tastaturWert(rolle), faktor));
     },
@@ -259,6 +276,7 @@ export function erzeugeControls(speicher) {
       if (name === "expo") expo = wert;
       if (name === "empfindlichkeit") empfindlichkeit = wert;
       if (name === "glaettung") glaettung = wert;
+      if (name === "empfindlichkeitSchub") empfindlichkeitSchub = wert;
     },
 
     async setzeEmpfindlichkeitModus(modus) {
@@ -275,7 +293,7 @@ export function erzeugeControls(speicher) {
       await speicher.setzeEinstellung("empfindlichkeitJeGeraet", empfindlichkeitJeGeraet);
     },
 
-    regler() { return { totzone, expo, empfindlichkeit, glaettung, empfindlichkeitModus, empfindlichkeitJeGeraet }; },
+    regler() { return { totzone, expo, empfindlichkeit, glaettung, empfindlichkeitSchub, empfindlichkeitModus, empfindlichkeitJeGeraet }; },
 
     // Dialog-Rückrufe erben das this von controls lexikalisch. oeffneDialog muss daher
     // immer als controls.oeffneDialog() gerufen werden, nicht entnommen.
@@ -315,7 +333,9 @@ export function erzeugeControls(speicher) {
         <div class="reglerzeile"><span class="reglertitel">Empfindlichkeit</span><span class="skala">0,5</span><input type="range" id="empfindlichkeit" min="0.5" max="5" step="0.05"><span class="skala">5</span><span class="reglerwert" id="empfindlichkeit-wert"></span></div>
         <div class="reglerzeile"><span class="reglertitel">Glättung</span><span class="skala">aus</span><input type="range" id="glaettung" min="0" max="250" step="10"><span class="skala">250</span><span class="reglerwert" id="glaettung-wert"></span></div>
         <label class="hakenzeile"><input type="checkbox" id="empf-je-geraet"> Empfindlichkeit je Gerät</label>
-        <p class="reglerhinweis">Mit Haken bekommt jedes verbundene Gerät in der Geräteliste einen eigenen Regler, der allgemeine gilt dann nicht.</p>
+        <p class="reglerhinweis">Mit Haken bekommt jedes verbundene Gerät in der Geräteliste einen eigenen Regler, der allgemeine gilt dann nicht. Beides betrifft nur Stick und Ruder, der Schub hat seinen eigenen Regler.</p>
+        <div class="reglerzeile"><span class="reglertitel">Schubweg</span><span class="skala">1</span><input type="range" id="empf-schub" min="1" max="3" step="0.05"><span class="skala">3</span><span class="reglerwert" id="empf-schub-wert"></span></div>
+        <p class="reglerhinweis">Nur für den Schubregler, unabhängig von der Empfindlichkeit oben: Über 1 liegen Leerlauf und Vollgas früher im Hebelweg, dazwischen wird der Hebel feinfühliger. So bekommen Schub und Ruder getrennte Einstellungen, auch wenn sie am selben Gerät hängen.</p>
         <div class="rollenzeile">
           <span class="rollentitel">Ruhelage</span>
           <span class="rollenstand" id="stand-ruhelage"></span>
@@ -376,6 +396,7 @@ export function erzeugeControls(speicher) {
         dialog.querySelector("#expo-wert").textContent = alsZahl(stand.expo);
         dialog.querySelector("#empfindlichkeit-wert").textContent = alsZahl(stand.empfindlichkeit);
         dialog.querySelector("#glaettung-wert").textContent = stand.glaettung > 0 ? `${stand.glaettung} ms` : "aus";
+        dialog.querySelector("#empf-schub-wert").textContent = alsZahl(stand.empfindlichkeitSchub);
       };
       // Der Modus schaltet die Klasse am Dialog: Sie blendet die Geräteregler
       // ein und legt den allgemeinen Empfindlichkeitsregler still.
@@ -389,6 +410,7 @@ export function erzeugeControls(speicher) {
       dialog.querySelector("#expo").value = this.regler().expo;
       dialog.querySelector("#empfindlichkeit").value = this.regler().empfindlichkeit;
       dialog.querySelector("#glaettung").value = this.regler().glaettung;
+      dialog.querySelector("#empf-schub").value = this.regler().empfindlichkeitSchub;
       zeigeRegler();
       zeigeModus();
       dialog.querySelector("#totzone").addEventListener("input", (e) => { this.setzeReglerFluechtig("totzone", Number(e.target.value)); zeigeRegler(); });
@@ -402,6 +424,8 @@ export function erzeugeControls(speicher) {
       dialog.querySelector("#empf-je-geraet").addEventListener("change", (e) => {
         this.setzeEmpfindlichkeitModus(e.target.checked ? "geraet" : "alle").then(zeigeModus);
       });
+      dialog.querySelector("#empf-schub").addEventListener("input", (e) => { this.setzeReglerFluechtig("empfindlichkeitSchub", Number(e.target.value)); zeigeRegler(); });
+      dialog.querySelector("#empf-schub").addEventListener("change", (e) => this.setzeRegler("empfindlichkeitSchub", Number(e.target.value)));
 
       let halteAn = false;
       // Die Zeilen werden nur bei geändertem Gerätebestand oder geänderter
@@ -449,17 +473,18 @@ export function erzeugeControls(speicher) {
           // Ruhelage, Totzone, Expo und Empfindlichkeit wirklich bei den
           // Missionen an. Ein Stick in Ruhe zeigt so 0.00, die Totzone wird
           // sichtbar (Willis Rückmeldung vom 31.08.2026). Eine als Schub
-          // zugeordnete Achse rechnet ohne Ruhelage und Faktor, wie in wert().
-          // Gedrückte Knopfnummern weiter live, so fallen klemmende Knöpfe
-          // sofort auf.
+          // zugeordnete Achse rechnet ohne Ruhelage und mit dem gedeckelten
+          // Schubweg, wie in wert(). Gedrückte Knopfnummern weiter live, so
+          // fallen klemmende Knöpfe sofort auf.
           const stand = this.regler();
           const faktor = empfindlichkeitFuer(stand.empfindlichkeitModus, stand.empfindlichkeit, stand.empfindlichkeitJeGeraet, pad.id);
           const ruhen = this.ruhelagenVon()[pad.id] ?? [];
           const gedrueckt = pad.buttons.map((k, i) => (k.pressed ? i : null)).filter((i) => i !== null);
           feld.textContent = "wirksam  " + pad.axes.map((a, i) => {
             const stellung = zuordnung.schub?.geraet === pad.id && zuordnung.schub?.achse === i;
-            const k = mitKurve(mitRuhelage(a, stellung ? 0 : (ruhen[i] ?? 0)), stand.totzone, stand.expo);
-            return (stellung ? k : mitEmpfindlichkeit(k, faktor)).toFixed(2);
+            const k = mitKurve(mitRuhelage(a, stellung ? 0 : (ruhen[i] ?? 0)), Math.max(stand.totzone, RAUSCHTOR), stand.expo);
+            if (stellung) return Math.max(-1, Math.min(1, k * Math.max(1, stand.empfindlichkeitSchub))).toFixed(2);
+            return mitEmpfindlichkeit(k, faktor).toFixed(2);
           }).join("  ")
             + (gedrueckt.length ? ` · Knöpfe: ${gedrueckt.join(", ")}` : "");
         }

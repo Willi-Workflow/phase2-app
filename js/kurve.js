@@ -37,7 +37,10 @@ export function mitRuhelage(wert, ruhe) {
 
 // Wahl des Faktors nach Modus: "alle" nimmt den allgemeinen Wert, "geraet"
 // den je Gerät gespeicherten. Ohne Eintrag (oder ohne Gerät, etwa beim
-// Tastatur-Ersatz) bleibt der Faktor neutral bei 1.
+// Tastatur-Ersatz) bleibt der Faktor neutral bei 1. Beide Modi betreffen
+// nur die Ratenachsen; der Schub hat seinen eigenen Schubweg-Regler in
+// controls.js (Willis Auftrag vom 01.09.2026: Ruder und Schub hängen am
+// selben Gerät und brauchen getrennte Einstellung).
 export function empfindlichkeitFuer(modus, allgemein, jeGeraet, geraet) {
   if (modus === "geraet") return (geraet != null ? jeGeraet?.[geraet] : null) ?? 1;
   return allgemein;
