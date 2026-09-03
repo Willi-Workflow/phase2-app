@@ -96,7 +96,8 @@ Start zu Ziel). Durchgänge folgen am Stück, bis die Testdauer um ist.
   Einmaleins ist seit dem 29.08.2026 raus (Willis Entscheid).
 - Anpassende Schwierigkeit seit dem 03.09.2026 (Willis Entscheid, ohne
   Vorbild im Original, dort ist keine Schwierigkeitsregel beschrieben):
-  eine Stufenleiter deckelt die Operanden (5/9/15/20/30/40/55/70/85/99).
+  eine Stufenleiter deckelt die Operanden (9/15/20/30/40/55/70/85/99,
+  Einstieg einstellig, seit 03.09.2026 abends nicht mehr ab Deckel 5).
   Treppenregel: drei Richtige in Folge heben die Stufe um eins, jede
   falsche oder verpasste Aufgabe senkt sie sofort um eins und bricht die
   Serie. Jeder Lauf und jede Übung beginnt auf der leichtesten Stufe,

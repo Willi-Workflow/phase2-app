@@ -284,16 +284,16 @@ test("erzeugeRechenaufgabe: nur Plus und Minus, Grenzen je Stufe", () => {
       const a = erzeugeRechenaufgabe(Math.random, stufe);
       assert.ok(["+", "-"].includes(a.op));
       assert.ok(a.antwort >= 0 && a.antwort <= 99);
-      const deckel = [5, 9, 15, 20, 30, 40, 55, 70, 85, 99][stufe];
+      const deckel = [9, 15, 20, 30, 40, 55, 70, 85, 99][stufe];
       assert.ok(a.a >= 1 && a.a <= deckel, `Stufe ${stufe}: a=${a.a}`);
       assert.ok(a.b >= 0 && a.b <= deckel, `Stufe ${stufe}: b=${a.b}`);
       if (a.op === "+") assert.equal(a.antwort, a.a + a.b);
       else assert.equal(a.antwort, a.a - a.b);
     }
   }
-  // Ohne Stufenangabe gilt Stufe 0, jenseits der Spanne wird geklemmt.
+  // Ohne Stufenangabe gilt Stufe 0 (einstellig), jenseits wird geklemmt.
   const leicht = erzeugeRechenaufgabe(() => 0.99);
-  assert.ok(leicht.a <= 5 && leicht.b <= 5);
+  assert.ok(leicht.a <= 9 && leicht.b <= 9);
   const geklemmt = erzeugeRechenaufgabe(() => 0.99, 99);
   assert.ok(geklemmt.a <= 99);
 });

@@ -205,9 +205,11 @@ export function kennzahl3(punkteListe) {
 // eine anpassende Stufe deckelt die Operandengröße. Ergebnisse bleiben
 // immer zwischen 0 und 99, die Operanden werden so gewürfelt, dass kein
 // Neuwürfeln nötig ist. Die Leiter ist seit 03.09.2026 feiner gestuft,
-// damit die Treppenregel unten ganz leicht beginnt und nur langsam steigt.
-export const RECHENSTUFEN_MAX = 9;
-const STUFENDECKEL = [5, 9, 15, 20, 30, 40, 55, 70, 85, 99]; // größter Operand je Stufe
+// damit die Treppenregel nur langsam steigt; der Einstieg liegt nach
+// Willis Nachjustierung vom selben Tag einstellig bei Deckel 9 (Aufgaben
+// wie 4+9), nicht mehr bei Deckel 5 (1+2 war zu leicht).
+export const RECHENSTUFEN_MAX = 8;
+const STUFENDECKEL = [9, 15, 20, 30, 40, 55, 70, 85, 99]; // größter Operand je Stufe
 
 export function erzeugeRechenaufgabe(rnd = Math.random, stufe = 0) {
   const deckel = STUFENDECKEL[begrenze(Math.floor(stufe), 0, RECHENSTUFEN_MAX)];
