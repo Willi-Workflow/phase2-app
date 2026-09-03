@@ -11,7 +11,7 @@ import {
   TESTDAUERN, STUFEN, FLUGZEIT_S, EINRICHTZEIT_S, RECHENTAKT_S,
   erzeugeVorgaben, erzeugeFlugzustand, takt, sollwert, winkelabstand,
   momentanfehler, durchgangspunkte, kennzahl3, schwierigkeitsfaktor3, erfuellung3,
-  erzeugeRechenaufgabe, antworten5, pedalwahl, passeRechenstufeAn, rechenstandStart,
+  erzeugeRechenaufgabe, antworten5, pedalwahl, schiebeZone, passeRechenstufeAn, rechenstandStart,
 } from "./uebung3.js";
 import { mitEmpfindlichkeit } from "./kurve.js";
 import { svgUhr, svgSaeule } from "./uebung3-bild.js";
@@ -141,14 +141,17 @@ export function erzeugeUebung3({ speicher, controls }) {
 
   // Reine Kopfrechenübung ohne Flug (Muster: Buchstabenübung von Mission 1):
   // dunkler Schirm, alle RECHENTAKT_S Sekunden eine angesagte Aufgabe, die
-  // Pedale wählen den Knopf, die Schusstaste bestätigt. Zählt nie zur
-  // Statistik (beiEnde(null)).
+  // Pedale wählen den Knopf, die Schusstaste bestätigt. Ohne verbundene
+  // Pedale übernehmen die Pfeiltasten die Wahl, der Hinweistext folgt dem
+  // beim Start verbundenen Bedienweg. Zählt nie zur Statistik (beiEnde(null)).
   function starteRechenUebung({ tuer, beiEnde, registriereAbbruch }) {
     const { testdauer } = einstellung;
     const schleier = document.createElement("div");
     schleier.className = "laufschleier buchstaben";
     schleier.innerHTML = `<div class="testkopf"></div>
-      <div class="hinweis">Höre die Aufgabe. Wähle mit den Pedalen den passenden Knopf,<br>die Schusstaste bestätigt. Ohne Bestätigung zählt die Aufgabe als verpasst.</div>
+      <div class="hinweis">${controls.hatGeraet("ruder")
+        ? "Höre die Aufgabe. Wähle mit den Pedalen den passenden Knopf,<br>die Schusstaste bestätigt. Ohne Bestätigung zählt die Aufgabe als verpasst."
+        : "Höre die Aufgabe. Wähle mit den Pfeiltasten links und rechts den passenden Knopf,<br>die Leertaste bestätigt. Ohne Bestätigung zählt die Aufgabe als verpasst."}</div>
       <div class="ict-antworten"></div>`;
     document.body.append(schleier);
     if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
@@ -174,6 +177,17 @@ export function erzeugeUebung3({ speicher, controls }) {
     // Anpassende Schwierigkeit über die Treppenregel: drei Richtige in
     // Folge heben die Stufe, jede falsche oder verpasste Aufgabe senkt sie.
     let rechenstand = rechenstandStart();
+    // Ohne verbundene Pedale wählen die Pfeiltasten die Antwortzone
+    // (Willis Auftrag vom 03.09.2026), bestätigt wird wie immer über die
+    // Schusstaste, deren Ersatz die Leertaste ist.
+    let tastenZone = 2; // mittlere der fünf Zonen, wie ein Pedal in Ruhe
+    const beiPfeiltaste = (e) => {
+      if (beendet || ergebnisOffen || controls.hatGeraet("ruder")) return;
+      if (e.code !== "ArrowLeft" && e.code !== "ArrowRight") return;
+      e.preventDefault();
+      tastenZone = schiebeZone(tastenZone, e.code === "ArrowLeft" ? -1 : 1);
+    };
+    document.addEventListener("keydown", beiPfeiltaste);
 
     const zeichne = (gewaehlt = -1, echo = null) => {
       if (!aufgabe) { antwortenfeld.innerHTML = ""; return; }
@@ -189,6 +203,7 @@ export function erzeugeUebung3({ speicher, controls }) {
       beendet = true;
       clearTimeout(echoUhr);
       sprecher.stopp();
+      document.removeEventListener("keydown", beiPfeiltaste);
       document.removeEventListener("fullscreenchange", beiVollbildwechsel);
       document.removeEventListener("visibilitychange", beiSichtwechsel);
       schleier.remove();
@@ -215,7 +230,7 @@ export function erzeugeUebung3({ speicher, controls }) {
         naechsteMs += RECHENTAKT_S * 1000;
       }
       if (aufgabe && !beantwortet) {
-        const zone = pedalwahl(controls.wert("ruder"));
+        const zone = controls.hatGeraet("ruder") ? pedalwahl(controls.wert("ruder")) : tastenZone;
         if (zone !== gezeichneteZone) { gezeichneteZone = zone; zeichne(zone); }
         if (controls.schussGedrueckt()) {
           beantwortet = true;

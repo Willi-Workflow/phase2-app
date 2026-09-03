@@ -5,7 +5,7 @@ import {
   erzeugeVorgaben, erzeugeFlugzustand, takt, sollwert, winkelabstand,
   momentanfehler, durchgangspunkte, kennzahl3,
   erzeugeRechenaufgabe, antworten5, pedalwahl, RECHENSTUFEN_MAX, erfuellung3,
-  passeRechenstufeAn, rechenstandStart, ANSTIEG_SERIE,
+  passeRechenstufeAn, rechenstandStart, ANSTIEG_SERIE, schiebeZone,
 } from "../js/uebung3.js";
 import { svgUhr, svgSaeule, uhrwinkel, saeulenanteil } from "../js/uebung3-bild.js";
 
@@ -366,6 +366,14 @@ test("antworten5 ist mit gleichem Zufall gleich", () => {
   const a = antworten5(aufgabe, zaehler());
   const b = antworten5(aufgabe, zaehler());
   assert.deepEqual(a, b);
+});
+
+test("schiebeZone: schrittweise mit Klemmung an den Rändern", () => {
+  // Pfeiltastenwahl ohne Pedale (Willis Auftrag vom 03.09.2026).
+  assert.equal(schiebeZone(2, 1), 3);
+  assert.equal(schiebeZone(2, -1), 1);
+  assert.equal(schiebeZone(0, -1), 0);
+  assert.equal(schiebeZone(4, 1), 4);
 });
 
 test("pedalwahl: fünf gleich breite Zonen von -1 bis 1", () => {

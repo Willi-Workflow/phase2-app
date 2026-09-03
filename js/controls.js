@@ -111,6 +111,15 @@ export function erzeugeControls(speicher) {
       return pads().map((p) => ({ kennung: p.id, achsen: p.axes.length, knoepfe: p.buttons.length }));
     },
 
+    // Meldet, ob für die Rolle ein zugewiesenes Gerät verbunden ist; ohne
+    // eines wählt die Kopfrechen-Übung die Antwortzone über die Pfeiltasten.
+    hatGeraet(rolle) {
+      const z = zuordnung[rolle];
+      if (!z) return false;
+      const pad = pads().find((p) => p.id === z.geraet);
+      return Boolean(pad && z.achse < pad.axes.length);
+    },
+
     // Kette je Achse: Ruhelage (nur Ratenachsen) → Umkehrung → Totzone und
     // Expo → Empfindlichkeitsfaktor (Ratenachsen ohne Kappung: über 1 heißt
     // mehr als Missionsrate) → Glättung (nur Ratenachsen). Der Schub bleibt

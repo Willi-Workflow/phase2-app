@@ -246,6 +246,14 @@ export function antworten5(aufgabe, rnd = Math.random) {
   return mische([antwort, ...eindeutig], rnd);
 }
 
+// Antwortwahl ohne Pedale (Willis Auftrag vom 03.09.2026): Sind keine
+// Pedale verbunden, schieben die Pfeiltasten die gewählte Zone in der
+// Kopfrechen-Übung schrittweise nach links oder rechts, geklemmt an den
+// Rändern; bestätigt wird weiter über die Schusstaste (Ersatz Leertaste).
+export function schiebeZone(zone, schritt) {
+  return begrenze(zone + schritt, 0, PEDALZONEN - 1);
+}
+
 // Pedalwahl über fünf gleich breite Zonen des Ausschlags von -1 bis 1.
 export function pedalwahl(ruder) {
   const r = begrenze(ruder, -1, 1);

@@ -105,7 +105,10 @@ Start zu Ziel). Durchgänge folgen am Stück, bis die Testdauer um ist.
   Ablenker in der Nähe). Die Pedale wählen über fünf gleich breite Zonen
   des Ausschlags den Knopf (der gewählte hebt sich hervor), die
   Schusstaste bestätigt. Ohne Bestätigung bis zur nächsten Aufgabe zählt
-  die Aufgabe als verpasst.
+  die Aufgabe als verpasst. In der Kopfrechen-Übung wählen ohne
+  verbundene Pedale die Pfeiltasten links/rechts die Zone, bestätigt
+  wird über die Leertaste als Schusstasten-Ersatz (Willis Auftrag vom
+  03.09.2026); der Flug bleibt bei der reinen Pedalwahl.
 - Zählwerte (richtig, falsch, verpasst) erscheinen in der Ergebnistafel;
   seit dem 31.08.2026 fließt das Kopfrechnen in Stufe 4 mit 20 Prozent in
   die Kennzahl ein (verpasste zählen als falsch).
