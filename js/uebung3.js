@@ -10,7 +10,20 @@ export const TESTDAUERN = [3, 5, 10]; // Minuten
 export const STUFEN = [1, 2, 3, 4];
 export const FLUGZEIT_S = 60;         // Dauer eines Durchgangs
 export const EINRICHTZEIT_S = 5;      // Fahrt zählt erst danach zur Wertung
-export const RECHENTAKT_S = 12;       // Abstand der Rechenaufgaben in Stufe 4
+// Rechenfluss seit 03.09.2026 (Willis Auftrag): Die Aufgaben laufen
+// durchgehend nacheinander statt im festen 12-Sekunden-Raster. Ab
+// Ansagebeginn läuft ein Antwortfenster; nach Antwort oder Fensterablauf
+// folgt nach kurzer Pause sofort die nächste Aufgabe. Die Ansage lässt
+// zwischen Zahl, Zeichen und Zahl eine Sprechpause, damit sie
+// verständlich bleibt.
+export const RECHNEN_START_S = 6;     // erste Aufgabe kurz nach der Einrichtzeit
+export const ANTWORT_FENSTER_S = 10;  // Antwortfenster ab Ansagebeginn
+export const FOLGE_PAUSE_S = 1.2;     // Luft zwischen zwei Aufgaben
+export const ANSAGE_PAUSE_MS = 350;   // Sprechpause zwischen den Ansagegliedern
+// Unter dieser Restzeit startet keine neue Aufgabe mehr: Ansage (rund
+// 3,5 s) plus etwas Reaktionszeit müssen noch hineinpassen, sonst zählte
+// eine unbeantwortbare Aufgabe am Ende als verpasst.
+export const RECHNEN_MINDESTREST_S = 8;
 
 const INSTRUMENTE = ["kurs", "hoehe", "fahrt"]; // feste Reihenfolge im Ergebnis
 

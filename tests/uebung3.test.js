@@ -1,7 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  TESTDAUERN, STUFEN, FLUGZEIT_S, EINRICHTZEIT_S, RECHENTAKT_S,
+  TESTDAUERN, STUFEN, FLUGZEIT_S, EINRICHTZEIT_S,
+  RECHNEN_START_S, ANTWORT_FENSTER_S, FOLGE_PAUSE_S, ANSAGE_PAUSE_MS, RECHNEN_MINDESTREST_S,
   erzeugeVorgaben, erzeugeFlugzustand, takt, sollwert, winkelabstand,
   momentanfehler, durchgangspunkte, kennzahl3,
   erzeugeRechenaufgabe, antworten5, pedalwahl, RECHENSTUFEN_MAX, erfuellung3,
@@ -19,7 +20,13 @@ test("Konstanten des Instrumentenflugs", () => {
   assert.deepEqual(STUFEN, [1, 2, 3, 4]);
   assert.equal(FLUGZEIT_S, 60);
   assert.equal(EINRICHTZEIT_S, 5);
-  assert.equal(RECHENTAKT_S, 12);
+  // Durchgehender Rechenfluss seit 03.09.2026 (Willis Auftrag): Startpunkt,
+  // Antwortfenster, Folgepause und Sprechpause ersetzen den 12-s-Takt.
+  assert.equal(RECHNEN_START_S, 6);
+  assert.equal(ANTWORT_FENSTER_S, 10);
+  assert.equal(FOLGE_PAUSE_S, 1.2);
+  assert.equal(ANSAGE_PAUSE_MS, 350);
+  assert.equal(RECHNEN_MINDESTREST_S, 8);
 });
 
 test("erzeugeVorgaben: Kurs, Höhe und Fahrt würfeln je Durchgang", () => {

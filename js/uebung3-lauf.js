@@ -8,7 +8,8 @@
 // panelflaeche-Instrumente: im Panelbereich liegt stattdessen die eigene
 // ICT-Tafel.
 import {
-  TESTDAUERN, STUFEN, FLUGZEIT_S, EINRICHTZEIT_S, RECHENTAKT_S,
+  TESTDAUERN, STUFEN, FLUGZEIT_S, EINRICHTZEIT_S,
+  RECHNEN_START_S, ANTWORT_FENSTER_S, FOLGE_PAUSE_S, ANSAGE_PAUSE_MS, RECHNEN_MINDESTREST_S,
   erzeugeVorgaben, erzeugeFlugzustand, takt, sollwert, winkelabstand,
   momentanfehler, durchgangspunkte, kennzahl3, schwierigkeitsfaktor3, erfuellung3,
   erzeugeRechenaufgabe, antworten5, pedalwahl, schiebeZone, passeRechenstufeAn, rechenstandStart,
@@ -22,10 +23,11 @@ const AUFGABENECHO_MS = 600;
 
 // Ansage der Rechenaufgaben (Stufe 4): ElevenLabs-Aufnahmen aus der
 // Bundeswehr-Lern-App, Kopie unter klaenge/zahlen (siehe dort HERKUNFT.md).
-// Zahl, Rechenzeichen, Zahl spielen nacheinander über das ended-Ereignis;
-// alle Klänge werden beim Anlegen des Sprechers vorgeladen, damit im Lauf
-// nichts nachlädt. Fehlt ein Klang, liest ersatzweise die
-// Browser-Sprachausgabe die betroffene Stelle.
+// Zahl, Rechenzeichen, Zahl spielen nacheinander über das ended-Ereignis,
+// seit 03.09.2026 mit ANSAGE_PAUSE_MS Sprechpause zwischen den Gliedern
+// (Willis Auftrag: langsamer ansagen). Alle Klänge werden beim Anlegen des
+// Sprechers vorgeladen, damit im Lauf nichts nachlädt. Fehlt ein Klang,
+// liest ersatzweise die Browser-Sprachausgabe die betroffene Stelle.
 const OPERATOREN = [
   { zeichen: "+", datei: "op_plus", wort: "plus" },
   { zeichen: "-", datei: "op_minus", wort: "minus" },
@@ -49,34 +51,37 @@ function erzeugeAufgabenSprecher() {
     klang.preload = "auto";
     vorrat.set(datei, klang);
   }
-  // Nach stopp() darf kein Glied der Kette mehr weiterlaufen: ein zum
-  // Abbruchzeitpunkt noch offenes play() lehnt sonst später ab und spräche
-  // über den Ersatzweg weiter, obwohl der Schleier längst entfernt ist.
-  let angehalten = false;
+  // Nach stopp() darf kein Glied der Kette mehr weiterlaufen, auch kein
+  // schon geplanter Pausen-Zeitgeber zwischen zwei Gliedern: Jede Ansage
+  // trägt darum eine Generationsnummer, stopp() und jede neue Ansage
+  // entwerten die vorige (Muster der Fang-Schleifen in controls.js). Ein
+  // bloßer Schalter reichte nicht, weil sprich() ihn sofort zurücksetzt
+  // und ein alter Zeitgeber dann weiterspräche.
+  let generation = 0;
   return {
     sprich(aufgabe) {
-      angehalten = false;
+      const meine = ++generation;
       const folge = [`n${aufgabe.a}`, OP_DATEI[aufgabe.op], `n${aufgabe.b}`];
       const spieleAb = (i) => {
-        if (angehalten || i >= folge.length) return;
+        if (meine !== generation || i >= folge.length) return;
         const name = folge[i];
         const klang = vorrat.get(name);
         if (!klang) { spieleAb(i + 1); return; }
         klang.currentTime = 0;
-        klang.onended = () => spieleAb(i + 1);
+        klang.onended = () => setTimeout(() => spieleAb(i + 1), ANSAGE_PAUSE_MS);
         klang.play().catch(() => {
-          if (angehalten) return;
+          if (meine !== generation) return;
           const wort = name.startsWith("n") ? name.slice(1) : WORT_VON_DATEI[name];
           const laut = new SpeechSynthesisUtterance(wort);
           laut.lang = "de-DE";
           speechSynthesis.speak(laut);
-          spieleAb(i + 1);
+          setTimeout(() => spieleAb(i + 1), ANSAGE_PAUSE_MS);
         });
       };
       spieleAb(0);
     },
     stopp() {
-      angehalten = true;
+      generation += 1;
       for (const klang of vorrat.values()) { klang.pause(); klang.onended = null; }
       speechSynthesis?.cancel?.();
     },
@@ -142,10 +147,11 @@ export function erzeugeUebung3({ speicher, controls }) {
   }
 
   // Reine Kopfrechenübung ohne Flug (Muster: Buchstabenübung von Mission 1):
-  // dunkler Schirm, alle RECHENTAKT_S Sekunden eine angesagte Aufgabe, die
-  // Pedale wählen den Knopf, die Schusstaste bestätigt. Ohne verbundene
-  // Pedale übernehmen die Pfeiltasten die Wahl, der Hinweistext folgt dem
-  // beim Start verbundenen Bedienweg. Zählt nie zur Statistik (beiEnde(null)).
+  // dunkler Schirm, die Aufgaben laufen durchgehend nacheinander (Antwort
+  // oder Fensterablauf, kurze Pause, nächste Ansage), die Pedale wählen den
+  // Knopf, die Schusstaste bestätigt. Ohne verbundene Pedale übernehmen die
+  // Pfeiltasten die Wahl, der Hinweistext folgt dem beim Start verbundenen
+  // Bedienweg. Zählt nie zur Statistik (beiEnde(null)).
   function starteRechenUebung({ tuer, beiEnde, registriereAbbruch }) {
     const { testdauer } = einstellung;
     const schleier = document.createElement("div");
@@ -168,6 +174,7 @@ export function erzeugeUebung3({ speicher, controls }) {
     let vorher = 0;
     let testMs = 0;
     let naechsteMs = 0;
+    let fensterEndeMs = 0;
     let aufgabe = null;
     let antworten = [];
     let beantwortet = false;
@@ -222,14 +229,26 @@ export function erzeugeUebung3({ speicher, controls }) {
       const dtMs = Math.min(100, jetzt - vorher || 16);
       vorher = jetzt;
       testMs += dtMs;
-      if (testMs >= naechsteMs) {
-        if (aufgabe && !beantwortet) { verpasst += 1; rechenstand = passeRechenstufeAn(rechenstand, false); }
-        aufgabe = erzeugeRechenaufgabe(Math.random, rechenstand.stufe);
-        antworten = antworten5(aufgabe, Math.random);
-        beantwortet = false;
-        gezeichneteZone = null;
-        sprecher.sprich(aufgabe);
-        naechsteMs += RECHENTAKT_S * 1000;
+      // Durchgehender Fluss: Nach Antwort oder Fensterablauf folgt nach
+      // kurzer Pause sofort die nächste Aufgabe.
+      if (!aufgabe || beantwortet) {
+        // Kurz vor dem Testende startet keine Aufgabe mehr, sonst stünde
+        // eine unbeantwortbare auf der Tafel als verpasst.
+        if (testMs >= naechsteMs && testende - performance.now() > RECHNEN_MINDESTREST_S * 1000) {
+          sprecher.stopp();
+          aufgabe = erzeugeRechenaufgabe(Math.random, rechenstand.stufe);
+          antworten = antworten5(aufgabe, Math.random);
+          beantwortet = false;
+          gezeichneteZone = null;
+          sprecher.sprich(aufgabe);
+          fensterEndeMs = testMs + ANTWORT_FENSTER_S * 1000;
+        }
+      } else if (testMs >= fensterEndeMs) {
+        verpasst += 1;
+        rechenstand = passeRechenstufeAn(rechenstand, false);
+        aufgabe = null;
+        zeichne();
+        naechsteMs = testMs + FOLGE_PAUSE_S * 1000;
       }
       if (aufgabe && !beantwortet) {
         const zone = controls.hatGeraet("ruder") ? pedalwahl(controls.wert("ruder")) : tastenZone;
@@ -239,6 +258,7 @@ export function erzeugeUebung3({ speicher, controls }) {
           const treffer = antworten[zone] === aufgabe.antwort;
           if (treffer) richtig += 1; else falsch += 1;
           rechenstand = passeRechenstufeAn(rechenstand, treffer);
+          naechsteMs = testMs + FOLGE_PAUSE_S * 1000;
           zeichne(-1, { zone, treffer });
           echoUhr = setTimeout(() => { if (!beendet && !ergebnisOffen) zeichne(); }, 600);
         }
@@ -404,16 +424,17 @@ export function erzeugeUebung3({ speicher, controls }) {
     };
 
     // ---------- Stufe 4: Rechenaufgaben ----------
-    // Alle RECHENTAKT_S Sekunden eine neue, nur angesagte Aufgabe; die
+    // Durchgehender Fluss seit 03.09.2026 (Willis Auftrag): erste Aufgabe
+    // bei RECHNEN_START_S, danach folgt nach Antwort oder Fensterablauf
+    // nach kurzer Pause sofort die nächste, bis der Durchgang endet. Die
     // Pedale wählen über pedalwahl eine der fünf Zonen, die Schusstaste
-    // bestätigt. Ohne Bestätigung bis zur nächsten Aufgabe zählt sie als
-    // verpasst. Die Zeitpunkte liegen fest bei RECHENTAKT_S-Vielfachen
-    // (12/24/36/48/60), FLUGZEIT_S ist durch RECHENTAKT_S teilbar, darum
-    // trifft die letzte Aufgabe genau das Durchgangsende.
+    // bestätigt. Ohne Bestätigung im Antwortfenster zählt die Aufgabe als
+    // verpasst; eine am Durchgangsende noch offene ebenso.
     let aktuelleAufgabe = null;
     let aktuelleAntworten = [];
     let aufgabeBeantwortet = false;
-    let naechsteAufgabeS = RECHENTAKT_S;
+    let naechsteAufgabeS = RECHNEN_START_S;
+    let fensterEndeS = 0;
 
     let gezeichneteZone = null;
     const zeichneAntworten = (gewaehlt = -1, echo = null) => {
@@ -427,18 +448,20 @@ export function erzeugeUebung3({ speicher, controls }) {
       }).join("");
     };
 
-    const starteAufgabe = () => {
+    const starteAufgabe = (tS) => {
+      sprecher.stopp(); // eine noch laufende Ansage endet, bevor die neue beginnt
       aktuelleAufgabe = erzeugeRechenaufgabe(Math.random, rechenstand.stufe);
       aktuelleAntworten = antworten5(aktuelleAufgabe, Math.random);
       aufgabeBeantwortet = false;
       gezeichneteZone = null;
-      naechsteAufgabeS += RECHENTAKT_S;
+      fensterEndeS = tS + ANTWORT_FENSTER_S;
       sprecher.sprich(aktuelleAufgabe);
       zeichneAntworten();
     };
 
-    const bestaetigeAufgabe = (zone) => {
+    const bestaetigeAufgabe = (zone, tS) => {
       aufgabeBeantwortet = true;
+      naechsteAufgabeS = tS + FOLGE_PAUSE_S;
       const treffer = aktuelleAntworten[zone] === aktuelleAufgabe.antwort;
       if (treffer) rechnenRichtig += 1; else rechnenFalsch += 1;
       rechenstand = passeRechenstufeAn(rechenstand, treffer);
@@ -447,20 +470,24 @@ export function erzeugeUebung3({ speicher, controls }) {
     };
 
     const taktRechnen = (tS) => {
-      if (aktuelleAufgabe === null) {
-        if (tS >= naechsteAufgabeS) starteAufgabe();
+      if (aktuelleAufgabe === null || aufgabeBeantwortet) {
+        // Kurz vor dem Durchgangsende startet keine Aufgabe mehr, sonst
+        // zählte eine unbeantwortbare am Ende als verpasst.
+        if (tS >= naechsteAufgabeS && tS < FLUGZEIT_S - RECHNEN_MINDESTREST_S) starteAufgabe(tS);
         return;
       }
-      if (tS >= naechsteAufgabeS) {
-        if (!aufgabeBeantwortet) { rechnenVerpasst += 1; rechenstand = passeRechenstufeAn(rechenstand, false); }
-        if (tS < FLUGZEIT_S) starteAufgabe(); else aktuelleAufgabe = null;
+      if (tS >= fensterEndeS) {
+        rechnenVerpasst += 1;
+        rechenstand = passeRechenstufeAn(rechenstand, false);
+        aktuelleAufgabe = null;
+        zeichneAntworten();
+        naechsteAufgabeS = tS + FOLGE_PAUSE_S;
         return;
       }
-      if (aufgabeBeantwortet) return;
       const zone = pedalwahl(controls.wert("ruder"));
       // Neu gezeichnet wird nur bei Zonenwechsel, nicht in jedem Bild.
       if (zone !== gezeichneteZone) { gezeichneteZone = zone; zeichneAntworten(zone); }
-      if (controls.schussGedrueckt()) bestaetigeAufgabe(zone);
+      if (controls.schussGedrueckt()) bestaetigeAufgabe(zone, tS);
     };
 
     // ---------- Flugtakt ----------
@@ -532,7 +559,8 @@ export function erzeugeUebung3({ speicher, controls }) {
       mfZaehler = 0;
       aktuelleAufgabe = null;
       aufgabeBeantwortet = false;
-      naechsteAufgabeS = RECHENTAKT_S;
+      naechsteAufgabeS = RECHNEN_START_S;
+      fensterEndeS = 0;
       if (antwortenfeld) antwortenfeld.innerHTML = "";
       durchgangStart = performance.now();
       vorher = durchgangStart;
@@ -546,6 +574,13 @@ export function erzeugeUebung3({ speicher, controls }) {
       // Eine noch laufende Ansage endet mit dem Durchgang, sie soll nicht
       // in die Zwischenanzeige hineinsprechen.
       sprecher?.stopp();
+      // Eine am Durchgangsende noch offene Aufgabe zählt als verpasst,
+      // wie zuvor die letzte Aufgabe des festen Rasters bei Sekunde 60.
+      if (aktuelleAufgabe && !aufgabeBeantwortet) {
+        rechnenVerpasst += 1;
+        rechenstand = passeRechenstufeAn(rechenstand, false);
+      }
+      aktuelleAufgabe = null;
       const punkte = durchgangspunkte(mfSumme, mfZaehler);
       punkteListe.push(punkte);
       zwischenfeld.textContent = `DURCHGANG ${durchgangsNummer} · ${punkte} %`;

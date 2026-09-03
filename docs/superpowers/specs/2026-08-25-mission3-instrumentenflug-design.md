@@ -85,10 +85,15 @@ Start zu Ziel). Durchgänge folgen am Stück, bis die Testdauer um ist.
 
 ## Rechenaufgaben (Stufe 4)
 
-- Alle 12 Sekunden eine neue Aufgabe, nur angesagt, nicht angezeigt (wie
-  im Original über Gehör): nur noch a+b (Ergebnis höchstens 99) und a-b
-  (Ergebnis mindestens 0); das Einmaleins ist seit dem 29.08.2026 raus
-  (Willis Entscheid).
+- Die Aufgaben laufen seit dem 03.09.2026 durchgehend nacheinander
+  (Willis Entscheid, ersetzt das feste 12-Sekunden-Raster): erste Aufgabe
+  bei Sekunde 6 des Durchgangs, Antwortfenster 10 s ab Ansagebeginn, nach
+  Antwort oder Fensterablauf folgt nach 1,2 s die nächste, bis der
+  Durchgang endet; unter 8 s Restzeit startet keine neue Aufgabe mehr,
+  eine am Durchgangsende offene zählt als verpasst. Nur angesagt, nicht angezeigt (wie im Original über Gehör),
+  mit 350 ms Sprechpause zwischen Zahl, Zeichen und Zahl: nur noch a+b
+  (Ergebnis höchstens 99) und a-b (Ergebnis mindestens 0); das
+  Einmaleins ist seit dem 29.08.2026 raus (Willis Entscheid).
 - Anpassende Schwierigkeit seit dem 03.09.2026 (Willis Entscheid, ohne
   Vorbild im Original, dort ist keine Schwierigkeitsregel beschrieben):
   eine Stufenleiter deckelt die Operanden (5/9/15/20/30/40/55/70/85/99).
