@@ -11,7 +11,7 @@ import {
   TESTDAUERN, STUFEN, FLUGZEIT_S, EINRICHTZEIT_S, RECHENTAKT_S,
   erzeugeVorgaben, erzeugeFlugzustand, takt, sollwert, winkelabstand,
   momentanfehler, durchgangspunkte, kennzahl3, schwierigkeitsfaktor3, erfuellung3,
-  erzeugeRechenaufgabe, antworten5, pedalwahl, RECHENSTUFEN_MAX,
+  erzeugeRechenaufgabe, antworten5, pedalwahl, passeRechenstufeAn, rechenstandStart,
 } from "./uebung3.js";
 import { mitEmpfindlichkeit } from "./kurve.js";
 import { svgUhr, svgSaeule } from "./uebung3-bild.js";
@@ -171,8 +171,9 @@ export function erzeugeUebung3({ speicher, controls }) {
     let richtig = 0;
     let falsch = 0;
     let verpasst = 0;
-    // Anpassende Schwierigkeit: jede richtige Antwort hebt die Stufe um eins.
-    let rechenstufe = 0;
+    // Anpassende Schwierigkeit über die Treppenregel: drei Richtige in
+    // Folge heben die Stufe, jede falsche oder verpasste Aufgabe senkt sie.
+    let rechenstand = rechenstandStart();
 
     const zeichne = (gewaehlt = -1, echo = null) => {
       if (!aufgabe) { antwortenfeld.innerHTML = ""; return; }
@@ -205,8 +206,8 @@ export function erzeugeUebung3({ speicher, controls }) {
       vorher = jetzt;
       testMs += dtMs;
       if (testMs >= naechsteMs) {
-        if (aufgabe && !beantwortet) verpasst += 1;
-        aufgabe = erzeugeRechenaufgabe(Math.random, rechenstufe);
+        if (aufgabe && !beantwortet) { verpasst += 1; rechenstand = passeRechenstufeAn(rechenstand, false); }
+        aufgabe = erzeugeRechenaufgabe(Math.random, rechenstand.stufe);
         antworten = antworten5(aufgabe, Math.random);
         beantwortet = false;
         gezeichneteZone = null;
@@ -219,8 +220,8 @@ export function erzeugeUebung3({ speicher, controls }) {
         if (controls.schussGedrueckt()) {
           beantwortet = true;
           const treffer = antworten[zone] === aufgabe.antwort;
-          if (treffer) { richtig += 1; rechenstufe = Math.min(RECHENSTUFEN_MAX, rechenstufe + 1); }
-          else falsch += 1;
+          if (treffer) richtig += 1; else falsch += 1;
+          rechenstand = passeRechenstufeAn(rechenstand, treffer);
           zeichne(-1, { zone, treffer });
           echoUhr = setTimeout(() => { if (!beendet && !ergebnisOffen) zeichne(); }, 600);
         }
@@ -322,8 +323,9 @@ export function erzeugeUebung3({ speicher, controls }) {
     const abwSumme = { kurs: 0, hoehe: 0, fahrt: 0 };
     const abwZaehler = { kurs: 0, hoehe: 0, fahrt: 0 };
     let rechnenRichtig = 0;
-    // Anpassende Schwierigkeit auch im Flug: richtig hebt die Stufe um eins.
-    let rechenstufe = 0;
+    // Anpassende Schwierigkeit auch im Flug: gleiche Treppenregel wie in
+    // der Übung, jeder Lauf beginnt bei der leichtesten Stufe.
+    let rechenstand = rechenstandStart();
     let rechnenFalsch = 0;
     let rechnenVerpasst = 0;
     const zeitgeber = new Set();
@@ -409,7 +411,7 @@ export function erzeugeUebung3({ speicher, controls }) {
     };
 
     const starteAufgabe = () => {
-      aktuelleAufgabe = erzeugeRechenaufgabe(Math.random, rechenstufe);
+      aktuelleAufgabe = erzeugeRechenaufgabe(Math.random, rechenstand.stufe);
       aktuelleAntworten = antworten5(aktuelleAufgabe, Math.random);
       aufgabeBeantwortet = false;
       gezeichneteZone = null;
@@ -421,8 +423,8 @@ export function erzeugeUebung3({ speicher, controls }) {
     const bestaetigeAufgabe = (zone) => {
       aufgabeBeantwortet = true;
       const treffer = aktuelleAntworten[zone] === aktuelleAufgabe.antwort;
-      if (treffer) { rechnenRichtig += 1; rechenstufe = Math.min(RECHENSTUFEN_MAX, rechenstufe + 1); }
-      else rechnenFalsch += 1;
+      if (treffer) rechnenRichtig += 1; else rechnenFalsch += 1;
+      rechenstand = passeRechenstufeAn(rechenstand, treffer);
       zeichneAntworten(-1, { zone, treffer });
       spaeter(() => { gezeichneteZone = null; zeichneAntworten(); }, AUFGABENECHO_MS);
     };
@@ -433,7 +435,7 @@ export function erzeugeUebung3({ speicher, controls }) {
         return;
       }
       if (tS >= naechsteAufgabeS) {
-        if (!aufgabeBeantwortet) rechnenVerpasst += 1;
+        if (!aufgabeBeantwortet) { rechnenVerpasst += 1; rechenstand = passeRechenstufeAn(rechenstand, false); }
         if (tS < FLUGZEIT_S) starteAufgabe(); else aktuelleAufgabe = null;
         return;
       }

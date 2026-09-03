@@ -189,12 +189,12 @@ export function kennzahl3(punkteListe) {
 }
 
 // Rechenaufgaben seit 29.08.2026 (Willis Auftrag): nur Plus und Minus, und
-// eine anpassende Stufe deckelt die Operandengröße. Stufe 0 rechnet
-// einstellig; jede richtig beantwortete Aufgabe hebt die Stufe im Lauf um
-// eins, bis zur Obergrenze. Ergebnisse bleiben immer zwischen 0 und 99,
-// die Operanden werden so gewürfelt, dass kein Neuwürfeln nötig ist.
-export const RECHENSTUFEN_MAX = 4;
-const STUFENDECKEL = [9, 20, 40, 70, 99]; // größter Operand je Stufe
+// eine anpassende Stufe deckelt die Operandengröße. Ergebnisse bleiben
+// immer zwischen 0 und 99, die Operanden werden so gewürfelt, dass kein
+// Neuwürfeln nötig ist. Die Leiter ist seit 03.09.2026 feiner gestuft,
+// damit die Treppenregel unten ganz leicht beginnt und nur langsam steigt.
+export const RECHENSTUFEN_MAX = 9;
+const STUFENDECKEL = [5, 9, 15, 20, 30, 40, 55, 70, 85, 99]; // größter Operand je Stufe
 
 export function erzeugeRechenaufgabe(rnd = Math.random, stufe = 0) {
   const deckel = STUFENDECKEL[begrenze(Math.floor(stufe), 0, RECHENSTUFEN_MAX)];
@@ -207,6 +207,23 @@ export function erzeugeRechenaufgabe(rnd = Math.random, stufe = 0) {
   const a = 1 + wuerfelIndex(deckel, rnd);                      // 1 bis deckel
   const b = wuerfelIndex(a + 1, rnd);                           // 0 bis a: Ergebnis >= 0
   return { a, op, b, antwort: a - b };
+}
+
+// Treppenregel seit 03.09.2026 (Willis Festlegung): Erst drei Richtige in
+// Folge heben die Rechenstufe um eins, jede falsche oder verpasste Aufgabe
+// senkt sie sofort um eins und bricht die Serie. Jeder Lauf und jede Übung
+// beginnt wieder bei der leichtesten Stufe.
+export const ANSTIEG_SERIE = 3;
+
+export function rechenstandStart() {
+  return { stufe: 0, serie: 0 };
+}
+
+export function passeRechenstufeAn(stand, richtig) {
+  if (!richtig) return { stufe: Math.max(0, stand.stufe - 1), serie: 0 };
+  const serie = stand.serie + 1;
+  if (serie < ANSTIEG_SERIE) return { stufe: stand.stufe, serie };
+  return { stufe: Math.min(RECHENSTUFEN_MAX, stand.stufe + 1), serie: 0 };
 }
 
 // Fünf gemischte Antwortmöglichkeiten: die richtige Antwort plus vier

@@ -86,8 +86,16 @@ Start zu Ziel). Durchgänge folgen am Stück, bis die Testdauer um ist.
 ## Rechenaufgaben (Stufe 4)
 
 - Alle 12 Sekunden eine neue Aufgabe, nur angesagt, nicht angezeigt (wie
-  im Original über Gehör): Formen a+b (Ergebnis höchstens 99), a-b
-  (Ergebnis mindestens 0), kleines Einmaleins (Faktoren bis 12).
+  im Original über Gehör): nur noch a+b (Ergebnis höchstens 99) und a-b
+  (Ergebnis mindestens 0); das Einmaleins ist seit dem 29.08.2026 raus
+  (Willis Entscheid).
+- Anpassende Schwierigkeit seit dem 03.09.2026 (Willis Entscheid, ohne
+  Vorbild im Original, dort ist keine Schwierigkeitsregel beschrieben):
+  eine Stufenleiter deckelt die Operanden (5/9/15/20/30/40/55/70/85/99).
+  Treppenregel: drei Richtige in Folge heben die Stufe um eins, jede
+  falsche oder verpasste Aufgabe senkt sie sofort um eins und bricht die
+  Serie. Jeder Lauf und jede Übung beginnt auf der leichtesten Stufe,
+  gespeichert wird der Stand nicht.
 - Ansage aus vorproduzierten ElevenLabs-Klängen: Zahl, Rechenzeichen,
   Zahl. Die Dateien kommen als Kopie aus der Bundeswehr-Lern-App
   (`~/Desktop/Claude/Bundeswehr/App/stimme`, n0 bis n99 plus op_plus,
@@ -98,8 +106,9 @@ Start zu Ziel). Durchgänge folgen am Stück, bis die Testdauer um ist.
   des Ausschlags den Knopf (der gewählte hebt sich hervor), die
   Schusstaste bestätigt. Ohne Bestätigung bis zur nächsten Aufgabe zählt
   die Aufgabe als verpasst.
-- Zählwerte (richtig, falsch, verpasst) erscheinen informativ in der
-  Ergebnistafel und fließen nicht in die Punkte ein.
+- Zählwerte (richtig, falsch, verpasst) erscheinen in der Ergebnistafel;
+  seit dem 31.08.2026 fließt das Kopfrechnen in Stufe 4 mit 20 Prozent in
+  die Kennzahl ein (verpasste zählen als falsch).
 
 ## Sichtprüfung und Tests
 

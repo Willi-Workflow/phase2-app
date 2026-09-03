@@ -5,6 +5,7 @@ import {
   erzeugeVorgaben, erzeugeFlugzustand, takt, sollwert, winkelabstand,
   momentanfehler, durchgangspunkte, kennzahl3,
   erzeugeRechenaufgabe, antworten5, pedalwahl, RECHENSTUFEN_MAX, erfuellung3,
+  passeRechenstufeAn, rechenstandStart, ANSTIEG_SERIE,
 } from "../js/uebung3.js";
 import { svgUhr, svgSaeule, uhrwinkel, saeulenanteil } from "../js/uebung3-bild.js";
 
@@ -270,13 +271,13 @@ test("kennzahl3: gerundetes Mittel, leere Liste 0", () => {
 
 test("erzeugeRechenaufgabe: nur Plus und Minus, Grenzen je Stufe", () => {
   // Willis Auftrag vom 29.08.2026: keine Malaufgaben mehr, und die Stufe
-  // deckelt die Operanden (0 rechnet einstellig, oben bleibt 99 die Grenze).
+  // deckelt die Operanden; seit 03.09.2026 feinere Leiter ab Deckel 5.
   for (let stufe = 0; stufe <= RECHENSTUFEN_MAX; stufe++) {
     for (let i = 0; i < 300; i++) {
       const a = erzeugeRechenaufgabe(Math.random, stufe);
       assert.ok(["+", "-"].includes(a.op));
       assert.ok(a.antwort >= 0 && a.antwort <= 99);
-      const deckel = [9, 20, 40, 70, 99][stufe];
+      const deckel = [5, 9, 15, 20, 30, 40, 55, 70, 85, 99][stufe];
       assert.ok(a.a >= 1 && a.a <= deckel, `Stufe ${stufe}: a=${a.a}`);
       assert.ok(a.b >= 0 && a.b <= deckel, `Stufe ${stufe}: b=${a.b}`);
       if (a.op === "+") assert.equal(a.antwort, a.a + a.b);
@@ -285,9 +286,40 @@ test("erzeugeRechenaufgabe: nur Plus und Minus, Grenzen je Stufe", () => {
   }
   // Ohne Stufenangabe gilt Stufe 0, jenseits der Spanne wird geklemmt.
   const leicht = erzeugeRechenaufgabe(() => 0.99);
-  assert.ok(leicht.a <= 9 && leicht.b <= 9);
+  assert.ok(leicht.a <= 5 && leicht.b <= 5);
   const geklemmt = erzeugeRechenaufgabe(() => 0.99, 99);
   assert.ok(geklemmt.a <= 99);
+});
+
+test("passeRechenstufeAn: drei Richtige heben, jeder Fehler senkt", () => {
+  // Willis Treppenregel vom 03.09.2026: langsamer Anstieg über die Serie,
+  // sofortiger Abstieg bei falsch oder verpasst, Grenzen 0 und Maximum.
+  let stand = rechenstandStart();
+  assert.deepEqual(stand, { stufe: 0, serie: 0 });
+  stand = passeRechenstufeAn(stand, true);
+  stand = passeRechenstufeAn(stand, true);
+  assert.equal(stand.stufe, 0); // zwei Richtige reichen nicht
+  stand = passeRechenstufeAn(stand, true);
+  assert.deepEqual(stand, { stufe: 1, serie: 0 });
+  stand = passeRechenstufeAn(stand, true);
+  stand = passeRechenstufeAn(stand, false); // Fehler bricht die Serie und senkt
+  assert.deepEqual(stand, { stufe: 0, serie: 0 });
+  stand = passeRechenstufeAn(stand, false); // unter 0 geht es nicht
+  assert.deepEqual(stand, { stufe: 0, serie: 0 });
+});
+
+test("passeRechenstufeAn: Deckel am Maximum, Serie zählt nach Fehler neu", () => {
+  let stand = { stufe: RECHENSTUFEN_MAX, serie: ANSTIEG_SERIE - 1 };
+  stand = passeRechenstufeAn(stand, true);
+  assert.deepEqual(stand, { stufe: RECHENSTUFEN_MAX, serie: 0 });
+  stand = passeRechenstufeAn(stand, false);
+  assert.equal(stand.stufe, RECHENSTUFEN_MAX - 1);
+  // Nach dem Fehler heben erst wieder drei Richtige in Folge.
+  stand = passeRechenstufeAn(stand, true);
+  stand = passeRechenstufeAn(stand, true);
+  assert.equal(stand.stufe, RECHENSTUFEN_MAX - 1);
+  stand = passeRechenstufeAn(stand, true);
+  assert.equal(stand.stufe, RECHENSTUFEN_MAX);
 });
 
 test("erzeugeRechenaufgabe ist mit gleichem Zufall gleich", () => {
