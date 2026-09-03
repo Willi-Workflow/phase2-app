@@ -33,7 +33,9 @@ const OPERATOREN = [
 ];
 const OP_DATEI = Object.fromEntries(OPERATOREN.map((o) => [o.zeichen, o.datei]));
 const WORT_VON_DATEI = Object.fromEntries(OPERATOREN.map((o) => [o.datei, o.wort]));
-const klangVon = (name) => new URL(`../klaenge/zahlen/${name}.mp3`, import.meta.url).href;
+// ?v=2 seit 03.09.2026: fünf Klänge neu erzeugt (siehe HERKUNFT.md), die
+// Marke zwingt Browser mit altem Zwischenspeicher zum Neuladen.
+const klangVon = (name) => new URL(`../klaenge/zahlen/${name}.mp3?v=2`, import.meta.url).href;
 
 function erzeugeAufgabenSprecher() {
   const vorrat = new Map();
