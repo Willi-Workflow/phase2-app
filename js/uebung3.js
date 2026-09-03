@@ -110,8 +110,10 @@ export function erzeugeVorgaben(stufe, rnd = Math.random) {
 
 // Anfangszustand: Kurs und Höhe stehen systemseitig auf dem Startwert, die
 // Fahrt beginnt bei 60 kt und muss vom Bewerber selbst hochgezogen werden.
+// kursWeg zählt die Drehung unaufgewickelt (ohne 360er-Umlauf) mit, damit
+// die Fehlerrechnung Volldrehungen von Stillstand unterscheiden kann.
 export function erzeugeFlugzustand(vorgaben) {
-  return { kurs: vorgaben.kurs.start, hoehe: vorgaben.hoehe.start, fahrt: 60 };
+  return { kurs: vorgaben.kurs.start, kursWeg: vorgaben.kurs.start, hoehe: vorgaben.hoehe.start, fahrt: 60 };
 }
 
 // Ein Zeitschritt der Steuerung. dt wird je Aufruf auf höchstens 0,05 s
@@ -119,7 +121,8 @@ export function erzeugeFlugzustand(vorgaben) {
 // nicht in einem Sprung verändert.
 export function takt(zustand, achsen, dtMs) {
   const dt = Math.min(dtMs / 1000, TAKT_DT_MAX);
-  zustand.kurs = mod360(zustand.kurs + achsen.stickX * KURSRATE * dt);
+  zustand.kursWeg = (zustand.kursWeg ?? zustand.kurs) + achsen.stickX * KURSRATE * dt;
+  zustand.kurs = mod360(zustand.kursWeg);
   zustand.hoehe = begrenze(zustand.hoehe + achsen.stickY * HOEHENRATE * dt, 0, 9900);
   const sollfahrt = FAHRT_MIN + ((achsen.schub + 1) / 2) * (FAHRT_MAX - FAHRT_MIN);
   zustand.fahrt += (sollfahrt - zustand.fahrt) * (1 - Math.exp(-dt / FAHRT_ZEITKONSTANTE));
@@ -148,6 +151,13 @@ export function sollwert(vorgaben, id, tS) {
   throw new Error(`unbekannte Instrumenten-Kennung: ${id}`);
 }
 
+// Kurssoll ohne 360er-Umlauf: dieselbe lineare Interpolation wie sollwert,
+// aber unaufgewickelt, für die Fehlerrechnung gegen zustand.kursWeg.
+export function kursSollWeg(vorgaben, tS) {
+  const t = begrenze(tS, 0, FLUGZEIT_S);
+  return vorgaben.kurs.start + vorgaben.kurs.aenderung * (t / FLUGZEIT_S);
+}
+
 // Kleinster Winkelabstand zweier Kurse, unabhängig von der Umlaufrichtung
 // (350 zu 10 ist 20, nicht 340).
 export function winkelabstand(a, b) {
@@ -162,7 +172,11 @@ export function winkelabstand(a, b) {
 export function momentanfehler(zustand, vorgaben, tS) {
   const teile = [];
   if (vorgaben.aktive.includes("kurs")) {
-    const abweichung = winkelabstand(zustand.kurs, sollwert(vorgaben, "kurs", tS));
+    // Aufgewickelt statt kleinster Winkelabstand (Willis Entscheid vom
+    // 03.09.2026, bewusste Abweichung vom Original): Bei Volldrehungen
+    // wanderte das Soll sonst am stehenden Flugzeug vorbei, und Säule wie
+    // Wertung sanken, obwohl nichts richtig lief.
+    const abweichung = Math.abs((zustand.kursWeg ?? zustand.kurs) - kursSollWeg(vorgaben, tS));
     teile.push(Math.min(1, abweichung / NORM_KURS));
   }
   if (vorgaben.aktive.includes("hoehe")) {

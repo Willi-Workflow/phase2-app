@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {
   TESTDAUERN, STUFEN, FLUGZEIT_S, EINRICHTZEIT_S,
   RECHNEN_START_S, ANTWORT_FENSTER_S, FOLGE_PAUSE_S, ANSAGE_PAUSE_MS, RECHNEN_MINDESTREST_S,
-  erzeugeVorgaben, erzeugeFlugzustand, takt, sollwert, winkelabstand,
+  erzeugeVorgaben, erzeugeFlugzustand, takt, sollwert, winkelabstand, kursSollWeg,
   momentanfehler, durchgangspunkte, kennzahl3,
   erzeugeRechenaufgabe, antworten5, pedalwahl, RECHENSTUFEN_MAX, erfuellung3,
   passeRechenstufeAn, rechenstandStart, ANSTIEG_SERIE, schiebeZone,
@@ -95,7 +95,7 @@ test("erzeugeVorgaben ist mit gleichem Zufall gleich", () => {
 test("erzeugeFlugzustand: Kurs und Höhe auf Start, Fahrt auf 60", () => {
   const v = erzeugeVorgaben(3, Math.random);
   const z = erzeugeFlugzustand(v);
-  assert.deepEqual(z, { kurs: 0, hoehe: 5000, fahrt: 60 });
+  assert.deepEqual(z, { kurs: 0, kursWeg: 0, hoehe: 5000, fahrt: 60 });
 });
 
 test("takt: Kursrate stickX mal 15 Grad je Sekunde, Umlauf 0 bis 360", () => {
@@ -108,6 +108,8 @@ test("takt: Kursrate stickX mal 15 Grad je Sekunde, Umlauf 0 bis 360", () => {
   const z2 = { kurs: 359.8, hoehe: 0, fahrt: 100 };
   takt(z2, { stickX: 1, stickY: 0, schub: -1 }, 50); // +0,75 Grad -> Umlauf
   assert.ok(Math.abs(z2.kurs - 0.55) < 1e-9);
+  // kursWeg wickelt nicht um: hinter dem Umlauf steht die volle Gradzahl.
+  assert.ok(Math.abs(z2.kursWeg - 360.55) < 1e-9);
 
   const z3 = { kurs: 0.2, hoehe: 0, fahrt: 100 };
   takt(z3, { stickX: -1, stickY: 0, schub: -1 }, 50); // -0,75 Grad -> Umlauf
@@ -216,6 +218,25 @@ test("momentanfehler: konstruierter Fall für Kurs", () => {
   // Deckel bei 1: Abweichung 90 Grad wäre 2, bleibt bei 1.
   z.kurs = 135;
   assert.equal(momentanfehler(z, v, 30), 1);
+});
+
+test("momentanfehler: Kurs aufgewickelt, kein Absinken beim Umlauf", () => {
+  // Willis Entscheid vom 03.09.2026: Gezählt wird die tatsächlich gedrehte
+  // Gradzahl gegen das Soll. Wer bei einer Volldrehung stehen bleibt, sieht
+  // Säule und Wertung nicht mehr sinken, wenn das Soll am eigenen Kurs
+  // vorbeiläuft (früher: kleinster Winkelabstand, 330 zu 0 waren 30 Grad).
+  const v = {
+    aktive: ["kurs"],
+    kurs: { start: 0, aenderung: 360, ziel: 0 },
+    hoehe: { start: 0, aenderung: 0, ziel: 0 },
+    fahrt: { start: 0, ziel: 0 },
+  };
+  assert.equal(kursSollWeg(v, 55), 330);
+  const stehend = { kurs: 0, kursWeg: 0, hoehe: 0, fahrt: 0 };
+  assert.equal(momentanfehler(stehend, v, 30), 1); // Soll 180, voller Fehler
+  assert.equal(momentanfehler(stehend, v, 55), 1); // Soll 330: bleibt voller Fehler
+  const mitgedreht = { kurs: 330, kursWeg: 330, hoehe: 0, fahrt: 0 };
+  assert.equal(momentanfehler(mitgedreht, v, 55), 0);
 });
 
 test("momentanfehler: konstruierter Fall für Höhe", () => {

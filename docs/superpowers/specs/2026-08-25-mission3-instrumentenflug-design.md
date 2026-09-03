@@ -66,8 +66,13 @@ Start zu Ziel). Durchgänge folgen am Stück, bis die Testdauer um ist.
 ## Fehlersäule und Wertung
 
 - Momentanfehler = Mittel der normierten Abweichungen der aktiven
-  Instrumente; Normierung: Kurs Winkelabstand/45 Grad, Höhe /600 ft,
-  Fahrt /40 kt, jeweils bei 1 gedeckelt. Die Fehlersäule zeigt ihn als 0
+  Instrumente; Normierung: Kurs /45 Grad, Höhe /600 ft, Fahrt /40 kt,
+  jeweils bei 1 gedeckelt. Der Kursfehler rechnet seit dem 03.09.2026
+  abends aufgewickelt (tatsächlich gedrehte Gradzahl gegen das
+  unaufgewickelte Soll, Willis Entscheid, bewusste Abweichung vom
+  Original): Der frühere kleinste Winkelabstand ließ bei Volldrehungen
+  Säule und Wertung sinken, wenn das Soll am stehenden Flugzeug
+  vorbeilief. Die Fehlersäule zeigt ihn als 0
   bis 100 Prozent (Punkt auf der Säule wie im Original), Schalter
   FEHLERSÄULE EIN/AUS (Vorgabe EIN); ausgeschaltet wird trotzdem gewertet.
 - Punkte je Durchgang: 100 mal (1 minus mittlerer Momentanfehler über die

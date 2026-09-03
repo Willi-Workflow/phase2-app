@@ -10,7 +10,7 @@
 import {
   TESTDAUERN, STUFEN, FLUGZEIT_S, EINRICHTZEIT_S,
   RECHNEN_START_S, ANTWORT_FENSTER_S, FOLGE_PAUSE_S, ANSAGE_PAUSE_MS, RECHNEN_MINDESTREST_S,
-  erzeugeVorgaben, erzeugeFlugzustand, takt, sollwert, winkelabstand,
+  erzeugeVorgaben, erzeugeFlugzustand, takt, sollwert, kursSollWeg,
   momentanfehler, durchgangspunkte, kennzahl3, schwierigkeitsfaktor3, erfuellung3,
   erzeugeRechenaufgabe, antworten5, pedalwahl, schiebeZone, passeRechenstufeAn, rechenstandStart,
 } from "./uebung3.js";
@@ -501,7 +501,9 @@ export function erzeugeUebung3({ speicher, controls }) {
 
     const haeufeAbweichungen = (tS) => {
       if (vorgaben.aktive.includes("kurs")) {
-        abwSumme.kurs += winkelabstand(zustand.kurs, sollwert(vorgaben, "kurs", tS));
+        // Aufgewickelt wie in momentanfehler: Wertung und Fehlersäule
+        // messen denselben Abstand (Willis Entscheid vom 03.09.2026).
+        abwSumme.kurs += Math.abs((zustand.kursWeg ?? zustand.kurs) - kursSollWeg(vorgaben, tS));
         abwZaehler.kurs += 1;
       }
       if (vorgaben.aktive.includes("hoehe")) {
