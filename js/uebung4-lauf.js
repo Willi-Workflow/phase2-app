@@ -41,7 +41,7 @@ export function erzeugeUebung4({ speicher }) {
       + zeile("FRAGEN JE RUNDE", "fragen", FRAGENANZAHLEN, einstellung.fragen, "")
       + zeile("TESTDAUER", "dauer", TESTDAUERN, einstellung.dauer, " min")
       + `<div class="wahlabschnitt">BLITZÜBUNG</div>`
-      + zeile("ANZEIGEZEIT", "uebungszeit", [1, 1.5, 2, 3], einstellung.uebungszeit, " s")
+      + zeile("ANZEIGEZEIT", "uebungszeit", [0.5, 1, 1.5, 2, 3], einstellung.uebungszeit, " s")
       + `<div class="wahlzeile"><span class="wahltitel">START</span>
         <button type="button" class="wahlknopf" data-element="ueben">NUR ÜBEN</button></div>`;
     feld.onchange = (e) => {
@@ -64,7 +64,7 @@ export function erzeugeUebung4({ speicher }) {
   function starte({ tuer, beiEnde, registriereAbbruch }) {
     const { zeit, fragen, dauer, uebungszeit } = einstellung;
     // Blitzübung (Willis Auftrag vom 31.08.2026): ein einzelnes Instrument
-    // für 1 bis 3 Sekunden, danach genau eine Auswahlfrage, endlos bis Esc.
+    // für 0,5 bis 3 Sekunden, danach genau eine Auswahlfrage, endlos bis Esc.
     const uebung = uebungsStart;
     uebungsStart = false;
     // Der Aufrufer hat die Hangartür bereits geschlossen: der Testbildschirm
