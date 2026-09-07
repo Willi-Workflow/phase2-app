@@ -203,11 +203,18 @@ export function pruefeAuswahl(auswahl) {
   return auswahl.length > 0 && auswahl.every((e) => ELEMENTE.includes(e));
 }
 
-// Erfüllungsanteil (Willis Festlegung vom 31.08.2026): Auch hier sind
-// 100 Prozent Deckung unerreichbar (alles driftet ständig weg), darum wird
-// die Deckung am erreichbaren Bestwert gemessen; Faktor wie bisher obendrauf.
-export const DECKUNG_BESTWERT = 65;   // % Deckungsquote für volle Erfüllung
+// Erfüllungsanteil seit 07.09.2026 (Willis Auftrag, Muster Mission 1):
+// Nicht mehr die Deckungsquote, sondern die Erledigungen tragen die
+// Prozente. Je gewähltem Element zählen die Treffer je Minute am Bestwert,
+// gedeckelt und über die Auswahl gemittelt; der Schwierigkeitsfaktor
+// bleibt obendrauf. Der Bestwert ist eine Setzung für den
+// Drei-Elemente-Fall (je Erledigung 1 s Haltezeit plus Anfahrweg, geteilte
+// Aufmerksamkeit), Willi eicht nach Läufen nach. Die Deckungsquote bleibt
+// als Anzeige- und Datenwert erhalten.
+export const TREFFER_BESTWERT2 = 5; // Erledigungen je Minute und Element für volle Erfüllung
 
-export function erfuellung2(quote) {
-  return Math.min(100, (quote / DECKUNG_BESTWERT) * 100);
+export function erfuellung2(z, dauerMin) {
+  if (!dauerMin || z.auswahl.length === 0) return 0;
+  const anteile = z.auswahl.map((e) => Math.min(1, z.treffer[e] / dauerMin / TREFFER_BESTWERT2));
+  return (anteile.reduce((s, a) => s + a, 0) / z.auswahl.length) * 100;
 }

@@ -238,9 +238,19 @@ test("takt: sammelt Deckungszeit und Testzeit", () => {
   assert.equal(z.deckungMs.ruder, 300);
 });
 
-test("Erfüllung Mission 2: Deckung am Bestwert 65 gemessen", () => {
-  assert.equal(erfuellung2(65), 100);
-  assert.equal(erfuellung2(100), 100);
-  assert.ok(Math.abs(erfuellung2(32.5) - 50) < 1e-9);
-  assert.equal(erfuellung2(0), 0);
+test("Erfüllung Mission 2: Erledigungen je Element am Bestwert, gemittelt", () => {
+  // Willis Auftrag vom 07.09.2026 (Muster Mission 1): Die Treffer je Minute
+  // tragen die Prozente, je Element gedeckelt, dann über die Auswahl gemittelt.
+  const z = (auswahl, treffer) => ({ auswahl, treffer });
+  // Ein Element, Bestwert genau getroffen: 5 Treffer je Minute -> 100.
+  assert.equal(erfuellung2(z(["stick"], { stick: 25, ruder: 0, schub: 0 }), 5), 100);
+  // Halber Bestwert -> 50.
+  assert.ok(Math.abs(erfuellung2(z(["stick"], { stick: 12.5, ruder: 0, schub: 0 }), 5) - 50) < 1e-9);
+  // Deckel je Element: Überschuss bei einem gleicht Fehlen beim anderen nicht aus.
+  assert.equal(erfuellung2(z(["stick", "ruder"], { stick: 50, ruder: 0, schub: 0 }), 5), 50);
+  // Drei Elemente je am Bestwert -> 100.
+  assert.equal(erfuellung2(z(["stick", "ruder", "schub"], { stick: 25, ruder: 25, schub: 25 }), 5), 100);
+  // Ohne Dauer oder ohne Auswahl 0.
+  assert.equal(erfuellung2(z(["stick"], { stick: 25, ruder: 0, schub: 0 }), 0), 0);
+  assert.equal(erfuellung2(z([], { stick: 25, ruder: 0, schub: 0 }), 5), 0);
 });

@@ -3,7 +3,7 @@
 // rechnet in uebung2.js, hier laufen Achsenabfrage, Zeichnung und Tafeln.
 import {
   TESTDAUERN, ELEMENTE, erzeugeLaufzustand, takt, punkte, pruefeAuswahl, deckungsquote, schwierigkeitsfaktor2,
-  erfuellung2, DECKUNG_BESTWERT,
+  erfuellung2, TREFFER_BESTWERT2,
 } from "./uebung2.js";
 import { mitEmpfindlichkeit, MISSIONS_EMPFINDLICHKEITEN } from "./kurve.js";
 import { xImBild, yImBild, TACHO, gradFuerKnoten, buehneSvg } from "./uebung2-bild.js";
@@ -158,12 +158,13 @@ export function erzeugeUebung2({ speicher, controls }) {
       const wert = punkte(zustand, dauer);
       const quote = deckungsquote(zustand);
       const faktor = schwierigkeitsfaktor2(auswahl.length);
-      // Erfüllungsanteil statt roher Deckungsquote (Willis Festlegung vom
-      // 31.08.2026): Deckung am erreichbaren Bestwert gemessen.
-      const erfuellung = erfuellung2(quote);
+      // Erfüllungsanteil aus Erledigungen je Element (Willis Auftrag vom
+      // 07.09.2026, Muster Mission 1): Treffer je Minute am Bestwert,
+      // gemittelt über die Auswahl; die Deckungsquote bleibt Anzeige.
+      const erfuellung = erfuellung2(zustand, dauer);
       const wertung = Math.round(erfuellung * faktor);
-      const zeilen = [`<span>Deckungsquote: ${quote} % · Erfüllung ${Math.round(erfuellung)} % (Bestwert ${DECKUNG_BESTWERT} %)</span>`].concat(auswahl.map((e) =>
-        `<span>${NAMEN[e]}: ${zustand.treffer[e]} Treffer</span>`)).join("");
+      const zeilen = [`<span>Erfüllung ${Math.round(erfuellung)} % (Bestwert ${TREFFER_BESTWERT2} je Minute und Element) · Deckungsquote: ${quote} %</span>`].concat(auswahl.map((e) =>
+        `<span>${NAMEN[e]}: ${zustand.treffer[e]} Treffer · ${(zustand.treffer[e] / dauer).toFixed(1)} je Minute</span>`)).join("");
       const kombizeile = auswahl.length > 1 ? `<span>Kombitreffer: ${zustand.kombitreffer}</span>` : "";
       const abbruchzeile = gewertet ? "" : `<span class="abgebrochen">ABGEBROCHEN · DER LAUF ZÄHLT NICHT ZUR STATISTIK</span>`;
       const tafel = document.createElement("div");
