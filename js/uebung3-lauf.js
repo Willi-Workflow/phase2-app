@@ -584,6 +584,10 @@ export function erzeugeUebung3({ speicher, controls }) {
     let naechsteVorgaben = null;
     const zeigeAufgabe = () => {
       if (beendet || ergebnisOffen) return;
+      // Läuft die Testdauer während Blende oder Anzeige ab, darf danach
+      // kein voller Durchgang mehr starten (Prüfer-Befund vom 07.09.2026;
+      // die Prüfung am Ende der Zwischenanzeige deckt das Fenster nicht ab).
+      if (performance.now() >= testende) { zeigeErgebnis(true); return; }
       naechsteVorgaben = erzeugeVorgaben(stufe, Math.random);
       const aktiv = (id) => naechsteVorgaben.aktive.includes(id);
       const zeilen = [
@@ -598,6 +602,7 @@ export function erzeugeUebung3({ speicher, controls }) {
       spaeter(() => {
         zwischenfeld.classList.remove("da");
         if (beendet || ergebnisOffen) return;
+        if (performance.now() >= testende) { zeigeErgebnis(true); return; }
         startDurchgang();
       }, AUFGABENANZEIGE_MS);
     };
