@@ -28,8 +28,10 @@ const RATE_NADEL = 30;
 // 40 Prozent zurückgenommen ("das Gegensteuern soll nicht so doll sein"):
 // erst das Ruder (auf der einspurigen Strichbahn wirkt dieselbe Drift
 // unerbittlicher als in der Fläche), dann Fadenkreuz und Nadel nach.
+// Ruder am 07.09.2026 auf Willis Zuruf noch einmal um ein Drittel gesenkt,
+// das Gegensteuern dort war weiter zu fordernd.
 const DRIFT_STICK = 0.045;
-const DRIFT_RUDER = 0.045;
+const DRIFT_RUDER = 0.03;
 const DRIFT_NADEL = 3;
 const DRIFTWECHSEL_MIN_MS = 1500;
 const DRIFTWECHSEL_MAX_MS = 3000;
