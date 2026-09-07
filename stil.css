@@ -881,6 +881,27 @@ main { position: relative; z-index: 1; }
 }
 .ict-zwischenanzeige .aufgabenzeilen span { display: block; margin-top: 0.4em; }
 
+/* Schnellrechnen-Übung Mission 5: Aufgabe mittig auf dunklem Schirm,
+   darunter nach der Antwort der schnellste Kopfrechenweg mit Merktipp. */
+.schnellmitte {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+  width: min(680px, 86vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  text-align: center;
+}
+.schnellmitte .frage { font-size: clamp(17px, 2vw, 22px); line-height: 1.5; color: var(--hell); letter-spacing: 0.04em; }
+.loesungsweg { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 6px; }
+.loesungsweg .wegkopf { color: #35e0d0; letter-spacing: 0.22em; font-size: 13px; }
+.loesungsweg .wegzeile { color: var(--hell); font-size: 16px; letter-spacing: 0.05em; }
+.loesungsweg .wegtipp { color: var(--gedeckt); font-size: 13px; letter-spacing: 0.06em; max-width: 60ch; margin-top: 6px; line-height: 1.5; }
+.loesungsweg .wegweiter { color: var(--gedeckt); font-size: 12px; letter-spacing: 0.2em; margin-top: 8px; }
+
 /* Stufe 4: fünf Antwortknöpfe, über die Pedale angewählt (gewaehlt), die
    Schusstaste bestätigt (richtig/falsch aus den bestehenden
    antwortknopf-Regeln). */

@@ -4,7 +4,7 @@ import {
   TESTDAUERN, AUFGABENZEIT, PRINZIPIEN,
   waehlePrinzipien, erzeugeAufgabe, erzeugeLauf, panelwerte, verdeckteInstrumente,
   ablenker, antwortenFuer, pruefeEingabe,
-  punkteFuerAntwort, kennzahl,
+  punkteFuerAntwort, kennzahl, loesungsweg, TIPPS5,
 } from "../js/uebung5.js";
 
 function saatZufall(saat) {
@@ -312,5 +312,96 @@ test("panelwerte: auch Textwerte stehen am Instrument", () => {
     assert.equal(wr.vario, 0);          // die Rate ist die Antwort, kein Verrat
     assert.equal(wr.hoehe, rate.lage.aenderung);  // wörtlich wie im Text
     assert.ok(rate.frage.includes(`${rate.lage.aenderung} ft`));
+  }
+});
+
+test("erzeugeAufgabe: werte tragen die Rohzahlen stimmig zur Aufgabe", () => {
+  // Grundlage der Schnellrechnen-Übung (Willis Auftrag vom 07.09.2026):
+  // Jede Aufgabe kennt ihre Rohwerte, der Lösungsweg rechnet mit ihnen.
+  for (let i = 0; i < 200; i++) {
+    for (const prinzip of PRINZIPIEN) {
+      const a = erzeugeAufgabe(prinzip, Math.random, Math.random() < 0.5);
+      assert.ok(a.werte, `${prinzip}: werte fehlen`);
+      if (prinzip === "rate") {
+        const { r, t, h } = a.werte;
+        assert.equal(h, r * t);
+        assert.ok([r, t].includes(a.antwort));
+      } else {
+        const { v, t, s } = a.werte;
+        assert.equal(s, (v * t) / 60);
+        assert.ok([v, t, s].includes(a.antwort));
+      }
+      assert.ok(loesungsweg(a).length >= 2, `${prinzip}: Lösungsweg leer`);
+    }
+  }
+});
+
+test("loesungsweg: wählt je Zahlenlage die schnellste Route", () => {
+  const zeitGlatt = { prinzip: "zeit", antwort: 15, werte: { v: 120, t: 15, s: 30 } };
+  assert.deepEqual(loesungsweg(zeitGlatt), [
+    "120 kt sind 2 NM je Minute.",
+    "30 NM geteilt durch 2 = 15 Minuten.",
+  ]);
+  // Krumme Knoten: Weg durch Knoten ergibt die Stunden (Prüfer-Befund
+  // vom 08.09.2026, die Formelroute mit s mal 60 war nicht der Kopfweg).
+  const zeitKrumm = { prinzip: "zeit", antwort: 120, werte: { v: 100, t: 120, s: 200 } };
+  assert.deepEqual(loesungsweg(zeitKrumm), [
+    "200 NM geteilt durch 100 kt = zwei Stunden.",
+    "Also 120 Minuten.",
+  ]);
+  const zeitViertel = { prinzip: "zeit", antwort: 15, werte: { v: 80, t: 15, s: 20 } };
+  assert.deepEqual(loesungsweg(zeitViertel), [
+    "20 NM geteilt durch 80 kt = eine Viertelstunde.",
+    "Also 15 Minuten.",
+  ]);
+  // Genau eine Stunde: nichts zu rechnen, ab über einer Stunde schlägt
+  // der Stundenbruch die NM je Minute.
+  const wegStunde = { prinzip: "weg", antwort: 90, werte: { v: 90, t: 60, s: 90 } };
+  assert.deepEqual(loesungsweg(wegStunde), [
+    "60 Minuten sind genau eine Stunde.",
+    "Der Weg entspricht den Knoten: 90 NM.",
+  ]);
+  const wegLang = { prinzip: "weg", antwort: 450, werte: { v: 90, t: 300, s: 450 } };
+  assert.deepEqual(loesungsweg(wegLang), [
+    "300 Minuten sind fünf Stunden.",
+    "90 kt mal 5 = 450 NM.",
+  ]);
+  const tempoStunde = { prinzip: "geschwindigkeit", antwort: 90, werte: { v: 90, t: 60, s: 90 } };
+  assert.deepEqual(loesungsweg(tempoStunde), [
+    "60 Minuten sind genau eine Stunde.",
+    "Die Knoten entsprechen dem Weg: 90 kt.",
+  ]);
+  const wegBruch = { prinzip: "weg", antwort: 75, werte: { v: 100, t: 45, s: 75 } };
+  assert.deepEqual(loesungsweg(wegBruch), [
+    "45 Minuten sind eine Dreiviertelstunde.",
+    "100 kt mal 3, geteilt durch 4 = 75 NM.",
+  ]);
+  const tempoGlatt = { prinzip: "geschwindigkeit", antwort: 120, werte: { v: 120, t: 18, s: 36 } };
+  assert.deepEqual(loesungsweg(tempoGlatt), [
+    "36 NM in 18 Minuten sind 2 NM je Minute.",
+    "2 mal 60 = 120 kt.",
+  ]);
+  const tempoBruch = { prinzip: "geschwindigkeit", antwort: 100, werte: { v: 100, t: 45, s: 75 } };
+  assert.deepEqual(loesungsweg(tempoBruch), [
+    "45 Minuten sind eine Dreiviertelstunde.",
+    "75 NM mal 4, geteilt durch 3 = 100 kt.",
+  ]);
+  const rateGesucht = { prinzip: "rate", antwort: 600, werte: { r: 600, t: 8, h: 4800 } };
+  assert.deepEqual(loesungsweg(rateGesucht), [
+    "Nullen weg: aus 4800 ft werden 48.",
+    "48 geteilt durch 8 Minuten = 6, Nullen dran: 600 ft/min.",
+  ]);
+  const zeitAusRate = { prinzip: "rate", antwort: 4, werte: { r: 1200, t: 4, h: 4800 } };
+  assert.deepEqual(loesungsweg(zeitAusRate), [
+    "Nullen weg: aus 4800 ft und 1200 ft/min werden 48 und 12.",
+    "48 geteilt durch 12 = 4 Minuten.",
+  ]);
+  // Ohne werte (fremde alte Aufgabe) still und leise leer.
+  assert.deepEqual(loesungsweg({ prinzip: "zeit", antwort: 1 }), []);
+});
+
+test("TIPPS5: je Prinzip ein Merktipp", () => {
+  for (const prinzip of PRINZIPIEN) {
+    assert.ok(typeof TIPPS5[prinzip] === "string" && TIPPS5[prinzip].length > 20, prinzip);
   }
 });

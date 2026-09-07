@@ -9,6 +9,7 @@
 import {
   TESTDAUERN, AUFGABENZEIT, erzeugeLauf, antwortenFuer, pruefeEingabe,
   punkteFuerAntwort, kennzahl, panelwerte, verdeckteInstrumente,
+  waehlePrinzipien, erzeugeAufgabe, loesungsweg, TIPPS5,
 } from "./uebung5.js";
 import { tafelHtml } from "./instrumente.js";
 import { KARTEN5 } from "./wissen5.js";
@@ -20,6 +21,7 @@ const RUECKMELDEDAUER_FALSCH = 1800;
 
 export function erzeugeUebung5({ speicher }) {
   let einstellung = { dauer: 5 };
+  let uebungsStart = false;
   const hinweis = "Rechenaufgaben zu Weg, Zeit, Geschwindigkeit und Sink- oder Steigrate am Stück, "
     + "bis die eingestellte Testdauer um ist, je Aufgabe 20 Sekunden, im Cockpit. Manche Aufgaben "
     + "nennen keinen Wert, sondern verweisen aufs Ablesen am Instrumentenpanel. Geantwortet wird "
@@ -32,15 +34,29 @@ export function erzeugeUebung5({ speicher }) {
   }
 
   function zeichneFeld(feld) {
+    // Das Schnellrechnen bekommt wie die Blitzübung von Mission 4 einen
+    // abgesetzten Block: reine Übung, kein Teil des Tests.
     feld.innerHTML = `
       <div class="wahlzeile"><span class="wahltitel">TESTDAUER</span>
         <select class="wahlliste" data-name="dauer">${TESTDAUERN.map((w) =>
-          `<option value="${w}" ${w === einstellung.dauer ? "selected" : ""}>${w} min</option>`).join("")}</select></div>`;
+          `<option value="${w}" ${w === einstellung.dauer ? "selected" : ""}>${w} min</option>`).join("")}</select></div>
+      <div class="wahlabschnitt">SCHNELLRECHNEN</div>
+      <div class="wahlzeile"><span class="wahltitel">START</span>
+        <button type="button" class="wahlknopf" data-element="ueben">NUR ÜBEN</button></div>`;
     feld.onchange = (e) => {
       const liste = e.target.closest(".wahlliste");
       if (!liste) return;
       einstellung[liste.dataset.name] = Number(liste.value);
       speicher.setzeEinstellung("uebung5-einstellung", einstellung);
+    };
+    feld.onclick = (e) => {
+      const knopf = e.target.closest(".wahlknopf");
+      if (!knopf || knopf.dataset.element !== "ueben") return;
+      // Übung über den normalen Startweg, damit Tür, Vollbild und Abbruch
+      // wie bei jedem Lauf funktionieren (Muster aus Mission 1 und 4).
+      knopf.blur();
+      uebungsStart = true;
+      document.getElementById("start")?.click();
     };
   }
 
@@ -88,7 +104,126 @@ export function erzeugeUebung5({ speicher }) {
     zeichne();
   }
 
+  // Schnellrechnen-Übung (Willis Auftrag vom 07.09.2026): Textaufgaben ohne
+  // Zeitdruck, endlos bis Esc; nach jeder Antwort steht der schnellste im
+  // Kopf rechenbare Weg mit den Zahlen der Aufgabe im Bild, dazu der
+  // Merktipp des Aufgabentyps. Nur Textaufgaben (das Ablesen am Panel ist
+  // Sache des Tests), zählt nie zur Statistik (beiEnde(null)).
+  function starteSchnellrechnen({ tuer, beiEnde, registriereAbbruch }) {
+    const schleier = document.createElement("div");
+    schleier.className = "laufschleier buchstaben";
+    schleier.innerHTML = `<div class="testkopf">SCHNELLRECHNEN · ESC BEENDET</div>
+      <div class="schnellmitte"></div>`;
+    document.body.append(schleier);
+    if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+    const mitte = schleier.querySelector(".schnellmitte");
+    let beendet = false;
+    let ergebnisOffen = false;
+    let vorrat = [];
+    let gestellt = 0;
+    let richtig = 0;
+
+    const raeumeAuf = () => {
+      beendet = true;
+      document.removeEventListener("fullscreenchange", beiVollbildwechsel);
+      document.removeEventListener("visibilitychange", beiSichtwechsel);
+      schleier.remove();
+    };
+    const beiVollbildwechsel = () => { if (!document.fullscreenElement) verlasse?.(); };
+    const beiSichtwechsel = () => { if (document.hidden) verlasse?.(); };
+    let verlasse = () => zeigeErgebnis();
+    document.addEventListener("fullscreenchange", beiVollbildwechsel);
+    document.addEventListener("visibilitychange", beiSichtwechsel);
+    registriereAbbruch(() => verlasse?.());
+
+    const stelle = () => {
+      if (beendet || ergebnisOffen) return;
+      // Jedes Prinzip kommt reihum vor, wie im Test, aber nur als Text.
+      if (vorrat.length === 0) vorrat = waehlePrinzipien(4);
+      const aufgabe = erzeugeAufgabe(vorrat.shift(), Math.random, false);
+      mitte.innerHTML = `
+        <div class="frage">${aufgabe.frage}</div>
+        <form class="eingabezeile" id="u5s-form">
+          <input class="zahlenfeld" id="u5s-eingabe" inputmode="decimal" autocomplete="off" placeholder="Antwort">
+          <span class="einheit">${aufgabe.einheit}</span>
+        </form>
+        <div class="rueckmeldung"></div>
+        <div class="loesungsweg" hidden></div>`;
+      const eingabe = mitte.querySelector("#u5s-eingabe");
+      eingabe.focus();
+      let entschieden = false;
+      mitte.querySelector("#u5s-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (beendet || ergebnisOffen) return;
+        if (entschieden) { stelle(); return; } // zweites Enter geht weiter
+        entschieden = true;
+        gestellt += 1;
+        const getroffen = pruefeEingabe(eingabe.value, aufgabe.antwort);
+        if (getroffen) richtig += 1;
+        // readonly statt disabled: der Fokus bleibt, Enter führt weiter.
+        eingabe.readOnly = true;
+        eingabe.classList.add(getroffen ? "richtig" : "falsch");
+        const rueck = mitte.querySelector(".rueckmeldung");
+        rueck.textContent = getroffen ? "RICHTIG" : `FALSCH · richtig: ${aufgabe.antwort} ${aufgabe.einheit}`;
+        rueck.classList.add(getroffen ? "gut" : "schlecht");
+        const weg = mitte.querySelector(".loesungsweg");
+        weg.innerHTML = `<div class="wegkopf">SCHNELLSTER WEG</div>`
+          + loesungsweg(aufgabe).map((z) => `<div class="wegzeile">${z}</div>`).join("")
+          + `<div class="wegtipp">TIPP · ${TIPPS5[aufgabe.prinzip]}</div>`
+          + `<div class="wegweiter">WEITER MIT ENTER</div>`;
+        weg.hidden = false;
+      });
+    };
+
+    const zeigeErgebnis = async () => {
+      if (beendet || ergebnisOffen) return;
+      ergebnisOffen = true;
+      document.removeEventListener("fullscreenchange", beiVollbildwechsel);
+      document.removeEventListener("visibilitychange", beiSichtwechsel);
+      await tuer.schliesse();
+      tuer.verwische(true);
+      const tafel = document.createElement("div");
+      tafel.className = "ergebnisschicht";
+      tafel.innerHTML = `
+        <div class="frage">ÜBUNG BEENDET</div>
+        <div class="ergebnisgross">${richtig} / ${gestellt}</div>
+        <div class="ergebniszeilen"><span>Richtig: ${richtig}</span><span>Beantwortet: ${gestellt}</span></div>
+        <button class="punkt" id="u5s-fertig">ZURÜCK ZUR MISSION</button>
+        <div class="ergebnisfuss"><span>Schnellrechnen · Die Übung zählt nicht zur Statistik</span></div>`;
+      document.body.append(tafel);
+      requestAnimationFrame(() => tafel.classList.add("da"));
+      let geschlossen = false;
+      const schliesse = async () => {
+        if (geschlossen) return;
+        geschlossen = true;
+        tafel.classList.remove("da");
+        setTimeout(() => tafel.remove(), 260);
+        tuer.verwische(false);
+        raeumeAuf();
+        if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
+        await beiEnde(null); // die Übung zählt nie
+        await tuer.oeffne();
+      };
+      verlasse = schliesse;
+      tafel.querySelector("#u5s-fertig").addEventListener("click", schliesse);
+    };
+
+    (async () => {
+      await tuer.oeffne();
+      if (beendet || ergebnisOffen) return;
+      stelle();
+    })();
+  }
+
   function starte({ tuer, beiEnde, registriereAbbruch }) {
+    // Den Übungsmerker immer verbrauchen: bleibt er versehentlich scharf,
+    // darf er keinen späteren Testlauf umleiten (Muster aus Mission 3).
+    const nurUebung = uebungsStart;
+    uebungsStart = false;
+    if (nurUebung) {
+      starteSchnellrechnen({ tuer, beiEnde, registriereAbbruch });
+      return;
+    }
     const { dauer } = einstellung;
     let vorrat = [];
     const naechsteAufgabe = () => {

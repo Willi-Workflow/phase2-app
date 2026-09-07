@@ -54,6 +54,21 @@ Fassung nach Willis Vorgabe vom 23.08.2026: Testdauer statt fester Aufgabenzahl.
 - Gespeicherte Laufdaten (`daten`): `art: "flugphysik"`, `dauerMin`, `gestellt`, `richtig`, `quote` (Prozent), `punkte`. Einzelne Aufgaben werden nicht gespeichert.
 - Die Ergebnistafel führt mit der Trefferquote in Prozent (Willis Festlegung vom 24.08.2026: alle Missionen zeigen auf der Tafel Prozent statt Punkte), darunter Richtige von Gestellt; die Fußzeile nennt Testdauer, Antwortzeit je Aufgabe und die Zahl der gestellten Aufgaben. Die gespeicherte Kennzahl bleibt der Punkteschnitt.
 
+## Schnellrechnen-Übung (seit 07.09.2026, Willis Auftrag)
+
+- Abgesetzter Block SCHNELLRECHNEN mit Knopf NUR ÜBEN in den
+  Missionseinstellungen (Muster Blitzübung Mission 4), Start über den
+  normalen Startweg. Textaufgaben ohne Zeitdruck, endlos bis Esc, zählt
+  nie zur Statistik.
+- Nach jeder Antwort steht der schnellste im Kopf rechenbare Weg mit den
+  konkreten Zahlen der Aufgabe im Bild (loesungsweg in uebung5.js): je
+  nach Zahlenlage über NM je Minute (v/60 glatt), den Stundenbruch
+  (griffige Minutenzahlen wie 15, 45, 120) oder die nackte Formel; bei
+  den Raten der Nullen-Trick. Darunter der Merktipp des Aufgabentyps
+  (TIPPS5). Weiter mit Enter.
+- Dafür trägt jede Aufgabe seit dem 07.09.2026 ihre Rohwerte (werte:
+  v/t/s beziehungsweise r/t/h) mit sich.
+
 ## Wissensbereich als Karteikartenstapel
 
 Fassung nach Willis Sichtung vom 23.08.2026; die erste Fassung (Schild WISSEN öffnet eine Schicht vor der Seite, sechs Karten mit getrennten Beispielkarten) ist verworfen.

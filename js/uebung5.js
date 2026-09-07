@@ -61,6 +61,7 @@ export function erzeugeAufgabe(prinzip, rnd = Math.random, mitInstrument = false
           antwort: r,
           einheit: "ft/min",
           instrument: { id: "hoehe", wert: h },
+          werte: { r, t, h },
         };
       }
       const { r, t, h } = zufallAus(RATEN_PAARE_VARIOMETER, rnd);
@@ -70,6 +71,7 @@ export function erzeugeAufgabe(prinzip, rnd = Math.random, mitInstrument = false
         antwort: t,
         einheit: "min",
         instrument: { id: "vario", wert: -r },
+        werte: { r, t, h },
       };
     }
     const { r, t, h } = zufallAus(RATEN_PAARE, rnd);
@@ -83,6 +85,7 @@ export function erzeugeAufgabe(prinzip, rnd = Math.random, mitInstrument = false
       einheit: "ft/min",
       instrument: null,
       lage: { aenderung: h, sinken },
+      werte: { r, t, h },
     };
   }
 
@@ -94,6 +97,7 @@ export function erzeugeAufgabe(prinzip, rnd = Math.random, mitInstrument = false
       antwort: t,
       einheit: "min",
       instrument: { id: "fahrt", wert: v },
+      werte: { v, t, s },
     };
     return {
       prinzip,
@@ -101,6 +105,7 @@ export function erzeugeAufgabe(prinzip, rnd = Math.random, mitInstrument = false
       antwort: s,
       einheit: "NM",
       instrument: { id: "fahrt", wert: v },
+      werte: { v, t, s },
     };
   }
 
@@ -112,6 +117,7 @@ export function erzeugeAufgabe(prinzip, rnd = Math.random, mitInstrument = false
     einheit: "min",
     instrument: null,
     lage: { fahrt: v },
+    werte: { v, t, s },
   };
   if (prinzip === "weg") return {
     prinzip,
@@ -120,6 +126,7 @@ export function erzeugeAufgabe(prinzip, rnd = Math.random, mitInstrument = false
     einheit: "NM",
     instrument: null,
     lage: { fahrt: v },
+    werte: { v, t, s },
   };
   return {
     prinzip,
@@ -127,6 +134,7 @@ export function erzeugeAufgabe(prinzip, rnd = Math.random, mitInstrument = false
     antwort: v,
     einheit: "kt",
     instrument: null,
+    werte: { v, t, s },
   };
 }
 
@@ -197,6 +205,122 @@ export function pruefeEingabe(text, antwort) {
 // für jede Antwort innerhalb von acht Sekunden (Willis Vorgabe vom
 // 28.08.2026), danach schmilzt der Bonus linear bis zum Zeitlimit. Eine
 // langsame richtige Antwort schlägt so immer jede falsche.
+// Schnellrechnen-Übung seit 07.09.2026 (Willis Auftrag): Zu jeder Aufgabe
+// gibt es den schnellsten im Kopf rechenbaren Weg mit den konkreten
+// Zahlen. Je nach Zahlenlage wird die passende Route gewählt: Knoten als
+// NM je Minute (wenn v/60 glatt ist), der Stundenbruch (wenn die Minuten
+// ein griffiger Teil einer Stunde sind) oder die nackte Formel. Bei den
+// Raten streicht der Nullen-Trick beidseitig die Hunderter weg.
+const zk = (n) => String(n).replace(".", ","); // Zahl mit Komma
+const istGlatt = (n) => Number.isInteger(n * 2); // ganz oder ,5
+// Je Minutenzahl der Stundenbruch in Worten und die Rechenoperation in
+// beide Richtungen: weg rechnet s aus v (mal Stundenanteil), tempo rechnet
+// v aus s (die Umkehrung). Bei 45 Minuten ist der Doppelschritt über
+// Viertel der schnellste Kopfweg.
+const STUNDENBRUECHE = {
+  12: { wort: "ein Fünftel einer Stunde", weg: "geteilt durch 5", tempo: "mal 5" },
+  15: { wort: "eine Viertelstunde", weg: "geteilt durch 4", tempo: "mal 4" },
+  20: { wort: "ein Drittel einer Stunde", weg: "geteilt durch 3", tempo: "mal 3" },
+  30: { wort: "eine halbe Stunde", weg: "geteilt durch 2", tempo: "mal 2" },
+  45: { wort: "eine Dreiviertelstunde", weg: "mal 3, geteilt durch 4", tempo: "mal 4, geteilt durch 3" },
+  60: { wort: "genau eine Stunde", weg: "mal 1", tempo: "mal 1" },
+  90: { wort: "anderthalb Stunden", weg: "mal 1,5", tempo: "geteilt durch 1,5" },
+  120: { wort: "zwei Stunden", weg: "mal 2", tempo: "geteilt durch 2" },
+  150: { wort: "zweieinhalb Stunden", weg: "mal 2,5", tempo: "geteilt durch 2,5" },
+  180: { wort: "drei Stunden", weg: "mal 3", tempo: "geteilt durch 3" },
+  240: { wort: "vier Stunden", weg: "mal 4", tempo: "geteilt durch 4" },
+  300: { wort: "fünf Stunden", weg: "mal 5", tempo: "geteilt durch 5" },
+};
+
+export const TIPPS5 = {
+  zeit: "Knoten geteilt durch 60 sind NM je Minute: 120 kt = 2, 90 kt = 1,5. Zeit = Weg geteilt durch NM je Minute. Bei krummen Knoten (80, 100, 200) teile Weg durch Knoten: Das ergibt die Stunden, etwa 20 NM bei 80 kt = eine Viertelstunde.",
+  weg: "Erst die Geschwindigkeit in NM je Minute umdenken (kt geteilt durch 60), dann mal die Minuten. Bei griffigen Zeiten hilft der Stundenbruch: 15 min = Viertelstunde, 45 min = Dreiviertelstunde.",
+  geschwindigkeit: "Weg geteilt durch Minuten ergibt NM je Minute, mal 60 sind es Knoten. Bei griffigen Zeiten direkt über den Stundenbruch: 30 min = halbe Stunde, also Weg mal 2.",
+  rate: "Rate gesucht: Nullen der Höhe streichen, klein teilen, Nullen wieder dran (4800 durch 8: 48 durch 8 = 6, also 600 ft/min). Zeit gesucht: auf beiden Seiten gleich viele Nullen streichen und nichts anhängen (4800 durch 1200: 48 durch 12 = 4 Minuten).",
+};
+
+export function loesungsweg(aufgabe) {
+  const w = aufgabe.werte;
+  if (!w) return [];
+  if (aufgabe.prinzip === "rate") {
+    const { r, t, h } = w;
+    if (aufgabe.antwort === t) return [
+      `Nullen weg: aus ${h} ft und ${r} ft/min werden ${h / 100} und ${r / 100}.`,
+      `${h / 100} geteilt durch ${r / 100} = ${t} Minuten.`,
+    ];
+    return [
+      `Nullen weg: aus ${h} ft werden ${h / 100}.`,
+      `${h / 100} geteilt durch ${t} Minuten = ${r / 100}, Nullen dran: ${r} ft/min.`,
+    ];
+  }
+  const { v, t, s } = w;
+  const je = v / 60;
+  const bruch = STUNDENBRUECHE[t];
+  if (aufgabe.prinzip === "zeit") {
+    if (istGlatt(je) && Number.isInteger(s / je)) return [
+      `${v} kt sind ${zk(je)} NM je Minute.`,
+      `${s} NM geteilt durch ${zk(je)} = ${t} Minuten.`,
+    ];
+    // Krumme Knoten (80/100/200): Weg durch Knoten ergibt die Stunden,
+    // und die sind über den ganzen Wertepool immer ein griffiger Bruch.
+    if (bruch) return [
+      `${s} NM geteilt durch ${v} kt = ${bruch.wort}.`,
+      `Also ${t} Minuten.`,
+    ];
+    return [
+      `Zeit = Weg mal 60, geteilt durch die Knoten.`,
+      `${s} mal 60 = ${s * 60}, geteilt durch ${v} = ${t} Minuten.`,
+    ];
+  }
+  if (aufgabe.prinzip === "weg") {
+    // Bei genau einer Stunde ist nichts zu rechnen, ab über einer Stunde
+    // ist der Stundenbruch griffiger als die NM je Minute (90 kt mal 5
+    // schlägt 1,5 mal 300).
+    if (t === 60) return [
+      `60 Minuten sind genau eine Stunde.`,
+      `Der Weg entspricht den Knoten: ${s} NM.`,
+    ];
+    if (t > 60 && bruch) return [
+      `${t} Minuten sind ${bruch.wort}.`,
+      `${v} kt ${bruch.weg} = ${s} NM.`,
+    ];
+    if (istGlatt(je)) return [
+      `${v} kt sind ${zk(je)} NM je Minute.`,
+      `${zk(je)} mal ${t} Minuten = ${s} NM.`,
+    ];
+    if (bruch) return [
+      `${t} Minuten sind ${bruch.wort}.`,
+      `${v} kt ${bruch.weg} = ${s} NM.`,
+    ];
+    return [
+      `Weg = Knoten mal Minuten, geteilt durch 60.`,
+      `${v} mal ${t} = ${v * t}, geteilt durch 60 = ${s} NM.`,
+    ];
+  }
+  // Prinzip Geschwindigkeit: v gesucht, gleiche Routenordnung wie beim Weg.
+  const jeWeg = s / t;
+  if (t === 60) return [
+    `60 Minuten sind genau eine Stunde.`,
+    `Die Knoten entsprechen dem Weg: ${v} kt.`,
+  ];
+  if (t > 60 && bruch) return [
+    `${t} Minuten sind ${bruch.wort}.`,
+    `${s} NM ${bruch.tempo} = ${v} kt.`,
+  ];
+  if (istGlatt(jeWeg)) return [
+    `${s} NM in ${t} Minuten sind ${zk(jeWeg)} NM je Minute.`,
+    `${zk(jeWeg)} mal 60 = ${v} kt.`,
+  ];
+  if (bruch) return [
+    `${t} Minuten sind ${bruch.wort}.`,
+    `${s} NM ${bruch.tempo} = ${v} kt.`,
+  ];
+  return [
+    `Knoten = Weg mal 60, geteilt durch die Minuten.`,
+    `${s} mal 60 = ${s * 60}, geteilt durch ${t} = ${v} kt.`,
+  ];
+}
+
 export const VOLLE_PUNKTE_MS = 8000;
 export function punkteFuerAntwort(richtig, restzeitMs, limitMs) {
   if (!richtig) return 0;
