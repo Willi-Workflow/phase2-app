@@ -20,6 +20,10 @@ import { svgKurs, svgFahrt, svgHoehe } from "./instrumente.js";
 
 const ZWISCHENANZEIGE_MS = 2500;
 const AUFGABENECHO_MS = 600;
+// Aufgabenbildschirm vor jedem Durchgang (Willis Auftrag vom 07.09.2026):
+// solange stehen die Zielwerte im Bild, erst danach starten Uhr und Aufgabe.
+const AUFGABENANZEIGE_MS = 5000;
+const AUFGABENBLENDE_MS = 400; // Luft zwischen Zwischenanzeige und Aufgabenbildschirm
 
 // Ansage der Rechenaufgaben (Stufe 4): ElevenLabs-Aufnahmen aus der
 // Bundeswehr-Lern-App, Kopie unter klaenge/zahlen (siehe dort HERKUNFT.md).
@@ -388,7 +392,8 @@ export function erzeugeUebung3({ speicher, controls }) {
 
     const zeichneKopf = () => {
       const rest = Math.max(0, testende - performance.now());
-      kopf.textContent = `DURCHGANG ${durchgangsNummer} · REST ${Math.floor(rest / 60_000)}:${String(Math.floor((rest % 60_000) / 1000)).padStart(2, "0")}`;
+      // Vor dem ersten Durchgang (Aufgabenbildschirm läuft) stünde sonst 0.
+      kopf.textContent = `DURCHGANG ${Math.max(1, durchgangsNummer)} · REST ${Math.floor(rest / 60_000)}:${String(Math.floor((rest % 60_000) / 1000)).padStart(2, "0")}`;
     };
 
     // Baut die Zellen der ICT-Tafel für einen frischen Durchgang: Uhr und
@@ -554,7 +559,10 @@ export function erzeugeUebung3({ speicher, controls }) {
     const startDurchgang = () => {
       if (beendet || ergebnisOffen) return;
       durchgangsNummer += 1;
-      vorgaben = erzeugeVorgaben(stufe, Math.random);
+      // Die Vorgaben hat der Aufgabenbildschirm schon gewürfelt und gezeigt;
+      // der Rückfall deckt nur einen Direktstart ohne Bildschirm ab.
+      vorgaben = naechsteVorgaben ?? erzeugeVorgaben(stufe, Math.random);
+      naechsteVorgaben = null;
       zustand = erzeugeFlugzustand(vorgaben);
       knoten = baueTafel(vorgaben);
       mfSumme = 0;
@@ -569,9 +577,34 @@ export function erzeugeUebung3({ speicher, controls }) {
       requestAnimationFrame(schleife);
     };
 
+    // Aufgabenbildschirm vor jedem Durchgang (Willis Auftrag vom
+    // 07.09.2026): Er würfelt die Vorgaben und zeigt die Zielwerte der
+    // kommenden 60 Sekunden über die Zwischenanzeige-Schicht; die Uhr und
+    // der Durchgang starten erst, wenn er wieder ausgeblendet ist.
+    let naechsteVorgaben = null;
+    const zeigeAufgabe = () => {
+      if (beendet || ergebnisOffen) return;
+      naechsteVorgaben = erzeugeVorgaben(stufe, Math.random);
+      const aktiv = (id) => naechsteVorgaben.aktive.includes(id);
+      const zeilen = [
+        `<span>FLUGZEIT · ${FLUGZEIT_S} Sekunden</span>`,
+        aktiv("kurs") ? `<span>KURS · ${schildKurs(naechsteVorgaben)}</span>` : "",
+        aktiv("hoehe") ? `<span>HÖHE · ${schildHoehe(naechsteVorgaben)}</span>` : "",
+        aktiv("fahrt") ? `<span>FAHRT · ${schildFahrt(naechsteVorgaben)}</span>` : "",
+      ].filter(Boolean).join("");
+      zwischenfeld.innerHTML = `<div>AUFGABE ${durchgangsNummer + 1}</div>`
+        + `<div class="aufgabenzeilen">${zeilen}</div>`;
+      zwischenfeld.classList.add("da");
+      spaeter(() => {
+        zwischenfeld.classList.remove("da");
+        if (beendet || ergebnisOffen) return;
+        startDurchgang();
+      }, AUFGABENANZEIGE_MS);
+    };
+
     // Nach jedem Durchgang eine kurze Zwischenanzeige der Durchgangspunkte,
-    // danach der nächste Durchgang oder, wenn die Testdauer um ist, die
-    // Ergebnistafel.
+    // danach der Aufgabenbildschirm des nächsten Durchgangs oder, wenn die
+    // Testdauer um ist, die Ergebnistafel.
     const beendeDurchgang = () => {
       // Eine noch laufende Ansage endet mit dem Durchgang, sie soll nicht
       // in die Zwischenanzeige hineinsprechen.
@@ -590,8 +623,10 @@ export function erzeugeUebung3({ speicher, controls }) {
       spaeter(() => {
         zwischenfeld.classList.remove("da");
         if (beendet || ergebnisOffen) return;
-        if (performance.now() >= testende) zeigeErgebnis(true);
-        else startDurchgang();
+        if (performance.now() >= testende) { zeigeErgebnis(true); return; }
+        // Kurze Blende, damit die Punkteanzeige ausblendet, bevor der
+        // Aufgabenbildschirm mit neuem Inhalt einblendet.
+        spaeter(zeigeAufgabe, AUFGABENBLENDE_MS);
       }, ZWISCHENANZEIGE_MS);
     };
 
@@ -678,13 +713,14 @@ export function erzeugeUebung3({ speicher, controls }) {
       tafelErgebnis.querySelector("#u3-fertig").addEventListener("click", schliesse);
     };
 
-    // Die Tür öffnet in die fertig aufgebaute Mission, erst dann läuft die Zeit.
+    // Die Tür öffnet in die fertig aufgebaute Mission; auch der erste
+    // Durchgang beginnt mit dem Aufgabenbildschirm.
     (async () => {
       await tuer.oeffne();
       if (beendet || ergebnisOffen) return;
       testende = performance.now() + testdauer * 60_000;
       restuhr = setInterval(zeichneKopf, 250);
-      startDurchgang();
+      zeigeAufgabe();
     })();
   }
 

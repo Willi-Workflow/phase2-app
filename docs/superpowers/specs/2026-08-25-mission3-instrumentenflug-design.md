@@ -53,6 +53,15 @@ Start zu Ziel). Durchgänge folgen am Stück, bis die Testdauer um ist.
   Wertung, ihre Sollkurve läuft von Sekunde 5 (Startwert) bis 60
   (Zielwert). Kurs und Höhe werten ab Sekunde 0.
 
+## Aufgabenbildschirm (seit 07.09.2026, Willis Auftrag)
+
+- Vor jedem Durchgang (auch dem ersten) stehen die Zielwerte der
+  kommenden 60 Sekunden 5 s groß im Bild (Flugzeit und die laut Stufe
+  aktiven Instrumente, gleiche Texte wie die Zielschilder); Uhr und
+  Durchgang starten erst danach. Zwischen der Punkteanzeige des vorigen
+  Durchgangs und dem Aufgabenbildschirm liegt eine kurze Blende. Die
+  Restzeit des Tests läuft dabei weiter (wie bei der Zwischenanzeige).
+
 ## Steuerung
 
 - Stick quer: Kursrate bis ±9 Grad je Sekunde.

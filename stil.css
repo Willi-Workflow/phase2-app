@@ -872,6 +872,15 @@ main { position: relative; z-index: 1; }
 }
 .ict-zwischenanzeige.da { opacity: 1; }
 
+/* Aufgabenbildschirm vor jedem Durchgang: Zielwerte als Zeilenblock unter
+   der Überschrift, etwas kleiner als die Punkteanzeige. */
+.ict-zwischenanzeige .aufgabenzeilen {
+  margin-top: 0.7em;
+  font-size: 0.76em;
+  letter-spacing: 0.1em;
+}
+.ict-zwischenanzeige .aufgabenzeilen span { display: block; margin-top: 0.4em; }
+
 /* Stufe 4: fünf Antwortknöpfe, über die Pedale angewählt (gewaehlt), die
    Schusstaste bestätigt (richtig/falsch aus den bestehenden
    antwortknopf-Regeln). */
