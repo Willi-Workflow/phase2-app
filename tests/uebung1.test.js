@@ -373,20 +373,20 @@ test("Antwortfenster endet mit der nächsten Ansage, auch bei schnellem Tempo", 
 
 test("Erfüllung Mission 1: Abschüsse je Minute am Bestwert gemessen, Buchstaben fließen ein", () => {
   // Willis Festlegung vom 31.08.2026: Es zählt, wie oft das Flugzeug
-  // abgeschossen wurde; seit 07.09.2026 sind 7 je Minute die vollen 100
-  // (Willis Auftrag: schwerer, vorher 5). Mit Letter-Task 70/30, jeder
-  // Fehlalarm kostet 15 Punkte.
-  assert.equal(TREFFER_BESTWERT, 7);
-  assert.equal(trefferErfuellung(21, 3), 100);
+  // abgeschossen wurde; seit 07.09.2026 sind 10 je Minute die vollen 100
+  // (Willis Auftrag: schwerer, vorher 5, kurz 7). Mit Letter-Task 70/30,
+  // jeder Fehlalarm kostet 15 Punkte.
+  assert.equal(TREFFER_BESTWERT, 10);
+  assert.equal(trefferErfuellung(30, 3), 100);
   assert.equal(trefferErfuellung(99, 3), 100);                // Deckel
-  assert.ok(Math.abs(trefferErfuellung(7, 2) - 50) < 1e-9);
+  assert.ok(Math.abs(trefferErfuellung(10, 2) - 50) < 1e-9);
   assert.equal(trefferErfuellung(0, 3), 0);
-  assert.equal(trefferErfuellung(7, 0), 0);                   // ohne Dauer keine Wertung
+  assert.equal(trefferErfuellung(10, 0), 0);                  // ohne Dauer keine Wertung
   assert.equal(letterErfuellung({ erkannt: 4, verpasst: 0, fehlalarm: 0 }), 100);
   assert.equal(letterErfuellung({ erkannt: 3, verpasst: 1, fehlalarm: 0 }), 75);
   assert.equal(letterErfuellung({ erkannt: 4, verpasst: 0, fehlalarm: 2 }), 70);
   assert.equal(letterErfuellung({ erkannt: 0, verpasst: 0, fehlalarm: 8 }), 0); // nie unter 0
   // Ohne Letter-Task zählen nur die Abschüsse, mit ihr die 70/30-Mischung.
-  assert.equal(erfuellung1(21, 3, null), 100);
-  assert.ok(Math.abs(erfuellung1(21, 3, { erkannt: 1, verpasst: 1, fehlalarm: 0 }) - (0.7 * 100 + 0.3 * 50)) < 1e-9);
+  assert.equal(erfuellung1(30, 3, null), 100);
+  assert.ok(Math.abs(erfuellung1(30, 3, { erkannt: 1, verpasst: 1, fehlalarm: 0 }) - (0.7 * 100 + 0.3 * 50)) < 1e-9);
 });

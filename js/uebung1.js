@@ -249,9 +249,11 @@ export function takt(z, eingaben, dtMs, rnd = Math.random) {
 // erreichbaren Bestwert. Mit Letter-Task fließt die Buchstabenerfüllung mit
 // 30 Prozent ein, jeder Fehlalarm kostet 15 Punkte. Der Schwierigkeitsfaktor
 // kommt wie bisher obendrauf; die Deckungsquote bleibt reine Anzeige.
-// Am 07.09.2026 auf Willis Auftrag von 5 auf 7 angehoben ("schwerer"),
-// betrifft nur den Abschussanteil, der Letter-Task-Anteil bleibt.
-export const TREFFER_BESTWERT = 7;    // Abschüsse je Minute für volle Erfüllung
+// Am 07.09.2026 auf Willis Auftrag in zwei Schritten von 5 auf 10
+// angehoben ("schwerer"; beide Piloten lagen in allen Läufen über dem
+// alten Deckel). Betrifft nur den Abschussanteil, der Letter-Task-Anteil
+// bleibt.
+export const TREFFER_BESTWERT = 10;   // Abschüsse je Minute für volle Erfüllung
 export const LETTER_GEWICHT = 0.3;
 export const FEHLALARM_ABZUG = 15;
 
