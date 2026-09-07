@@ -238,19 +238,20 @@ test("takt: sammelt Deckungszeit und Testzeit", () => {
   assert.equal(z.deckungMs.ruder, 300);
 });
 
-test("Erfüllung Mission 2: Erledigungen je Element am Bestwert, gemittelt", () => {
-  // Willis Auftrag vom 07.09.2026 (Muster Mission 1): Die Treffer je Minute
-  // tragen die Prozente, je Element gedeckelt, dann über die Auswahl gemittelt.
+test("Erfüllung Mission 2: Erledigungen je Element am eigenen Bestwert, gemittelt", () => {
+  // Willis Auftrag vom 07.09.2026 (Muster Mission 1), Bestwerte je Element
+  // datengeleitet verschieden: Stick 7, Ruder 4, Schub 4 je Minute.
   const z = (auswahl, treffer) => ({ auswahl, treffer });
-  // Ein Element, Bestwert genau getroffen: 5 Treffer je Minute -> 100.
-  assert.equal(erfuellung2(z(["stick"], { stick: 25, ruder: 0, schub: 0 }), 5), 100);
-  // Halber Bestwert -> 50.
-  assert.ok(Math.abs(erfuellung2(z(["stick"], { stick: 12.5, ruder: 0, schub: 0 }), 5) - 50) < 1e-9);
-  // Deckel je Element: Überschuss bei einem gleicht Fehlen beim anderen nicht aus.
-  assert.equal(erfuellung2(z(["stick", "ruder"], { stick: 50, ruder: 0, schub: 0 }), 5), 50);
+  // Stick am Bestwert: 7 je Minute -> 100.
+  assert.equal(erfuellung2(z(["stick"], { stick: 35, ruder: 0, schub: 0 }), 5), 100);
+  // Halber Bestwert -> 50, auch beim Ruder mit seinem eigenen Bestwert.
+  assert.ok(Math.abs(erfuellung2(z(["stick"], { stick: 17.5, ruder: 0, schub: 0 }), 5) - 50) < 1e-9);
+  assert.ok(Math.abs(erfuellung2(z(["ruder"], { stick: 0, ruder: 10, schub: 0 }), 5) - 50) < 1e-9);
+  // Deckel je Element: Überschuss beim Stick gleicht fehlendes Ruder nicht aus.
+  assert.equal(erfuellung2(z(["stick", "ruder"], { stick: 99, ruder: 0, schub: 0 }), 5), 50);
   // Drei Elemente je am Bestwert -> 100.
-  assert.equal(erfuellung2(z(["stick", "ruder", "schub"], { stick: 25, ruder: 25, schub: 25 }), 5), 100);
+  assert.equal(erfuellung2(z(["stick", "ruder", "schub"], { stick: 35, ruder: 20, schub: 20 }), 5), 100);
   // Ohne Dauer oder ohne Auswahl 0.
-  assert.equal(erfuellung2(z(["stick"], { stick: 25, ruder: 0, schub: 0 }), 0), 0);
-  assert.equal(erfuellung2(z([], { stick: 25, ruder: 0, schub: 0 }), 5), 0);
+  assert.equal(erfuellung2(z(["stick"], { stick: 35, ruder: 0, schub: 0 }), 0), 0);
+  assert.equal(erfuellung2(z([], { stick: 35, ruder: 0, schub: 0 }), 5), 0);
 });

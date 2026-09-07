@@ -205,16 +205,18 @@ export function pruefeAuswahl(auswahl) {
 
 // Erfüllungsanteil seit 07.09.2026 (Willis Auftrag, Muster Mission 1):
 // Nicht mehr die Deckungsquote, sondern die Erledigungen tragen die
-// Prozente. Je gewähltem Element zählen die Treffer je Minute am Bestwert,
-// gedeckelt und über die Auswahl gemittelt; der Schwierigkeitsfaktor
-// bleibt obendrauf. Der Bestwert ist eine Setzung für den
-// Drei-Elemente-Fall (je Erledigung 1 s Haltezeit plus Anfahrweg, geteilte
-// Aufmerksamkeit), Willi eicht nach Läufen nach. Die Deckungsquote bleibt
-// als Anzeige- und Datenwert erhalten.
-export const TREFFER_BESTWERT2 = 5; // Erledigungen je Minute und Element für volle Erfüllung
+// Prozente. Je gewähltem Element zählen die Treffer je Minute am Bestwert
+// des Elements, gedeckelt und über die Auswahl gemittelt; der
+// Schwierigkeitsfaktor bleibt obendrauf. Die Bestwerte sind je Element
+// verschieden (Willis Auftrag: datengeleitet statt ein gemeinsamer Wert),
+// abgeleitet aus den sechs gespeicherten Läufen beider Piloten bis zum
+// 07.09.2026: Stick schaffte 4 bis 8,8 je Minute, Ruder höchstens 2,8,
+// Schub höchstens 3; je Element liegt rund ein Drittel Luft über dem
+// besten Lauf. Die Deckungsquote bleibt als Anzeige- und Datenwert.
+export const TREFFER_BESTWERTE2 = { stick: 7, ruder: 4, schub: 4 }; // Erledigungen je Minute
 
 export function erfuellung2(z, dauerMin) {
   if (!dauerMin || z.auswahl.length === 0) return 0;
-  const anteile = z.auswahl.map((e) => Math.min(1, z.treffer[e] / dauerMin / TREFFER_BESTWERT2));
+  const anteile = z.auswahl.map((e) => Math.min(1, z.treffer[e] / dauerMin / TREFFER_BESTWERTE2[e]));
   return (anteile.reduce((s, a) => s + a, 0) / z.auswahl.length) * 100;
 }
