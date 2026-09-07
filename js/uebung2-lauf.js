@@ -5,7 +5,7 @@ import {
   TESTDAUERN, ELEMENTE, erzeugeLaufzustand, takt, punkte, pruefeAuswahl, deckungsquote, schwierigkeitsfaktor2,
   erfuellung2, DECKUNG_BESTWERT,
 } from "./uebung2.js";
-import { mitEmpfindlichkeit } from "./kurve.js";
+import { mitEmpfindlichkeit, MISSIONS_EMPFINDLICHKEITEN } from "./kurve.js";
 import { xImBild, yImBild, TACHO, gradFuerKnoten, buehneSvg } from "./uebung2-bild.js";
 
 const NAMEN = { stick: "STICK", ruder: "RUDER", schub: "SCHUB" };
@@ -36,7 +36,7 @@ export function erzeugeUebung2({ speicher, controls }) {
         <select class="wahlliste" data-name="dauer">${TESTDAUERN.map((w) =>
           `<option value="${w}" ${w === einstellung.dauer ? "selected" : ""}>${w} min</option>`).join("")}</select></div>
       <div class="wahlzeile"><span class="wahltitel">EMPFINDLICHKEIT</span>
-        <select class="wahlliste" data-name="empfindlichkeit">${[0.25, 0.5, 0.75, 1, 1.25, 1.5].map((w) =>
+        <select class="wahlliste" data-name="empfindlichkeit">${MISSIONS_EMPFINDLICHKEITEN.map((w) =>
           `<option value="${w}" ${w === einstellung.empfindlichkeit ? "selected" : ""}>${Math.round(w * 100)} %</option>`).join("")}</select></div>
       <p class="wahlhinweis" id="u2-wahlhinweis" hidden>Mindestens ein Steuerelement wählen.</p>`;
 

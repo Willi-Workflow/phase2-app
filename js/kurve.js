@@ -71,3 +71,10 @@ export function groessterAusschlag(basen, jetzt, schwelle) {
   if (!treffer) return null;
   return { geraet: treffer.geraet, achse: treffer.achse, delta: Math.round(treffer.rohesDelta * 100) / 100 };
 }
+
+// Wählbare Missions-Empfindlichkeiten: 25 bis 150 Prozent in 5er-Schritten
+// (Willis Auftrag vom 07.09.2026, vorher Viertelschritte; Spanne und
+// Vorgabe 100 Prozent bleiben unverändert). Ganzzahlig in Prozent erzeugt
+// und erst am Ende geteilt, damit die Werte exakt den früher gespeicherten
+// Einstellungen entsprechen (0.3 statt 0.30000000000000004).
+export const MISSIONS_EMPFINDLICHKEITEN = Array.from({ length: 26 }, (_, i) => (25 + i * 5) / 100);

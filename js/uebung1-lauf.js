@@ -6,7 +6,7 @@ import {
   erzeugeBuchstabenreihe, erzeugeSlaZaehler, zielHinweis,
   erfuellung1, trefferErfuellung, letterErfuellung, TREFFER_BESTWERT,
 } from "./uebung1.js";
-import { mitEmpfindlichkeit } from "./kurve.js";
+import { mitEmpfindlichkeit, MISSIONS_EMPFINDLICHKEITEN } from "./kurve.js";
 import * as THREE from "./fremd/three.module.js";
 import { GLTFLoader } from "./fremd/GLTFLoader.js";
 
@@ -79,7 +79,7 @@ export function erzeugeUebung1({ speicher, controls }) {
         <select class="wahlliste" data-name="dauer">${TESTDAUERN.map((w) =>
           `<option value="${w}" ${w === einstellung.dauer ? "selected" : ""}>${w} min</option>`).join("")}</select></div>
       <div class="wahlzeile"><span class="wahltitel">EMPFINDLICHKEIT</span>
-        <select class="wahlliste" data-name="empfindlichkeit">${[0.25, 0.5, 0.75, 1, 1.25, 1.5].map((w) =>
+        <select class="wahlliste" data-name="empfindlichkeit">${MISSIONS_EMPFINDLICHKEITEN.map((w) =>
           `<option value="${w}" ${w === einstellung.empfindlichkeit ? "selected" : ""}>${Math.round(w * 100)} %</option>`).join("")}</select></div>
       <div class="wahlzeile"><span class="wahltitel">BUCHSTABEN</span>
         <button type="button" class="wahlknopf klapppfeil" data-element="klappe" aria-expanded="false"

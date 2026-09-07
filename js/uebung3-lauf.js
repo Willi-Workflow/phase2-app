@@ -14,7 +14,7 @@ import {
   momentanfehler, durchgangspunkte, kennzahl3, schwierigkeitsfaktor3, erfuellung3,
   erzeugeRechenaufgabe, antworten5, pedalwahl, schiebeZone, passeRechenstufeAn, rechenstandStart,
 } from "./uebung3.js";
-import { mitEmpfindlichkeit } from "./kurve.js";
+import { mitEmpfindlichkeit, MISSIONS_EMPFINDLICHKEITEN } from "./kurve.js";
 import { svgUhr, svgSaeule } from "./uebung3-bild.js";
 import { svgKurs, svgFahrt, svgHoehe } from "./instrumente.js";
 
@@ -112,7 +112,7 @@ export function erzeugeUebung3({ speicher, controls }) {
         <select class="wahlliste" data-name="testdauer">${TESTDAUERN.map((w) =>
           `<option value="${w}" ${w === einstellung.testdauer ? "selected" : ""}>${w} min</option>`).join("")}</select></div>
       <div class="wahlzeile"><span class="wahltitel">EMPFINDLICHKEIT</span>
-        <select class="wahlliste" data-name="empfindlichkeit">${[0.25, 0.5, 0.75, 1, 1.25, 1.5].map((w) =>
+        <select class="wahlliste" data-name="empfindlichkeit">${MISSIONS_EMPFINDLICHKEITEN.map((w) =>
           `<option value="${w}" ${w === einstellung.empfindlichkeit ? "selected" : ""}>${Math.round(w * 100)} %</option>`).join("")}</select></div>
       <div class="wahlzeile"><span class="wahltitel">FEHLERSÄULE</span>
         <button type="button" class="wahlknopf ${einstellung.fehlersaeule ? "an" : ""}" data-element="fehlersaeule"

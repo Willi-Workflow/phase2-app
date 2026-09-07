@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mitKurve, groessterAusschlag, mitEmpfindlichkeit, empfindlichkeitFuer, mitRuhelage, glaette } from "../js/kurve.js";
+import { mitKurve, groessterAusschlag, mitEmpfindlichkeit, empfindlichkeitFuer, mitRuhelage, glaette, MISSIONS_EMPFINDLICHKEITEN } from "../js/kurve.js";
 
 test("glaette: Zeitkonstante 0 heißt aus, der neue Wert gilt sofort", () => {
   assert.equal(glaette(0, 1, 16, 0), 1);
@@ -132,4 +132,15 @@ test("groessterAusschlag waehlt groesseres rohen Delta, nicht Rundungsartefakt",
   ];
   const t = groessterAusschlag(basen, jetzt, 0.55);
   assert.deepEqual(t, { geraet: "A", achse: 0, delta: 0.8 });
+});
+
+test("MISSIONS_EMPFINDLICHKEITEN: 25 bis 150 Prozent in Fünferschritten", () => {
+  // Willis Auftrag vom 07.09.2026: feinere Schritte, Spanne und Vorgabe
+  // unverändert; die alten Viertelwerte müssen exakt enthalten sein, damit
+  // gespeicherte Einstellungen weiter auf ihren Eintrag treffen.
+  assert.equal(MISSIONS_EMPFINDLICHKEITEN.length, 26);
+  MISSIONS_EMPFINDLICHKEITEN.forEach((w, i) => assert.equal(w, (25 + i * 5) / 100));
+  for (const alt of [0.25, 0.5, 0.75, 1, 1.25, 1.5]) {
+    assert.ok(MISSIONS_EMPFINDLICHKEITEN.includes(alt), `fehlt: ${alt}`);
+  }
 });
