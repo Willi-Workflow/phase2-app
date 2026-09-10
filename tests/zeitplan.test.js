@@ -1,6 +1,18 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { tageBis, tagesliste, heuteAlsIso, monatsraster, monatsanfang, PRUEFUNGSDATUM } from "../js/zeitplan.js";
+import { tageBis, tagesliste, heuteAlsIso, monatsraster, monatsanfang, TERMINE, termineFuer } from "../js/zeitplan.js";
+
+test("termineFuer: eigener Termin je Profil, Rückfall auf den ursprünglichen", () => {
+  // Willis Ansage vom 10.09.2026: Luigi bleibt beim 14.09., Willi prüft am
+  // 21.09. mit Anreise am 20.09.
+  assert.deepEqual(termineFuer("luigi"), { pruefung: "2026-09-14", anreise: "2026-09-13" });
+  assert.deepEqual(termineFuer("willi"), { pruefung: "2026-09-21", anreise: "2026-09-20" });
+  assert.deepEqual(termineFuer("unbekannt"), TERMINE.luigi);
+  assert.deepEqual(termineFuer(null), TERMINE.luigi);
+  // Geerbte Eigenschaften dürfen nicht als Termin durchgehen.
+  assert.deepEqual(termineFuer("toString"), TERMINE.luigi);
+  assert.deepEqual(termineFuer("hasOwnProperty"), TERMINE.luigi);
+});
 
 test("tageBis zählt volle Tage, unabhängig von der Uhrzeit", () => {
   assert.equal(tageBis("2026-09-14", "2026-08-22"), 23);
@@ -13,7 +25,7 @@ test("tagesliste umfasst beide Ränder und kennt Wochenenden", () => {
   assert.equal(liste.length, 4);
   assert.deepEqual(liste.map((t) => t.wochentag), ["Fr", "Sa", "So", "Mo"]);
   assert.deepEqual(liste.map((t) => t.wochenende), [false, true, true, false]);
-  assert.equal(liste.at(-1).iso, PRUEFUNGSDATUM);
+  assert.equal(liste.at(-1).iso, TERMINE.luigi.pruefung);
 });
 
 test("heuteAlsIso liefert das Kalenderdatum mit führenden Nullen", () => {
@@ -37,9 +49,9 @@ test("monatsraster beginnt montags und füllt Ränder mit Lücken", () => {
   // 1.9.2026 ist ein Dienstag: eine Lücke davor
   assert.equal(monate[1].wochen[0][0], null);
   assert.equal(monate[1].wochen[0][1].tag, 1);
-  // letzter Eintrag ist der Prüfungstag, Restwoche aufgefüllt
+  // letzter Eintrag ist Luigis Prüfungstag, Restwoche aufgefüllt
   const letzteWoche = monate[1].wochen.at(-1);
-  assert.equal(letzteWoche.filter(Boolean).at(-1).iso, PRUEFUNGSDATUM);
+  assert.equal(letzteWoche.filter(Boolean).at(-1).iso, TERMINE.luigi.pruefung);
   assert.equal(letzteWoche.length, 7);
 });
 

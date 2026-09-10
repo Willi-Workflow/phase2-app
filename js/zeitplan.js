@@ -1,8 +1,19 @@
 // Reine Kalenderrechnung für den Countdown zur Prüfung.
 
-export const PRUEFUNGSDATUM = "2026-09-14";
-export const ANREISEDATUM = "2026-09-13";
+// Prüfungs- und Anreisetermin je Profil (Willis Ansage vom 10.09.2026):
+// Luigi bleibt beim ursprünglichen Termin, Willi prüft eine Woche später.
+export const TERMINE = {
+  luigi: { pruefung: "2026-09-14", anreise: "2026-09-13" },
+  willi: { pruefung: "2026-09-21", anreise: "2026-09-20" },
+};
 export const ZAEHLBEGINN = "2026-08-22";
+
+// Termine des Profils; ein unbekanntes Profil fällt auf den ursprünglichen
+// Termin zurück, damit der Kalender nie leer bleibt. Object.hasOwn hält
+// geerbte Eigenschaften wie toString aus dem Nachschlag heraus.
+export function termineFuer(profil) {
+  return Object.hasOwn(TERMINE, profil ?? "") ? TERMINE[profil] : TERMINE.luigi;
+}
 
 const WOCHENTAGE = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 

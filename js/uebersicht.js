@@ -1,6 +1,6 @@
 import { KONFIG } from "./konfig.js";
 import { ANHEFT, pendelGroessen, pendelSchritt, istRuhig } from "./pendel.js";
-import { PRUEFUNGSDATUM, ANREISEDATUM, ZAEHLBEGINN, heuteAlsIso, tageBis, monatsraster } from "./zeitplan.js";
+import { termineFuer, ZAEHLBEGINN, heuteAlsIso, tageBis, monatsraster } from "./zeitplan.js";
 import { erzeugeSpeicher } from "./speicher.js";
 import { MISSIONEN } from "./missionen.js";
 import { oeffneProfilmenue } from "./profilmenue.js";
@@ -53,11 +53,14 @@ if (schwungRoh) {
 
 // Countdown zur Prüfung: aus dem aktuellen Datum gerechnet und bei jedem
 // Sichtbarwerden der Seite neu aufgebaut, damit er auch über Nacht stimmt.
+// Die Termine hängen am Profil (Willis Ansage vom 10.09.2026): Luigi prüft
+// am 14.09., Willi am 21.09. mit Anreise am 20.09.
 function zeichneZeitplan() {
   const feld = document.getElementById("zeitplan");
+  const { pruefung, anreise } = termineFuer(speicher.profil());
   const heute = heuteAlsIso();
-  const rest = tageBis(PRUEFUNGSDATUM, heute);
-  const [pj, pm, pt] = PRUEFUNGSDATUM.split("-");
+  const rest = tageBis(pruefung, heute);
+  const [pj, pm, pt] = pruefung.split("-");
   let restzeile;
   if (rest > 1) restzeile = `Noch <b>${rest} Tage</b> bis zur Prüfung`;
   else if (rest === 1) restzeile = "Morgen ist <b>Prüfung</b>";
@@ -66,7 +69,7 @@ function zeichneZeitplan() {
 
   let rumpf = "";
   if (rest >= 0) {
-    rumpf = monatsraster(ZAEHLBEGINN, PRUEFUNGSDATUM).map((monat) => {
+    rumpf = monatsraster(ZAEHLBEGINN, pruefung).map((monat) => {
       const kopf = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
         .map((w) => `<span class="wochenkopf">${w}</span>`).join("");
       const zellen = monat.wochen.flat().map((tag) => {
@@ -75,10 +78,10 @@ function zeichneZeitplan() {
         if (tag.wochenende) klassen.push("wochenende");
         if (tag.iso < heute) klassen.push("vergangen");
         if (tag.iso === heute) klassen.push("heute");
-        if (tag.iso === PRUEFUNGSDATUM) klassen.push("pruefung");
-        if (tag.iso === ANREISEDATUM) klassen.push("anreise");
-        const ziel = tag.iso === PRUEFUNGSDATUM ? '<span class="ziel">PRÜFUNG</span>' : "";
-        const notiz = tag.iso === ANREISEDATUM ? '<span class="notiz">Anreisetag</span>' : "";
+        if (tag.iso === pruefung) klassen.push("pruefung");
+        if (tag.iso === anreise) klassen.push("anreise");
+        const ziel = tag.iso === pruefung ? '<span class="ziel">PRÜFUNG</span>' : "";
+        const notiz = tag.iso === anreise ? '<span class="notiz">Anreisetag</span>' : "";
         return `<span class="${klassen.join(" ")}"><span class="nr">${tag.tag}</span>${ziel}${notiz}</span>`;
       }).join("");
       return `<div class="monat"><div class="monatsname">${monat.name}</div>
