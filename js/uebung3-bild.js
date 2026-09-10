@@ -2,8 +2,9 @@
 // selben Gehäusestil wie js/instrumente.js: dunkle Gehäuseplatte mit
 // Schrauben, schwarzes Zifferblatt, helle Skala. Die Uhr zeigt die
 // verbleibende Flugzeit mit einem roten Zeiger, eine volle Umdrehung je
-// 60 Sekunden; die Fehlersäule zeigt den gemittelten Momentanfehler als
-// schwarzen Punkt auf einer schmalen senkrechten Skala von 0 bis 100.
+// 60 Sekunden; die Fehlersäule zeigt das schlechteste aktive Instrument
+// (saeulenfehler, Willis Auftrag vom 10.09.2026) als schwarzen Punkt auf
+// einer schmalen senkrechten Skala von 0 bis 100.
 // Beide bewusst gezeichnet statt fotografiert, wie im Original (Abbildung
 // 3-9 der Dissertation). Die Zeichenhelfer aus instrumente.js sind dort
 // nicht exportiert, deshalb stehen sie hier in eigener Fassung, mit den

@@ -11,7 +11,7 @@ import {
   TESTDAUERN, STUFEN, FLUGZEIT_S, EINRICHTZEIT_S,
   RECHNEN_START_S, ANTWORT_FENSTER_S, FOLGE_PAUSE_S, ANSAGE_PAUSE_MS, RECHNEN_MINDESTREST_S,
   erzeugeVorgaben, erzeugeFlugzustand, takt, sollwert, kursSollWeg,
-  momentanfehler, durchgangspunkte, kennzahl3, schwierigkeitsfaktor3, erfuellung3,
+  momentanfehler, saeulenfehler, durchgangspunkte, kennzahl3, schwierigkeitsfaktor3, erfuellung3,
   erzeugeRechenaufgabe, antworten5, pedalwahl, schiebeZone, passeRechenstufeAn, rechenstandStart,
 } from "./uebung3.js";
 import { mitEmpfindlichkeit, MISSIONS_EMPFINDLICHKEITEN } from "./kurve.js";
@@ -525,12 +525,12 @@ export function erzeugeUebung3({ speicher, controls }) {
     // die Achse physisch weiterläuft (der Stick bewegt kurs/hoehe/fahrt
     // unabhängig von der Stufe, gewertet und angezeigt wird nur, was laut
     // Vorgabe aktiv ist).
-    const zeichneInstrumente = (tS, mfProzent) => {
+    const zeichneInstrumente = (tS, saeulenProzent) => {
       knoten.zeit.innerHTML = svgUhr(Math.max(0, FLUGZEIT_S - tS));
       knoten.kurs.innerHTML = svgKurs(vorgaben.aktive.includes("kurs") ? zustand.kurs : vorgaben.kurs.start);
       knoten.hoehe.innerHTML = svgHoehe(vorgaben.aktive.includes("hoehe") ? zustand.hoehe : vorgaben.hoehe.start);
       knoten.fahrt.innerHTML = svgFahrt(vorgaben.aktive.includes("fahrt") ? zustand.fahrt : vorgaben.fahrt.start);
-      if (fehlersaeule) knoten.saeule.innerHTML = svgSaeule(mfProzent);
+      if (fehlersaeule) knoten.saeule.innerHTML = svgSaeule(saeulenProzent);
     };
 
     const schleife = (jetzt) => {
@@ -551,7 +551,9 @@ export function erzeugeUebung3({ speicher, controls }) {
       mfZaehler += 1;
       haeufeAbweichungen(tS);
       if (stufe4) taktRechnen(tS);
-      zeichneInstrumente(tS, mf * 100);
+      // Die Säule zeigt das schlechteste Instrument (Willis Auftrag vom
+      // 10.09.2026), gewertet wird weiter das Mittel mf.
+      zeichneInstrumente(tS, saeulenfehler(zustand, vorgaben, tS) * 100);
       if (tS >= FLUGZEIT_S) { beendeDurchgang(); return; }
       requestAnimationFrame(schleife);
     };

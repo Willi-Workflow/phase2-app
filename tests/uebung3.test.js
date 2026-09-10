@@ -4,7 +4,7 @@ import {
   TESTDAUERN, STUFEN, FLUGZEIT_S, EINRICHTZEIT_S,
   RECHNEN_START_S, ANTWORT_FENSTER_S, FOLGE_PAUSE_S, ANSAGE_PAUSE_MS, RECHNEN_MINDESTREST_S,
   erzeugeVorgaben, erzeugeFlugzustand, takt, sollwert, winkelabstand, kursSollWeg,
-  momentanfehler, durchgangspunkte, kennzahl3,
+  momentanfehler, saeulenfehler, durchgangspunkte, kennzahl3,
   erzeugeRechenaufgabe, antworten5, pedalwahl, RECHENSTUFEN_MAX, erfuellung3,
   passeRechenstufeAn, rechenstandStart, ANSTIEG_SERIE, schiebeZone,
 } from "../js/uebung3.js";
@@ -30,17 +30,19 @@ test("Konstanten des Instrumentenflugs", () => {
 });
 
 test("erzeugeVorgaben: Kurs, Höhe und Fahrt würfeln je Durchgang", () => {
-  // Willis Auftrag vom 01.09.2026: Kursbeträge 180, 360, 720, Höhenbeträge
-  // 500, 1000, 1500 Fuß (beide mit Richtung), die Fahrt frei im Zehnerraster.
+  // Willis Aufträge vom 01.09. und 10.09.2026: Kursbeträge 180, 360, 720,
+  // Höhenbeträge 500, 1000, 1500 Fuß (beide mit Richtung), die Fahrt im
+  // Zwanzigerraster mit Spanne 40 bis 160 kt.
   // Je Größe zwei Züge: erst der Betrag oder Startwert, dann Richtung oder Ziel.
   const v = erzeugeVorgaben(3, folge([0.1, 0.7, 0.5, 0.5, 0.5, 0.5]));
   assert.deepEqual(v.kurs, { start: 0, aenderung: 180, ziel: 180 });
   assert.deepEqual(v.hoehe, { start: 5000, aenderung: 1000, ziel: 6000 });
-  assert.deepEqual(v.fahrt, { start: 190, ziel: 230 });
+  assert.deepEqual(v.fahrt, { start: 200, ziel: 160 });
   const w = erzeugeVorgaben(3, folge([0.8, 0.3, 0.9, 0.2, 0.0, 0.99]));
   assert.deepEqual(w.kurs, { start: 0, aenderung: -720, ziel: 0 });
   assert.deepEqual(w.hoehe, { start: 5000, aenderung: -1500, ziel: 3500 });
-  assert.deepEqual(w.fahrt, { start: 60, ziel: 320 });
+  // Von 60 kt aus deckelt die Höchstspanne das Ziel bei 220 statt 320.
+  assert.deepEqual(w.fahrt, { start: 60, ziel: 220 });
 });
 
 test("erzeugeVorgaben: Raster und Erreichbarkeit über viele Zufallszüge", () => {
@@ -60,10 +62,16 @@ test("erzeugeVorgaben: Raster und Erreichbarkeit über viele Zufallszüge", () =
       gesehen.add(`h${v.hoehe.aenderung}`);
 
       assert.ok(v.fahrt.start >= 60 && v.fahrt.start <= 320);
-      assert.equal(v.fahrt.start % 10, 0);
+      assert.equal(v.fahrt.start % 20, 0);
       assert.ok(v.fahrt.ziel >= 60 && v.fahrt.ziel <= 320);
-      assert.equal(v.fahrt.ziel % 10, 0);
-      assert.ok(Math.abs(v.fahrt.ziel - v.fahrt.start) >= 40);
+      assert.equal(v.fahrt.ziel % 20, 0);
+      // Kopfrechenfreundlich (Willis Auftrag vom 10.09.2026): Werte und
+      // Spanne glatt durch 4 teilbar, Spanne zwischen 40 und 160 kt.
+      assert.equal(v.fahrt.start % 4, 0);
+      assert.equal(v.fahrt.ziel % 4, 0);
+      const spanne = Math.abs(v.fahrt.ziel - v.fahrt.start);
+      assert.ok(spanne >= 40 && spanne <= 160);
+      assert.equal(spanne % 4, 0);
     }
   }
   // Über 2000 Züge müssen bei Kurs und Höhe beide Richtungen und alle
@@ -281,6 +289,40 @@ test("momentanfehler: Mittel über mehrere aktive Instrumente, Fahrt fällt vor 
   const z = { kurs: 22.5, hoehe: 2300, fahrt: 5000 }; // Fahrt absichtlich weit daneben
   // Bei t=2 (< Einrichtzeit) zählt nur Kurs (0,5) und Höhe (0,5) -> Mittel 0,5.
   assert.ok(Math.abs(momentanfehler(z, v, 2) - 0.5) < 1e-9);
+});
+
+test("saeulenfehler: schlechtestes Instrument statt Mittel", () => {
+  // Willis Auftrag vom 10.09.2026: Die Säule zeigt das schlechteste aktive
+  // Instrument. Ist eines am Deckel, steht die Säule voll, egal wie sauber
+  // die übrigen laufen. Die Wertung rechnet weiter mit momentanfehler.
+  const v = {
+    aktive: ["kurs", "hoehe"],
+    kurs: { start: 0, aenderung: 0, ziel: 0 },
+    hoehe: { start: 5000, aenderung: 0, ziel: 5000 },
+    fahrt: { start: 100, ziel: 140 },
+  };
+  // Kurs 90 Grad daneben (gedeckelt 1), Höhe exakt: Mittel 0,5, Maximum 1.
+  const z = { kurs: 90, kursWeg: 90, hoehe: 5000, fahrt: 100 };
+  assert.ok(Math.abs(momentanfehler(z, v, 30) - 0.5) < 1e-9);
+  assert.equal(saeulenfehler(z, v, 30), 1);
+  // Kurs halb daneben, Höhe exakt: Mittel 0,25, Maximum 0,5.
+  const halb = { kurs: 22.5, kursWeg: 22.5, hoehe: 5000, fahrt: 100 };
+  assert.ok(Math.abs(saeulenfehler(halb, v, 30) - 0.5) < 1e-9);
+  // Beide exakt: Säule auf 0.
+  const sauber = { kurs: 0, kursWeg: 0, hoehe: 5000, fahrt: 100 };
+  assert.equal(saeulenfehler(sauber, v, 30), 0);
+});
+
+test("saeulenfehler: ohne messbares Instrument 0, Fahrt zählt ab Sekunde 5", () => {
+  const v = {
+    aktive: ["fahrt"],
+    kurs: { start: 0, aenderung: 0, ziel: 0 },
+    hoehe: { start: 5000, aenderung: 0, ziel: 5000 },
+    fahrt: { start: 100, ziel: 140 },
+  };
+  const z = { kurs: 0, kursWeg: 0, hoehe: 5000, fahrt: 60 };
+  assert.equal(saeulenfehler(z, v, 2), 0); // vor der Einrichtzeit
+  assert.ok(saeulenfehler(z, v, 32.5) > 0); // danach misst die Säule
 });
 
 test("durchgangspunkte", () => {

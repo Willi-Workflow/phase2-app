@@ -32,8 +32,12 @@ const INSTRUMENTE = ["kurs", "hoehe", "fahrt"]; // feste Reihenfolge im Ergebnis
 // bleibt fest: Norden und 5000 Fuß.
 const HOEHE_BASIS = 5000;                   // Fuß, feste Starthöhe
 const HOEHEN_BETRAEGE = [500, 1000, 1500];  // Fuß, gewürfelter Betrag je Richtung
-const FAHRT_RASTER = 10;                    // Knoten, Schrittweite der Fahrtvorgaben
+// Zwanzigerraster und gedeckelte Spanne seit 10.09.2026 (Willis Auftrag):
+// jeder Wert und jede Spanne ist glatt durch 4 teilbar, fürs Kopfrechnen
+// im Flug; riesige Sprünge über das halbe Band gibt es nicht mehr.
+const FAHRT_RASTER = 20;                    // Knoten, Schrittweite der Fahrtvorgaben
 const FAHRT_MINDESTAENDERUNG = 40;          // Knoten, kleinster Abstand Start zu Ziel
+const FAHRT_HOECHSTAENDERUNG = 160;         // Knoten, größter Abstand Start zu Ziel
 
 // Physischer Fahrtbereich, den der Schub kommandiert (bleibt breiter als die
 // Aufgabe, die Nadel läuft von 60 bis 320 kt).
@@ -78,15 +82,17 @@ function wuerfleHoehe(rnd = Math.random) {
 }
 
 // Fahrt: Start und Ziel frei über dem ganzen Fahrtmesserband 60 bis 320 kt
-// im Zehnerraster, mindestens 40 kt auseinander (Willis Auftrag vom
-// 01.09.2026, "die Geschwindigkeit kann alles sein"). Die Nadel beginnt
-// weiter bei 60 kt und wird in der Einrichtzeit auf den Startwert
-// hochgezogen (siehe erzeugeFlugzustand).
+// im Zwanzigerraster, 40 bis 160 kt auseinander (Willis Aufträge vom
+// 01.09. und 10.09.2026). Die Nadel beginnt weiter bei 60 kt und wird in
+// der Einrichtzeit auf den Startwert hochgezogen (siehe erzeugeFlugzustand).
 function wuerfleFahrt(rnd = Math.random) {
   const werte = [];
   for (let kt = FAHRT_MIN; kt <= FAHRT_MAX; kt += FAHRT_RASTER) werte.push(kt);
   const start = werte[wuerfelIndex(werte.length, rnd)];
-  const ziele = werte.filter((kt) => Math.abs(kt - start) >= FAHRT_MINDESTAENDERUNG);
+  const ziele = werte.filter((kt) => {
+    const abstand = Math.abs(kt - start);
+    return abstand >= FAHRT_MINDESTAENDERUNG && abstand <= FAHRT_HOECHSTAENDERUNG;
+  });
   return { start, ziel: ziele[wuerfelIndex(ziele.length, rnd)] };
 }
 
@@ -165,11 +171,9 @@ export function winkelabstand(a, b) {
   return Math.min(d, 360 - d);
 }
 
-// Momentanfehler zur Sekunde tS: Mittel der normierten Abweichungen über die
-// aktiven Instrumente, je Instrument bei 1 gedeckelt. Die Fahrt zählt erst ab
-// der Einrichtzeit; ist sie vorher das einzige aktive Instrument, bleibt der
-// Momentanfehler 0.
-export function momentanfehler(zustand, vorgaben, tS) {
+// Normierte Abweichungen der aktiven Instrumente zur Sekunde tS, je
+// Instrument bei 1 gedeckelt. Die Fahrt zählt erst ab der Einrichtzeit.
+function fehlerteile(zustand, vorgaben, tS) {
   const teile = [];
   if (vorgaben.aktive.includes("kurs")) {
     // Aufgewickelt statt kleinster Winkelabstand (Willis Entscheid vom
@@ -187,8 +191,26 @@ export function momentanfehler(zustand, vorgaben, tS) {
     const abweichung = Math.abs(zustand.fahrt - sollwert(vorgaben, "fahrt", tS));
     teile.push(Math.min(1, abweichung / NORM_FAHRT));
   }
+  return teile;
+}
+
+// Momentanfehler zur Sekunde tS: Mittel der normierten Abweichungen über die
+// aktiven Instrumente. Geht in die Wertung ein; ist die Fahrt vor der
+// Einrichtzeit das einzige aktive Instrument, bleibt der Momentanfehler 0.
+export function momentanfehler(zustand, vorgaben, tS) {
+  const teile = fehlerteile(zustand, vorgaben, tS);
   if (teile.length === 0) return 0;
   return teile.reduce((summe, w) => summe + w, 0) / teile.length;
+}
+
+// Säulenfehler zur Sekunde tS: das schlechteste aktive Instrument statt des
+// Mittels (Willis Auftrag vom 10.09.2026). Nur für die Anzeige der
+// Fehlersäule; die Wertung rechnet weiter mit momentanfehler, damit die
+// Genauigkeit mit den gespeicherten Läufen vergleichbar bleibt.
+export function saeulenfehler(zustand, vorgaben, tS) {
+  const teile = fehlerteile(zustand, vorgaben, tS);
+  if (teile.length === 0) return 0;
+  return Math.max(...teile);
 }
 
 // Punkte eines Durchgangs aus der Summe der Momentanfehler über die Messungen
