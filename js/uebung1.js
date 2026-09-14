@@ -8,10 +8,12 @@
 
 export const TESTDAUERN = [3, 5, 10]; // Minuten
 export const HALTEZEIT_MS = 1000;
-// Deckungsradius = gezeichneter Kreis: 7 Prozent Bildbreite mal Radius
-// 46/100 aus der SVG-Vorlage; nach Videomessung, auf Willis Wunsch noch
-// etwas kleiner als das Original.
-export const KREIS_R = 0.032;          // Anteil der Bildbreite
+// Deckungsradius = gezeichneter Kreis: 5,5 Prozent Bildbreite mal Radius
+// 46/100 aus der SVG-Vorlage. Der Kreis ist seit 29.08.2026 so gezeichnet,
+// die Wertung wurde am 14.09.2026 auf Willis Entscheid nachgezogen (vorher
+// rechnete sie noch mit dem alten 7-Prozent-Kreis, also großzügiger als
+// das Bild).
+export const KREIS_R = 0.025;          // Anteil der Bildbreite
 export const BILDVERHAELTNIS = 9 / 16; // Höhe zu Breite des Sichtfelds
 // Mindestabstand des Sprungziels zur Bildmitte; am 31.08.2026 auf Willis
 // Wunsch von 0,18 auf 0,3 angehoben, der Blicksprung fällt damit größer aus.
