@@ -5,7 +5,7 @@ import {
   TESTDAUERN, TEMPOS, erzeugeLaufzustand, takt, ergebnisWerte, schwierigkeitsfaktor1,
   erzeugeBuchstabenreihe, erzeugeSlaZaehler, zielHinweis,
   erfuellung1, trefferErfuellung, letterErfuellung, TREFFER_BESTWERT,
-  sichtmasse, KREIS_JE_SPANNWEITE, SPANNWEITE, FLUGDISTANZ, BLICKWINKEL,
+  sichtmasse, KREIS_JE_SPANNWEITE, TREFFER_JE_SPANNWEITE, SPANNWEITE, FLUGDISTANZ, BLICKWINKEL,
 } from "./uebung1.js";
 import { mitEmpfindlichkeit, MISSIONS_EMPFINDLICHKEITEN } from "./kurve.js";
 import * as THREE from "./fremd/three.module.js";
@@ -633,7 +633,7 @@ export function erzeugeUebung1({ speicher, controls }) {
       const wert = Math.round(erfuellung * faktor);
       const zeilen = [
         `<span>Abschüsse: ${werte.treffer} · Erfüllung ${Math.round(trefferErfuellung(werte.treffer, dauer))} % (Bestwert ${TREFFER_BESTWERT} je Minute)</span>`,
-        `<span>Deckungsquote: ${werte.deckungsquote} %</span>`,
+        `<span>Zeit auf dem Rumpf: ${werte.deckungsquote} %</span>`,
         `<span>Zeit bis zum ersten Treffer: ${werte.ersterTrefferS == null ? "–" : `${werte.ersterTrefferS} s`}</span>`,
         `<span>Mittlere Zeit je Treffer: ${werte.mittelS == null ? "–" : `${werte.mittelS} s`}</span>`,
         slaWerte ? `<span>Letter-Task: ${slaWerte.erkannt} erkannt · ${slaWerte.verpasst} verpasst · ${slaWerte.fehlalarm} Fehlalarm · Erfüllung ${Math.round(letterErfuellung(slaWerte))} %</span>` : "",
@@ -672,6 +672,13 @@ export function erzeugeUebung1({ speicher, controls }) {
             erfuellung: Math.round(erfuellung),
             wertung: wert,
             treffer: werte.treffer,
+            // Maßstab der Trefferzone (Anteil der Spannweite). Seit dem
+            // 14.09.2026 ist die Zone rumpfgroß statt kreisgroß und damit
+            // rund fünfmal enger; Läufe davor tragen dieses Feld nicht.
+            // Ohne die Marke ließen sich alte und neue Kennzahlen später
+            // nicht mehr auseinanderhalten, denn die Schwierigkeit selbst
+            // hat sich geändert und ist nachträglich nicht umrechenbar.
+            zone: TREFFER_JE_SPANNWEITE,
             deckungsquote: werte.deckungsquote,
             ersterTrefferS: werte.ersterTrefferS,
             mittelS: werte.mittelS,

@@ -3,40 +3,53 @@
 <head>
 <meta charset="utf-8">
 <title>Rumpfbreite · Messung</title>
-<style>body { margin: 0; background: #000; } canvas { display: block; }</style>
+<style>
+  body { margin: 0; background: #000; color: #dfe6ea; font: 15px/1.5 system-ui, sans-serif; }
+  canvas { display: block; }
+  #bericht { padding: 16px 20px; }
+  table { border-collapse: collapse; margin-top: 8px; }
+  th, td { padding: 2px 14px 2px 0; text-align: left; }
+  .traegt { color: #35e0d0; }
+  .ragt { color: #e5312b; }
+</style>
 </head>
 <body>
+<div id="bericht">Messung läuft.</div>
 <script type="module">
-  // Messaufbau für die Trefferzone von Mission 1: zeigt das Zielflugzeug in
-  // genau der Lage des Laufs (Nase weg von der Kamera, Spannweite 22,
-  // Distanz 215, Blickwinkel 62 Grad) schwarzweiß vor schwarzem Grund.
-  // Die Auswertung zählt je Bildspalte die Höhe der weißen Fläche: Der
-  // Rumpf ist hoch, die Flügel sind flach. Daraus kommt die Rumpfbreite
-  // als Anteil der Spannweite.
+  // Messaufbau für die Trefferzone von Mission 1 (Willis Auftrag vom
+  // 14.09.2026, Treffer nur auf dem Flugzeugkörper). Die Seite zeigt das
+  // Zielflugzeug in genau der Lage des Laufs (Nase weg von der Kamera,
+  // Spannweite SPANNWEITE, Distanz FLUGDISTANZ) weiß vor schwarzem Grund
+  // und wertet das Bild danach selbst aus: Sie sucht den größten Kreis um
+  // die Flugzeugmitte, der noch vollständig auf dem Flugzeug liegt, und
+  // zeigt für eine Reihe von Radien, wie viel vom Kreisrand noch trägt.
+  // Daraus stammt die Setzung TREFFER_JE_SPANNWEITE in js/uebung1.js.
+  // Mit ?lupe=1 verengt sich der Blickwinkel stark: Das Flugzeug füllt das
+  // Bild, die Silhouette wird fein messbar, und bei 215 Einheiten Abstand
+  // ändert sich an den Proportionen praktisch nichts. So wurde gemessen.
   import * as THREE from "../js/fremd/three.module.js";
   import { GLTFLoader } from "../js/fremd/GLTFLoader.js";
-  import { SPANNWEITE, FLUGDISTANZ, BLICKWINKEL } from "../js/uebung1.js";
+  import { SPANNWEITE, FLUGDISTANZ, BLICKWINKEL, TREFFER_JE_SPANNWEITE } from "../js/uebung1.js";
 
-  const renderer = new THREE.WebGLRenderer({ antialias: false });
-  renderer.setSize(1600, 900, false);
-  document.body.append(renderer.domElement);
+  const BREITE = 1600, HOEHE = 900;
+  const lupe = new URLSearchParams(location.search).get("lupe");
+  const renderer = new THREE.WebGLRenderer({ antialias: false, preserveDrawingBuffer: true });
+  renderer.setSize(BREITE, HOEHE, false);
+  document.body.prepend(renderer.domElement);
   const szene = new THREE.Scene();
   szene.background = new THREE.Color(0x000000);
-  // ?lupe=1 verengt den Blickwinkel stark: Das Flugzeug füllt das Bild,
-  // die Silhouette wird fein messbar, und bei 215 Einheiten Abstand ändert
-  // sich an den Proportionen praktisch nichts.
-  const lupe = new URLSearchParams(location.search).get("lupe");
-  const kamera = new THREE.PerspectiveCamera(lupe ? 7 : BLICKWINKEL, 16 / 9, 1, 9000);
+  const kamera = new THREE.PerspectiveCamera(lupe ? 7 : BLICKWINKEL, BREITE / HOEHE, 1, 9000);
   const weiss = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
   new GLTFLoader().load("../modelle/flugzeug.glb", (gltf) => {
+    // Aufbau wortgleich zum Lauf: Nase nach hinten drehen, auf die
+    // Spannweite bringen, um die Kastenmitte zentrieren.
     const halter = new THREE.Object3D();
     halter.rotation.y = -Math.PI / 2;
     halter.add(gltf.scene);
     gltf.scene.traverse((k) => { if (k.isMesh) k.material = weiss; });
-    const kasten = new THREE.Box3().setFromObject(halter);
     const groesse = new THREE.Vector3();
-    kasten.getSize(groesse);
+    new THREE.Box3().setFromObject(halter).getSize(groesse);
     halter.scale.setScalar(SPANNWEITE / groesse.x);
     const mitte = new THREE.Vector3();
     new THREE.Box3().setFromObject(halter).getCenter(mitte);
@@ -45,11 +58,73 @@
     flugzeug.add(halter);
     flugzeug.position.set(0, 0, -FLUGDISTANZ);
     szene.add(flugzeug);
+    renderer.render(szene, kamera);
+    werteAus();
   });
-  // Dauerhaft zeichnen, damit das Schirmbild den geladenen Stand trifft,
-  // egal wann es ausgelöst wird.
-  const zeichne = () => { renderer.render(szene, kamera); requestAnimationFrame(zeichne); };
-  zeichne();
+
+  // Auswertung: Silhouette einlesen, Kastenmitte bestimmen, dann je Radius
+  // den Kreisrand abtasten. Getragen heißt: jeder abgetastete Punkt des
+  // Randes liegt auf dem Flugzeug.
+  function werteAus() {
+    const flaeche = document.createElement("canvas");
+    flaeche.width = BREITE;
+    flaeche.height = HOEHE;
+    const stift = flaeche.getContext("2d");
+    stift.drawImage(renderer.domElement, 0, 0);
+    const bild = stift.getImageData(0, 0, BREITE, HOEHE).data;
+    const hell = (x, y) => x >= 0 && x < BREITE && y >= 0 && y < HOEHE
+      && bild[(y * BREITE + x) * 4] > 40;
+
+    let links = BREITE, rechts = -1, oben = HOEHE, unten = -1;
+    for (let y = 0; y < HOEHE; y++) {
+      for (let x = 0; x < BREITE; x++) {
+        if (!hell(x, y)) continue;
+        if (x < links) links = x;
+        if (x > rechts) rechts = x;
+        if (y < oben) oben = y;
+        if (y > unten) unten = y;
+      }
+    }
+    if (rechts < 0) { document.getElementById("bericht").textContent = "Nichts gefunden."; return; }
+    const spann = rechts - links + 1;
+    const mx = (links + rechts) / 2, my = (oben + unten) / 2;
+
+    const anteilAufFlugzeug = (radius) => {
+      let treffer = 0;
+      const schritte = 720;
+      for (let i = 0; i < schritte; i++) {
+        const winkel = (i / schritte) * 2 * Math.PI;
+        const x = Math.round(mx + radius * Math.cos(winkel));
+        const y = Math.round(my + radius * Math.sin(winkel));
+        if (hell(x, y)) treffer++;
+      }
+      return treffer / schritte;
+    };
+
+    const zeilen = [];
+    let groesstGetragen = 0;
+    for (let anteil = 0.02; anteil <= 0.2001; anteil += 0.01) {
+      const gerundet = Math.round(anteil * 100) / 100;
+      const quote = anteilAufFlugzeug(gerundet * spann);
+      if (quote === 1) groesstGetragen = gerundet;
+      zeilen.push({ anteil: gerundet, quote });
+    }
+
+    const zahl = (w, n = 2) => w.toFixed(n).replace(".", ",");
+    document.getElementById("bericht").innerHTML = `
+      <b>Messung am Modell</b> (Silhouette von hinten, wie im Lauf)<br>
+      Spannweite ${spann} Bildpunkte, Silhouettenhöhe ${zahl((unten - oben + 1) / spann)} Spannweiten.<br>
+      Größter Kreis, der ganz auf dem Flugzeug liegt: <b>${zahl(groesstGetragen)}</b> Spannweiten Radius.<br>
+      Gesetzt ist TREFFER_JE_SPANNWEITE = <b>${zahl(TREFFER_JE_SPANNWEITE)}</b>.
+      <table>
+        <tr><th>Radius in Spannweiten</th><th>Anteil des Kreisrands auf dem Flugzeug</th></tr>
+        ${zeilen.map((z) => `<tr><td>${zahl(z.anteil)}</td>
+          <td class="${z.quote === 1 ? "traegt" : "ragt"}">${Math.round(z.quote * 100)} Prozent</td></tr>`).join("")}
+      </table>
+      <p>Ganz getragene Radien stehen türkis, herausragende rot. Der Rumpf
+      trägt den Kreis bis rund 0,06 Spannweiten, bei 0,08 beginnen die
+      Tragflächen, bei 0,15 steht das Fahrwerk.</p>`;
+  }
 </script>
 </body>
 </html>

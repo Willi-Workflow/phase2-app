@@ -84,24 +84,38 @@ three.js taucht in keinem Test auf.
 Willis Festlegung, ersetzt die Deckungsregel oben:
 
 - Der gezeichnete Zielkreis hängt an der scheinbaren Spannweite des
-  Zielflugzeugs statt an der Fensterbreite (KREIS_JE_SPANNWEITE 1,15;
-  bei 16:9 exakt der alte Anblick von 5,5 Prozent Bildbreite). Der Lauf
-  setzt die Kreisgröße in Bildpunkten je Fenstergröße (passeGroesseAn),
-  damit der Kreis auf jedem Schirm proportional zum Flieger bleibt.
+  Zielflugzeugs statt an der Fensterbreite. KREIS_JE_SPANNWEITE 1,15 ist
+  dabei die Breite des SVG-Kastens, nicht der Kreisdurchmesser: Der Kreis
+  darin hat r=46 bei viewBox 100, gezeichnet werden also 1,06 Spannweiten
+  Durchmesser, Radius rund 0,53. Bei 16:9 ergibt das exakt den alten
+  Anblick von 5,5 Prozent Bildbreite. Der Lauf setzt die Kreisgröße in
+  Bildpunkten je Fenstergröße (passeGroesseAn), damit der Kreis auf jedem
+  Schirm proportional zum Flieger bleibt.
 - Die Trefferzone ist nicht mehr der sichtbare Kreis, sondern rumpfgroß:
   Radius TREFFER_JE_SPANNWEITE 0,10 der Spannweite. Am Modell vermessen
-  (`entwurf/rumpf-messung.html` zeichnet die Silhouette von hinten in der
-  Lage des Laufs, die Auswertung sucht den größten Kreis auf dem Rumpf):
-  0,06 liegt ganz auf dem Rumpf, ab 0,08 ragt der Kreisrand heraus, die
-  Tragflächen beginnen bei rund 0,08, das Fahrwerk steht bei 0,15. 0,10
-  deckt damit den Rumpfkörper mit etwas Luft und bleibt von den Flügeln
-  weg. Der gezeichnete Kreis (Radius rund 0,53 Spannweiten) bleibt als
-  Zielhilfe deutlich größer als die Trefferzone.
+  mit `entwurf/rumpf-messung.html`: Die Seite zeichnet die Silhouette von
+  hinten in der Lage des Laufs und wertet sie selbst aus, indem sie je
+  Radius abtastet, wie viel vom Kreisrand noch auf dem Flugzeug liegt.
+  Ergebnis: bis rund 0,06 trägt der Rumpf den ganzen Kreis, ab 0,08 ragt
+  der Rand heraus, dort beginnen die Tragflächen, das Fahrwerk steht bei
+  0,15. Die gewählten 0,10 decken den Rumpfkörper mit etwas Luft und
+  greifen dabei rund 0,02 Spannweiten auf den Flügelansatz über; draußen
+  auf den Flächen zählt nichts mehr. Der gezeichnete Kreis (Radius rund
+  0,53 Spannweiten) bleibt als Zielhilfe deutlich größer als die Zone.
 - Folge für die Wertung: Die Zone ist bei 16:9 rund fünfmal strenger als
-  der bisherige Deckungsradius (0,0048 statt 0,025 der Bildbreite), auf
-  breiteren Schirmen noch strenger. TREFFER_BESTWERT 12 stammt aus der
-  alten Zone und ist nach Willis ersten Läufen neu zu eichen.
+  der bisherige Deckungsradius (0,0048 statt 0,025 der Bildbreite), der
+  Flächeninhalt rund ein Siebenundzwanzigstel; auf breiteren Schirmen
+  noch strenger. TREFFER_BESTWERT 12 stammt aus der alten Zone und ist
+  nach Willis ersten Läufen neu zu eichen. Weil sich die Schwierigkeit
+  selbst geändert hat, sind die alten Läufe nicht umrechenbar (anders als
+  bei den Formeländerungen vom 07.09. und 14.09.). Damit die Maßstäbe
+  später trennbar bleiben, tragen neue Läufe das Feld `zone` mit dem
+  Zonenradius in den Laufdaten; Bestwert, Durchschnitt und BEST-Marke
+  mischen bis zur Neueichung weiter beide Maßstäbe.
+- Die Anzeige "Zeit auf dem Rumpf" (Datenfeld weiterhin deckungsquote)
+  misst seitdem die Trefferzone, nicht den sichtbaren Kreis.
 - Die Deckungsmessung rechnet mit dem echten Seitenverhältnis des
-  Fensters (sichtmasse in uebung1.js); das feste 16:9 gilt nur noch als
-  Vorgabe für Tests und Probeseite. Die übrige Bildgeometrie (Kegel,
-  Sprünge, Umlauf) bleibt bewusst in der alten virtuellen Welt.
+  Fensters (sichtmasse in uebung1.js); das feste 16:9 gilt nur noch in
+  den Tests. Die Probeseite `entwurf/uebung1-probe.html` fährt den
+  Produktivweg und zeigt damit die neue Zone. Die übrige Bildgeometrie
+  (Kegel, Sprünge, Umlauf) bleibt bewusst in der alten virtuellen Welt.

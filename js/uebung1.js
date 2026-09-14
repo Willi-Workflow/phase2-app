@@ -17,19 +17,24 @@ export const HALTEZEIT_MS = 1000;
 export const SPANNWEITE = 22;   // Weltmaß
 export const FLUGDISTANZ = 215; // Weltmaß
 export const BLICKWINKEL = 62;  // Grad, senkrechtes Sichtfeld der Kamera
-// Gezeichneter Zielkreis: Durchmesser als Anteil der Spannweite. 1,15 ist
-// der gewohnte Anblick (bei 16:9 exakt die alten 5,5 Prozent Bildbreite),
-// nur neu am Flieger verankert statt an der Fensterbreite.
+// Gezeichneter Zielkreis: Breite des SVG-Kastens als Anteil der Spannweite,
+// NICHT der Durchmesser des Kreises. Der Kreis darin hat r=46 bei viewBox
+// 0 0 100 100, also 92 Prozent des Kastens: gezeichnet werden damit 1,06
+// Spannweiten Durchmesser, Radius rund 0,53. Der Wert 1,15 hält den
+// gewohnten Anblick (bei 16:9 exakt die alten 5,5 Prozent Bildbreite), nur
+// neu am Flieger verankert statt an der Fensterbreite.
 export const KREIS_JE_SPANNWEITE = 1.15;
 // Trefferzone: Radius als Anteil der Spannweite (Willis Auftrag vom
-// 14.09.2026: Treffer zählen nur auf dem Flugzeugkörper, nicht auf den
-// Flügeln). Am Modell vermessen (entwurf/rumpf-messung.html, Silhouette von
-// hinten wie im Lauf): Ein Kreis von 0,06 Spannweiten liegt noch ganz auf
-// dem Rumpf, ab 0,08 ragt er heraus, die Tragflächen beginnen bei rund
-// 0,08 und das Fahrwerk steht bei 0,15. 0,10 deckt den Rumpfkörper mit
-// etwas Luft und bleibt von den Flügeln weg. Zum Vergleich: der
-// gezeichnete Kreis hat rund 0,53 Spannweiten Radius, die Zone ist also
-// deutlich kleiner als er.
+// 14.09.2026: Treffer zählen auf dem Flugzeugkörper, nicht draußen auf den
+// Flügeln). Am Modell vermessen (entwurf/rumpf-messung.html misst die
+// Silhouette von hinten, wie sie im Lauf steht): Ein Kreis von 0,06
+// Spannweiten liegt noch ganz auf dem Rumpf, ab 0,08 ragt sein Rand heraus,
+// dort beginnen auch die Tragflächen, das Fahrwerk steht bei 0,15. Gewählt
+// sind 0,10: Das deckt den Rumpfkörper mit etwas Luft und greift dabei rund
+// 0,02 Spannweiten auf den Flügelansatz über, bleibt also von den
+// Flächen draußen weg, ohne den Treffer auf Pixelarbeit zu verengen. Zum
+// Vergleich: der gezeichnete Kreis hat rund 0,53 Spannweiten Radius, die
+// Zone ist rund ein Fünftel davon.
 export const TREFFER_JE_SPANNWEITE = 0.10;
 
 // Sichtmaße bei echtem Seitenverhältnis (Breite durch Höhe): scheinbare
@@ -47,9 +52,10 @@ export function sichtmasse(seitenverhaeltnis) {
   };
 }
 
-// Vorgaben für Läufe ohne Sichtmaße (Tests, Probeseite): Deckungsradius als
-// Anteil der Bildbreite und festes 16:9. Der echte Lauf misst seit dem
-// 14.09.2026 mit sichtmasse().trefferR, siehe oben.
+// Vorgaben für Aufrufe ohne Sichtmaße, also nur noch die Tests:
+// Deckungsradius als Anteil der Bildbreite und festes 16:9. Jeder echte
+// Lauf misst seit dem 14.09.2026 mit sichtmasse().trefferR, auch der auf
+// der Probeseite entwurf/uebung1-probe.html, die den Produktivweg fährt.
 export const KREIS_R = 0.025;          // Anteil der Bildbreite
 export const BILDVERHAELTNIS = 9 / 16; // Höhe zu Breite des Sichtfelds
 // Mindestabstand des Sprungziels zur Bildmitte; am 31.08.2026 auf Willis
@@ -317,8 +323,11 @@ export function erfuellung1(treffer, dauerMin, slaWerte) {
   return (1 - LETTER_GEWICHT) * abschuss + LETTER_GEWICHT * letterErfuellung(slaWerte);
 }
 
-// Führende Kennzahl: Anteil der Laufzeit, in der der Kreis auf dem Flugzeug
-// lag, in ganzen Prozent. Die Zeiten daneben folgen den Messgrößen des
+// Anteil der Laufzeit, in dem das Fadenkreuz auf dem Rumpf lag, in ganzen
+// Prozent. Seit dem 14.09.2026 misst das die rumpfgroße Trefferzone, nicht
+// mehr den sichtbaren Kreis: Der liegt rund fünfmal weiter und damit viel
+// öfter auf dem Flieger, als hier gezählt wird. Reine Anzeige, die führende
+// Kennzahl sind die Abschüsse. Die Zeiten daneben folgen den Messgrößen des
 // Originals (Zeit bis zum ersten Treffer, mittlere Zeit je Treffer).
 export function deckungsquote(z) {
   if (!z.testMs) return 0;
