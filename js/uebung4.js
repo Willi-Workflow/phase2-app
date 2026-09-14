@@ -13,9 +13,11 @@ export const ANTWORTZEIT = 10; // Sekunden je Frage
 // Schwierigkeitsfaktor: die Höchstwertung ist ab 5 s Anzeigezeit erreichbar
 // (Willis Auftrag vom 14.09.2026, vorher nur bei 3 s); 3 s bringt keinen
 // Zuschlag mehr, weil die Tafeln Prozent führen und 100 der Deckel ist.
-// Die leichteste Einstellung (10 s, 1 Frage) bleibt bei rund 0,5.
-// Kennzahl = Trefferquote mal Faktor.
-const ZEITFAKTOR = { 3: 1.0, 5: 1.0, 7: 0.85, 10: 0.75, 15: 0.65 };
+// Die längeren Zeiten hängen an demselben Anker und sind mit dem Umbau
+// mitgerutscht (alte Werte durch 0,92): die Leiter bleibt relativ gleich,
+// nur der Nullpunkt liegt jetzt bei 5 s. Leichteste Einstellung (10 s,
+// 1 Frage) damit rund 0,55. Kennzahl = Trefferquote mal Faktor.
+const ZEITFAKTOR = { 3: 1.0, 5: 1.0, 7: 0.92, 10: 0.82, 15: 0.71 };
 const ANZAHLFAKTOR = { 1: 0.67, 2: 0.78, 3: 0.87, 4: 0.94, 5: 1.0 };
 
 export function schwierigkeitsfaktor(anzeigezeit, fragenanzahl) {

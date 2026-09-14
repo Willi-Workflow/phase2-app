@@ -15,7 +15,7 @@ test("schwierigkeitsfaktor: Höchstwertung ab 5 s erreichbar, leichtere deckeln 
   // 5 s Anzeigezeit, 3 s bringt keinen Zuschlag mehr.
   assert.equal(schwierigkeitsfaktor(3, 5), 1);
   assert.equal(schwierigkeitsfaktor(5, 5), 1);
-  assert.ok(Math.abs(schwierigkeitsfaktor(10, 1) - 0.5) < 0.01);
+  assert.ok(Math.abs(schwierigkeitsfaktor(10, 1) - 0.55) < 0.01);
   assert.ok(schwierigkeitsfaktor(5, 3) > schwierigkeitsfaktor(7, 3));
   assert.ok(schwierigkeitsfaktor(5, 4) > schwierigkeitsfaktor(5, 2));
   assert.ok(schwierigkeitsfaktor(15, 3) < schwierigkeitsfaktor(10, 3));
@@ -25,7 +25,7 @@ test("schwierigkeitsfaktor: Höchstwertung ab 5 s erreichbar, leichtere deckeln 
 test("kennzahlAus: Quote mal Faktor, gerundet", () => {
   assert.equal(kennzahlAus(5, 5, 1), 100);
   assert.equal(kennzahlAus(3, 5, 1), 60);
-  assert.equal(kennzahlAus(3, 5, schwierigkeitsfaktor(10, 1)), 30);
+  assert.equal(kennzahlAus(3, 5, schwierigkeitsfaktor(10, 1)), 33);
   assert.equal(kennzahlAus(0, 0, 1), 0);
 });
 
