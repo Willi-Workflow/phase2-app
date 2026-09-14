@@ -10,8 +10,11 @@ function saatZufall(saat) {
   };
 }
 
-test("schwierigkeitsfaktor: schwerste Einstellung voll, leichtere deckeln tiefer", () => {
+test("schwierigkeitsfaktor: Höchstwertung ab 5 s erreichbar, leichtere deckeln tiefer", () => {
+  // Willis Auftrag vom 14.09.2026: die volle Kennzahl gibt es schon bei
+  // 5 s Anzeigezeit, 3 s bringt keinen Zuschlag mehr.
   assert.equal(schwierigkeitsfaktor(3, 5), 1);
+  assert.equal(schwierigkeitsfaktor(5, 5), 1);
   assert.ok(Math.abs(schwierigkeitsfaktor(10, 1) - 0.5) < 0.01);
   assert.ok(schwierigkeitsfaktor(5, 3) > schwierigkeitsfaktor(7, 3));
   assert.ok(schwierigkeitsfaktor(5, 4) > schwierigkeitsfaktor(5, 2));
