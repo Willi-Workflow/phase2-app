@@ -78,3 +78,30 @@ three.js taucht in keinem Test auf.
 ## Sichtprüfung
 
 `entwurf/uebung1-probe.html` mit gestellten Achsen (Sinusfahrt) für den headless-Durchlauf; die Optik wird örtlich gezeigt und von Willi abgenommen, bevor gepusht wird. Versionsmarken nach jeder Änderung hochzählen.
+
+## Änderung vom 14.09.2026: Kreis am Flieger, Trefferzone am Rumpf
+
+Willis Festlegung, ersetzt die Deckungsregel oben:
+
+- Der gezeichnete Zielkreis hängt an der scheinbaren Spannweite des
+  Zielflugzeugs statt an der Fensterbreite (KREIS_JE_SPANNWEITE 1,15;
+  bei 16:9 exakt der alte Anblick von 5,5 Prozent Bildbreite). Der Lauf
+  setzt die Kreisgröße in Bildpunkten je Fenstergröße (passeGroesseAn),
+  damit der Kreis auf jedem Schirm proportional zum Flieger bleibt.
+- Die Trefferzone ist nicht mehr der sichtbare Kreis, sondern rumpfgroß:
+  Radius TREFFER_JE_SPANNWEITE 0,10 der Spannweite. Am Modell vermessen
+  (`entwurf/rumpf-messung.html` zeichnet die Silhouette von hinten in der
+  Lage des Laufs, die Auswertung sucht den größten Kreis auf dem Rumpf):
+  0,06 liegt ganz auf dem Rumpf, ab 0,08 ragt der Kreisrand heraus, die
+  Tragflächen beginnen bei rund 0,08, das Fahrwerk steht bei 0,15. 0,10
+  deckt damit den Rumpfkörper mit etwas Luft und bleibt von den Flügeln
+  weg. Der gezeichnete Kreis (Radius rund 0,53 Spannweiten) bleibt als
+  Zielhilfe deutlich größer als die Trefferzone.
+- Folge für die Wertung: Die Zone ist bei 16:9 rund fünfmal strenger als
+  der bisherige Deckungsradius (0,0048 statt 0,025 der Bildbreite), auf
+  breiteren Schirmen noch strenger. TREFFER_BESTWERT 12 stammt aus der
+  alten Zone und ist nach Willis ersten Läufen neu zu eichen.
+- Die Deckungsmessung rechnet mit dem echten Seitenverhältnis des
+  Fensters (sichtmasse in uebung1.js); das feste 16:9 gilt nur noch als
+  Vorgabe für Tests und Probeseite. Die übrige Bildgeometrie (Kegel,
+  Sprünge, Umlauf) bleibt bewusst in der alten virtuellen Welt.

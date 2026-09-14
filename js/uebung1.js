@@ -8,11 +8,48 @@
 
 export const TESTDAUERN = [3, 5, 10]; // Minuten
 export const HALTEZEIT_MS = 1000;
-// Deckungsradius = gezeichneter Kreis: 5,5 Prozent Bildbreite mal Radius
-// 46/100 aus der SVG-Vorlage. Der Kreis ist seit 29.08.2026 so gezeichnet,
-// die Wertung wurde am 14.09.2026 auf Willis Entscheid nachgezogen (vorher
-// rechnete sie noch mit dem alten 7-Prozent-Kreis, also großzügiger als
-// das Bild).
+// Sichtgeometrie: Das Zielflugzeug hat Spannweite SPANNWEITE (Weltmaß) und
+// fliegt fest bei FLUGDISTANZ vor der Kamera; BLICKWINKEL ist der senkrechte
+// Kamerawinkel in Grad. Daraus folgt die scheinbare Größe des Fliegers am
+// Schirm; seit dem 14.09.2026 hängen Zielkreis und Trefferzone daran
+// (Willis Auftrag: der Kreis wächst nicht mehr mit der Fensterbreite,
+// sondern bleibt proportional zum Flieger, der seine Größe nie ändert).
+export const SPANNWEITE = 22;   // Weltmaß
+export const FLUGDISTANZ = 215; // Weltmaß
+export const BLICKWINKEL = 62;  // Grad, senkrechtes Sichtfeld der Kamera
+// Gezeichneter Zielkreis: Durchmesser als Anteil der Spannweite. 1,15 ist
+// der gewohnte Anblick (bei 16:9 exakt die alten 5,5 Prozent Bildbreite),
+// nur neu am Flieger verankert statt an der Fensterbreite.
+export const KREIS_JE_SPANNWEITE = 1.15;
+// Trefferzone: Radius als Anteil der Spannweite (Willis Auftrag vom
+// 14.09.2026: Treffer zählen nur auf dem Flugzeugkörper, nicht auf den
+// Flügeln). Am Modell vermessen (entwurf/rumpf-messung.html, Silhouette von
+// hinten wie im Lauf): Ein Kreis von 0,06 Spannweiten liegt noch ganz auf
+// dem Rumpf, ab 0,08 ragt er heraus, die Tragflächen beginnen bei rund
+// 0,08 und das Fahrwerk steht bei 0,15. 0,10 deckt den Rumpfkörper mit
+// etwas Luft und bleibt von den Flügeln weg. Zum Vergleich: der
+// gezeichnete Kreis hat rund 0,53 Spannweiten Radius, die Zone ist also
+// deutlich kleiner als er.
+export const TREFFER_JE_SPANNWEITE = 0.10;
+
+// Sichtmaße bei echtem Seitenverhältnis (Breite durch Höhe): scheinbare
+// Spannweite als Höhenanteil (für den gezeichneten Kreis), Trefferradius in
+// Breitenanteilen und das Höhen-zu-Breiten-Verhältnis, damit Abstände auf
+// dem Schirm rund gemessen werden. Der Lauf reicht das Ergebnis je
+// Bildgröße an takt weiter; ohne diese Maße gelten die Vorgaben unten.
+export function sichtmasse(seitenverhaeltnis) {
+  const halbeHoehe = Math.tan((BLICKWINKEL * Math.PI) / 360) * FLUGDISTANZ;
+  const halbeBreite = halbeHoehe * seitenverhaeltnis;
+  return {
+    spannweiteHoehenanteil: SPANNWEITE / (2 * halbeHoehe),
+    trefferR: (TREFFER_JE_SPANNWEITE * SPANNWEITE) / (2 * halbeBreite),
+    verhaeltnis: 1 / seitenverhaeltnis,
+  };
+}
+
+// Vorgaben für Läufe ohne Sichtmaße (Tests, Probeseite): Deckungsradius als
+// Anteil der Bildbreite und festes 16:9. Der echte Lauf misst seit dem
+// 14.09.2026 mit sichtmasse().trefferR, siehe oben.
 export const KREIS_R = 0.025;          // Anteil der Bildbreite
 export const BILDVERHAELTNIS = 9 / 16; // Höhe zu Breite des Sichtfelds
 // Mindestabstand des Sprungziels zur Bildmitte; am 31.08.2026 auf Willis
@@ -91,7 +128,7 @@ function taktDrift(d, dtMs, rnd) {
   return d.wert;
 }
 
-const abstand = (a, b) => Math.hypot(a.x - b.x, (a.y - b.y) * BILDVERHAELTNIS);
+const abstand = (a, b, verhaeltnis = BILDVERHAELTNIS) => Math.hypot(a.x - b.x, (a.y - b.y) * verhaeltnis);
 
 // Dreht einen Bildpunkt um die Bildmitte, in Breiteneinheiten gerechnet,
 // damit der Bogen auf dem Schirm rund ist (y trägt das Seitenverhältnis).
@@ -131,8 +168,12 @@ export function wuerfleSprung(rnd = Math.random) {
   return { dx: Math.cos(winkel) * weite, dy: Math.sin(winkel) * weite };
 }
 
-export function inDeckung(z) {
-  return abstand(z.ziel, z.kreis) <= KREIS_R;
+// Deckung mit optionalen Sichtmaßen: Der Lauf gibt sichtmasse() mit, dann
+// gilt der rumpfgroße Trefferradius am echten Seitenverhältnis. Ohne masse
+// bleibt die alte Vorgabe (KREIS_R, 16:9) für Tests und Probeseite.
+export function inDeckung(z, masse) {
+  return abstand(z.ziel, z.kreis, masse?.verhaeltnis ?? BILDVERHAELTNIS)
+    <= (masse?.trefferR ?? KREIS_R);
 }
 
 // Pfeilhinweis am Bildrand: Liegt das Ziel außerhalb des Bildes, liefert die
@@ -170,7 +211,7 @@ export function erzeugeLaufzustand(rnd = Math.random) {
 
 // Ein Zeitschritt: Stick und Pedale bewegen den Blick, das Ziel wandert im
 // Sichtfeld entgegen; dazu kommt die eigene Drift des Zielflugzeugs.
-export function takt(z, eingaben, dtMs, rnd = Math.random) {
+export function takt(z, eingaben, dtMs, rnd = Math.random, masse) {
   const dt = dtMs / 1000;
 
   // Simulator-Anlauf: Die Sollrate aus dem Stick liegt erst nach der
@@ -217,7 +258,7 @@ export function takt(z, eingaben, dtMs, rnd = Math.random) {
 
   z.testMs += dtMs;
   const ereignisse = [];
-  if (inDeckung(z)) {
+  if (inDeckung(z, masse)) {
     z.deckungMs += dtMs;
     z.halteMs += dtMs;
     if (z.halteMs >= HALTEZEIT_MS) {

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Rumpfbreite · Messung</title>
+<style>body { margin: 0; background: #000; } canvas { display: block; }</style>
+</head>
+<body>
+<script type="module">
+  // Messaufbau für die Trefferzone von Mission 1: zeigt das Zielflugzeug in
+  // genau der Lage des Laufs (Nase weg von der Kamera, Spannweite 22,
+  // Distanz 215, Blickwinkel 62 Grad) schwarzweiß vor schwarzem Grund.
+  // Die Auswertung zählt je Bildspalte die Höhe der weißen Fläche: Der
+  // Rumpf ist hoch, die Flügel sind flach. Daraus kommt die Rumpfbreite
+  // als Anteil der Spannweite.
+  import * as THREE from "../js/fremd/three.module.js";
+  import { GLTFLoader } from "../js/fremd/GLTFLoader.js";
+  import { SPANNWEITE, FLUGDISTANZ, BLICKWINKEL } from "../js/uebung1.js";
+
+  const renderer = new THREE.WebGLRenderer({ antialias: false });
+  renderer.setSize(1600, 900, false);
+  document.body.append(renderer.domElement);
+  const szene = new THREE.Scene();
+  szene.background = new THREE.Color(0x000000);
+  // ?lupe=1 verengt den Blickwinkel stark: Das Flugzeug füllt das Bild,
+  // die Silhouette wird fein messbar, und bei 215 Einheiten Abstand ändert
+  // sich an den Proportionen praktisch nichts.
+  const lupe = new URLSearchParams(location.search).get("lupe");
+  const kamera = new THREE.PerspectiveCamera(lupe ? 7 : BLICKWINKEL, 16 / 9, 1, 9000);
+  const weiss = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+  new GLTFLoader().load("../modelle/flugzeug.glb", (gltf) => {
+    const halter = new THREE.Object3D();
+    halter.rotation.y = -Math.PI / 2;
+    halter.add(gltf.scene);
+    gltf.scene.traverse((k) => { if (k.isMesh) k.material = weiss; });
+    const kasten = new THREE.Box3().setFromObject(halter);
+    const groesse = new THREE.Vector3();
+    kasten.getSize(groesse);
+    halter.scale.setScalar(SPANNWEITE / groesse.x);
+    const mitte = new THREE.Vector3();
+    new THREE.Box3().setFromObject(halter).getCenter(mitte);
+    halter.position.sub(mitte);
+    const flugzeug = new THREE.Group();
+    flugzeug.add(halter);
+    flugzeug.position.set(0, 0, -FLUGDISTANZ);
+    szene.add(flugzeug);
+  });
+  // Dauerhaft zeichnen, damit das Schirmbild den geladenen Stand trifft,
+  // egal wann es ausgelöst wird.
+  const zeichne = () => { renderer.render(szene, kamera); requestAnimationFrame(zeichne); };
+  zeichne();
+</script>
+</body>
+</html>

@@ -4,6 +4,7 @@ import {
   TESTDAUERN, HALTEZEIT_MS, KREIS_R, BILDVERHAELTNIS, MINDESTABSTAND, KEGEL, UMLAUF, MAXROLL, MAXNICK, TEMPOS, SICHTWINKEL, zielHinweis, PFEILRAND,
   wuerfleSprung, SPRUNGWEITE, trefferErfuellung, letterErfuellung, erfuellung1, TREFFER_BESTWERT,
   zufallsZiel, erzeugeLaufzustand, takt, inDeckung,
+  sichtmasse, KREIS_JE_SPANNWEITE, TREFFER_JE_SPANNWEITE, SPANNWEITE, FLUGDISTANZ, BLICKWINKEL,
   deckungsquote, ergebnisWerte,
   BUCHSTABEN_ABSTAND_MS, EREIGNIS_LUECKE_MIN, EREIGNIS_LUECKE_MAX, erzeugeBuchstabenreihe, erzeugeSlaZaehler,
 } from "../js/uebung1.js";
@@ -190,6 +191,51 @@ test("inDeckung misst den Winkelabstand mit Bildverhältnis", () => {
   // Senkrecht zählt der Abstand gestaucht: derselbe Versatz in y liegt noch drin.
   z.ziel = { x: 0.5, y: 0.5 + KREIS_R + 0.001 };
   assert.equal(inDeckung(z), true);
+});
+
+test("sichtmasse: Kreis am Flieger verankert, alter Anblick bei 16:9", () => {
+  // Willis Auftrag vom 14.09.2026: Der Zielkreis hängt an der scheinbaren
+  // Spannweite, nicht mehr an der Fensterbreite.
+  const m = sichtmasse(16 / 9);
+  // Die scheinbare Spannweite hängt nur an der Höhe, nie am Seitenverhältnis.
+  assert.ok(Math.abs(m.spannweiteHoehenanteil - sichtmasse(21 / 9).spannweiteHoehenanteil) < 1e-12);
+  // Bei 16:9 entspricht der neue Kreis dem alten 5,5-Prozent-Anblick.
+  assert.ok(Math.abs(KREIS_JE_SPANNWEITE * m.spannweiteHoehenanteil - 0.055 * (16 / 9)) < 0.0005);
+  // Auf breiten Schirmen ist dieselbe Rumpfbreite ein kleinerer Breitenanteil.
+  assert.ok(sichtmasse(21 / 9).trefferR < m.trefferR);
+  assert.ok(Math.abs(m.verhaeltnis - 9 / 16) < 1e-12);
+  // Die Trefferzone bleibt auf dem Rumpf: am Modell vermessen ragt der
+  // Kreisrand ab 0,08 Spannweiten heraus, die Tragflächen beginnen bei
+  // rund 0,08, das Fahrwerk steht bei 0,15 (entwurf/rumpf-messung.html).
+  assert.ok(TREFFER_JE_SPANNWEITE > 0 && TREFFER_JE_SPANNWEITE <= 0.12);
+  // Die Maße folgen der Sichtgeometrie aus den exportierten Konstanten.
+  const halbeHoehe = Math.tan((BLICKWINKEL * Math.PI) / 360) * FLUGDISTANZ;
+  assert.ok(Math.abs(m.trefferR - (TREFFER_JE_SPANNWEITE * SPANNWEITE) / (2 * halbeHoehe * (16 / 9))) < 1e-12);
+});
+
+test("inDeckung mit Sichtmaßen: Trefferzone ist rumpfgroß statt kreisgroß", () => {
+  const m = sichtmasse(16 / 9);
+  // Rumpfgroß heißt deutlich kleiner als der alte Deckungsradius.
+  assert.ok(m.trefferR < KREIS_R / 3);
+  const z = erzeugeLaufzustand(halb);
+  z.kreis = { x: 0.5, y: 0.5 };
+  z.ziel = { x: 0.5 + m.trefferR + 0.001, y: 0.5 };
+  assert.equal(inDeckung(z), true);    // alte Vorgabe: noch weit im Kreis
+  assert.equal(inDeckung(z, m), false); // Sichtmaße: knapp neben dem Rumpf
+  z.ziel = { x: 0.5 + m.trefferR - 0.001, y: 0.5 };
+  assert.equal(inDeckung(z, m), true);
+});
+
+test("takt mit Sichtmaßen: Haltezeit wächst nur auf dem Rumpf", () => {
+  const m = sichtmasse(16 / 9);
+  const z = erzeugeLaufzustand(halb);
+  z.kreis = { x: 0.5, y: 0.5 };
+  z.ziel = { x: 0.512, y: 0.5 }; // im alten Kreis, aber neben dem Rumpf
+  takt(z, still, 100, halb, m);
+  assert.equal(z.halteMs, 0);
+  z.ziel = { x: 0.5, y: 0.5 };
+  takt(z, still, 100, halb, m);
+  assert.ok(z.halteMs > 0);
 });
 
 test("Eine Sekunde Deckung gibt den Treffer, der Blick springt statt des Flugzeugs", () => {

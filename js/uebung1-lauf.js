@@ -5,6 +5,7 @@ import {
   TESTDAUERN, TEMPOS, erzeugeLaufzustand, takt, ergebnisWerte, schwierigkeitsfaktor1,
   erzeugeBuchstabenreihe, erzeugeSlaZaehler, zielHinweis,
   erfuellung1, trefferErfuellung, letterErfuellung, TREFFER_BESTWERT,
+  sichtmasse, KREIS_JE_SPANNWEITE, SPANNWEITE, FLUGDISTANZ, BLICKWINKEL,
 } from "./uebung1.js";
 import { mitEmpfindlichkeit, MISSIONS_EMPFINDLICHKEITEN } from "./kurve.js";
 import * as THREE from "./fremd/three.module.js";
@@ -327,10 +328,8 @@ export function erzeugeUebung1({ speicher, controls }) {
     // Sichtfeldanteil der Logik gestellt; der Himmel ist der Seitengrund
     // hinter der durchsichtigen Leinwand.
     const BODENHOEHE = 420;
-    // Nach Willis Sichtung des Videos: Das Flugzeug wirkt dort deutlich
-    // kleiner und weiter weg. Die Distanz staucht nur die scheinbare Größe,
-    // die Bildposition bleibt gleich (halbeBreite/halbeHoehe wachsen mit).
-    const FLUGDISTANZ = 215;
+    // Flugdistanz und Spannweite kommen seit dem 14.09.2026 aus uebung1.js
+    // (Sichtgeometrie), weil Zielkreis und Trefferzone daran hängen.
     // Stetiger Vorwärtsflug in Weltmaß: Spannweite 22 entspricht rund 8 m,
     // damit liegen 140 je Sekunde bei etwa 180 km/h Kunstflugtempo.
     const FLUGTEMPO = 140;
@@ -378,7 +377,7 @@ export function erzeugeUebung1({ speicher, controls }) {
         new THREE.MeshBasicMaterial({ map: himmelTextur, side: THREE.BackSide, fog: false }),
       );
       szene.add(kuppel);
-      const kamera = new THREE.PerspectiveCamera(62, 16 / 9, 1, 9000);
+      const kamera = new THREE.PerspectiveCamera(BLICKWINKEL, 16 / 9, 1, 9000);
       // Flugzeug-Drehreihenfolge: erst Gieren um die Hochachse, dann Nicken,
       // dann Rollen; sonst verkippt der Kurs die Rollachse.
       kamera.rotation.order = "YXZ";
@@ -431,7 +430,7 @@ export function erzeugeUebung1({ speicher, controls }) {
         const kasten = new THREE.Box3().setFromObject(halter);
         const groesse = new THREE.Vector3();
         kasten.getSize(groesse);
-        halter.scale.setScalar(22 / groesse.x);
+        halter.scale.setScalar(SPANNWEITE / groesse.x);
         const mitte = new THREE.Vector3();
         new THREE.Box3().setFromObject(halter).getCenter(mitte);
         halter.position.sub(mitte);
@@ -494,12 +493,20 @@ export function erzeugeUebung1({ speicher, controls }) {
     document.addEventListener("visibilitychange", beiSichtwechsel);
     registriereAbbruch(() => verlasse?.());
 
+    // Sichtmaße für Kreis und Trefferzone, je Bildgröße neu gerechnet: Der
+    // gezeichnete Kreis hängt an der scheinbaren Spannweite (Willis Auftrag
+    // vom 14.09.2026, vorher wuchs er mit der Fensterbreite), die Trefferzone
+    // ist rumpfgroß und geht mit denselben Maßen in den Takt.
+    let masse = sichtmasse(16 / 9);
     const passeGroesseAn = () => {
       const b = schleier.clientWidth;
       const h = schleier.clientHeight;
+      if (!b || !h) return;
       drei.renderer.setSize(b, h, false);
       drei.kamera.aspect = b / h;
       drei.kamera.updateProjectionMatrix();
+      masse = sichtmasse(drei.kamera.aspect);
+      kreisBild.style.width = `${Math.round(KREIS_JE_SPANNWEITE * masse.spannweiteHoehenanteil * h)}px`;
     };
     passeGroesseAn();
     addEventListener("resize", passeGroesseAn);
@@ -584,7 +591,7 @@ export function erzeugeUebung1({ speicher, controls }) {
         stickY: mitEmpfindlichkeit(controls.wert("stickY"), einstellung.empfindlichkeit),
         ruder: mitEmpfindlichkeit(controls.wert("ruder"), einstellung.empfindlichkeit),
       };
-      const ereignisse = takt(zustand, eingaben, dtMs);
+      const ereignisse = takt(zustand, eingaben, dtMs, Math.random, masse);
       for (const e of ereignisse) {
         if (e.treffer) {
           kreisBild.classList.add("smtblitz");

@@ -324,7 +324,10 @@ main { position: relative; z-index: 1; }
   stroke: #35e0d0;
   pointer-events: none;
 }
-/* width steuert die Zielkreisgröße; auf Willis Wunsch etwas kleiner (war 7 %). */
+/* Die Breite hier ist nur der Startwert: Seit dem 14.09.2026 setzt der Lauf
+   die Kreisgröße in Bildpunkten aus der scheinbaren Spannweite des Fliegers
+   (passeGroesseAn in uebung1-lauf.js), damit der Kreis auf jedem Schirm
+   proportional zum Flugzeug bleibt. */
 .uebung1 .zielkreis.deckung { stroke: #e5312b; }
 /* Richtungspfeil, wenn das Ziel außerhalb des Bildes fliegt; Position und
    Drehung setzt die Übung je Takt, gestochene Kanten wie beim Zielkreis. */
