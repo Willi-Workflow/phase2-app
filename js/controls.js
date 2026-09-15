@@ -1,5 +1,5 @@
 // Gamepad-Anbindung: Anlernen über alle Geräte, Kurven, Tastatur-Ersatz.
-import { mitKurve, groessterAusschlag, mitEmpfindlichkeit, empfindlichkeitFuer, mitRuhelage, glaette } from "./kurve.js";
+import { mitKurve, groessterAusschlag, mitEmpfindlichkeit, empfindlichkeitFuer, mitRuhelage, glaette, totzoneFuer, RAUSCHTOR } from "./kurve.js";
 import { geraeteListe, kurzname } from "./geraetestand.js";
 
 const ROLLEN = [
@@ -24,22 +24,20 @@ const RATENROLLEN = new Set(["stickX", "stickY", "ruder"]);
 // Prüfung hat einen spürbar toten Mittelbereich, und damit lässt er sich
 // nachstellen. Jenseits der Zone streckt mitKurve den Restweg zurück auf den
 // vollen Bereich, der Vollausschlag bleibt also erreichbar.
-// ACHTUNG: Der Wert gilt für alle Achsen, auch für Schub und Pedale. Bei
-// großen Zonen bekommt der Schubhebel dieselbe tote Mitte; in Mission 3
-// steuert er eine Sollgeschwindigkeit, dort entsteht dann ein flacher
-// Bereich um die Bandmitte. Eine Trennung je Rolle ist nicht gebaut.
+// Seit dem 15.09.2026 wirkt der Regler in voller Höhe NUR auf die beiden
+// Stickachsen (Willis Auftrag, die Regel steht als totzoneFuer in
+// kurve.js). Pedale und Schubhebel folgen ihm nur bis zur bisherigen
+// Vorgabe von 0,10 und bleiben dann stehen: Eine Zone von 0,5 hätte dort
+// die halbe Hebelstrecke stillgelegt, ganz ohne tote Mitte wandert aber in
+// Mission 2 die Schubnadel und die Pedale verlieren ihr Mittenspiel.
 // Expo: staucht die Mittellage, kleine Ausschläge wirken sanft, der volle
 // Ausschlag bleibt voll. Beide Werte sind im Controls-Dialog live verstellbar
 // und werden je Profil gespeichert.
 const TOTZONE_VORGABE = 0.10;
 const EXPO_VORGABE = 0.4;
-// Festes Rauschtor unter dem Totzonen-Regler (Willis Auftrag vom
-// 01.09.2026, der Drift darf nicht mit der Sensibilität skalieren): Eine
-// ruhende Achse muss exakt 0 liefern, sonst verstärkt der Faktor den
-// Restwert aus Sensorzittern und wirkt wie zusätzliche Drift. 0,015 liegt
-// unter jeder fühlbaren Mitte; der Regler kann die Totzone nur vergrößern,
-// nie unter das Tor senken. Größere Ruhelagen-Versätze fängt die Messung.
-const RAUSCHTOR = 0.015;
+// Das feste Rauschtor unter dem Totzonen-Regler steht seit dem 15.09.2026
+// in kurve.js neben der Regel totzoneFuer, damit Aufrufer und Tests
+// denselben Wert lesen.
 // Empfindlichkeit: Faktor hinter der Kurve (Willis Auftrag vom 29.08.2026).
 // Entweder gilt ein allgemeiner Wert für alle Geräte, oder der Haken
 // "je Gerät" schaltet um, dann zählt nur noch der je Gerät gespeicherte
@@ -152,7 +150,7 @@ export function erzeugeControls(speicher) {
         if (pad && z.achse < pad.axes.length) {
           const ruhe = RATENROLLEN.has(rolle) ? (ruhelagen[z.geraet]?.[z.achse] ?? 0) : 0;
           const roh = mitRuhelage(pad.axes[z.achse], ruhe) * (z.invert ? -1 : 1);
-          const kurvenwert = mitKurve(roh, Math.max(totzone, RAUSCHTOR), expo);
+          const kurvenwert = mitKurve(roh, totzoneFuer(rolle, totzone, RAUSCHTOR), expo);
           if (!RATENROLLEN.has(rolle)) return mitSchubweg(kurvenwert);
           const faktor = empfindlichkeitFuer(empfindlichkeitModus, empfindlichkeit, empfindlichkeitJeGeraet, z.geraet);
           return geglaettetes(mitEmpfindlichkeit(kurvenwert, faktor));
@@ -346,7 +344,7 @@ export function erzeugeControls(speicher) {
         </div>
         <h3 class="abschnitt">STEUERGEFÜHL</h3>
         <div class="reglerzeile"><span class="reglertitel">Totzone</span><span class="skala">0</span><input type="range" id="totzone" min="0" max="0.5" step="0.01"><span class="skala">0,5</span><span class="reglerwert" id="totzone-wert"></span></div>
-        <p class="reglerhinweis">Die tote Mitte, in der noch nichts passiert; damit lässt sich der Stick der Prüfung nachstellen. Der Vollausschlag bleibt voll, der Restweg wird gestreckt. Achtung: Der Wert gilt für alle Achsen, ein großer Wert legt also auch die Mitte von Schubhebel und Pedalen still. Der gewohnte Bereich liegt bei 0,10.</p>
+        <p class="reglerhinweis">Die tote Mitte des Sticks, in der noch nichts passiert; damit lässt sich der Stick der Prüfung nachstellen. Der Vollausschlag bleibt voll, der Restweg wird gestreckt. In voller Höhe gilt er nur für die beiden Stickachsen. Pedale und Schubhebel folgen ihm bis 0,10 und bleiben dann stehen, damit ihnen der Hebelweg erhalten bleibt. Der gewohnte Bereich liegt bei 0,10.</p>
         <div class="reglerzeile"><span class="reglertitel">Expo</span><span class="skala">0</span><input type="range" id="expo" min="0" max="1" step="0.05"><span class="skala">1</span><span class="reglerwert" id="expo-wert"></span></div>
         <div class="reglerzeile"><span class="reglertitel">Empfindlichkeit</span><span class="skala">0,5</span><input type="range" id="empfindlichkeit" min="0.5" max="5" step="0.05"><span class="skala">5</span><span class="reglerwert" id="empfindlichkeit-wert"></span></div>
         <div class="reglerzeile"><span class="reglertitel">Glättung</span><span class="skala">aus</span><input type="range" id="glaettung" min="0" max="250" step="10"><span class="skala">250</span><span class="reglerwert" id="glaettung-wert"></span></div>
@@ -360,7 +358,7 @@ export function erzeugeControls(speicher) {
           <button class="punkt klein" data-tat="ruhelage">MESSEN</button>
           <span class="knopfplatz"></span>
         </div>
-        <p class="reglerhinweis">Hände weg von Stick, Ruder und Schub, dann messen: Die Totzone liegt danach um die echte Ruhelage jeder Achse statt um den Nullpunkt.</p>
+        <p class="reglerhinweis">Hände weg von Stick, Ruder und Schub, dann messen: Stick und Ruder rechnen danach um ihre echte Ruhelage statt um den Nullpunkt, die Totzone des Sticks liegt um diese Mitte. Der Schub rechnet weiter ab dem Nullpunkt der Achse.</p>
         <button class="punkt" data-tat="schliessen">Fertig</button>
       `;
       const schliesse = () => { this.brichFangAb(); this.brichSchussFangAb(); schleier.remove(); dialog.remove(); halteAn = true; };
@@ -498,9 +496,19 @@ export function erzeugeControls(speicher) {
           const faktor = empfindlichkeitFuer(stand.empfindlichkeitModus, stand.empfindlichkeit, stand.empfindlichkeitJeGeraet, pad.id);
           const ruhen = this.ruhelagenVon()[pad.id] ?? [];
           const gedrueckt = pad.buttons.map((k, i) => (k.pressed ? i : null)).filter((i) => i !== null);
+          // Rolle je Achse, damit die Anzeige dieselbe Totzone rechnet wie
+          // der Lauf: Seit dem 15.09.2026 gilt der Regler nur für die
+          // Stickachsen, alles andere sieht nur das Rauschtor. Der Schub
+          // wird weiter direkt geprüft und nicht über diese Suche: Hängen
+          // zwei Rollen versehentlich auf derselben Achse, bliebe er sonst
+          // je nach Reihenfolge der Zuordnung liegen und die Anzeige fiele
+          // auf den Ratenweg zurück.
+          const rolleVon = (achse) => Object.keys(zuordnung)
+            .find((r) => zuordnung[r]?.geraet === pad.id && zuordnung[r]?.achse === achse);
           feld.textContent = "wirksam  " + pad.axes.map((a, i) => {
             const stellung = zuordnung.schub?.geraet === pad.id && zuordnung.schub?.achse === i;
-            const k = mitKurve(mitRuhelage(a, stellung ? 0 : (ruhen[i] ?? 0)), Math.max(stand.totzone, RAUSCHTOR), stand.expo);
+            const rolle = stellung ? "schub" : rolleVon(i);
+            const k = mitKurve(mitRuhelage(a, stellung ? 0 : (ruhen[i] ?? 0)), totzoneFuer(rolle, stand.totzone, RAUSCHTOR), stand.expo);
             if (stellung) return Math.max(-1, Math.min(1, k * Math.max(1, stand.empfindlichkeitSchub))).toFixed(2);
             return mitEmpfindlichkeit(k, faktor).toFixed(2);
           }).join("  ")

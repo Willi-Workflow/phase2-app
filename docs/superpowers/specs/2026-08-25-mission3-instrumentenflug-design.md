@@ -68,7 +68,11 @@ Start zu Ziel). Durchgänge folgen am Stück, bis die Testdauer um ist.
 - Stick längs: Höhenrate bis ±100 ft je Sekunde, Ziehen steigt.
 - Schubregler: stellt die Sollfahrt linear (Regler unten 60 kt, oben 320
   kt), die Nadel folgt mit einer Zeitkonstante von 1,5 s.
-- Totzone und Expo kommen wie überall aus dem Controls-Dialog.
+- Expo kommt wie überall aus dem Controls-Dialog. Die Totzone gilt seit
+  dem 15.09.2026 in voller Höhe nur für die Stickachsen; Schubregler und
+  Pedale folgen dem Regler nur bis 0,10 und bleiben dann stehen. Damit
+  bleiben Fahrtband und die fünf Pedalzonen über den Hebelweg verteilt,
+  auch wenn der Stick eine tote Mitte von 0,5 bekommt.
 - Pedale und Schusstaste werden nur für die Rechenaufgaben in Stufe 4
   benutzt.
 

@@ -12,6 +12,32 @@ export function mitKurve(wert, totzone, expo) {
   return (1 - e) * gestreckt + e * gestreckt ** 3;
 }
 
+// Verteilung der Totzone auf die Rollen (Willis Auftrag vom 15.09.2026,
+// "nur am Stick"). Gemeint ist die große, den Prüfungsstick nachstellende
+// Zone: Sie gehört an die beiden Stickachsen und nirgendwo sonst hin, denn
+// der Schubhebel hat keine Mittenrast, und bei einer Zone von 0,5 drängte
+// sich das Fahrtband von Mission 3 in die äußeren Hebelviertel.
+// Ganz ohne tote Mitte dürfen Pedale und Schub aber auch nicht dastehen:
+// Die Pedale zentrieren sich selbst und haben eine echte Mitte, und in
+// Mission 2 ist der Schub eine Ratenachse, deren Nadel bei einem leicht
+// danebenstehenden Hebel sonst dauernd wandert. Sie behalten darum die
+// bisherige Vorgabe als Deckel: Bis 0,10 folgen sie dem Regler, darüber
+// bleiben sie stehen. Das feste Rauschtor gilt als Untergrenze für jede
+// Achse, sonst verstärkte der Empfindlichkeitsfaktor das Sensorzittern
+// einer ruhenden Achse.
+export const STICKROLLEN = new Set(["stickX", "stickY"]);
+export const GRUNDTOTZONE = 0.10;
+
+// Rauschtor gegen Sensorzittern (Willis Auftrag vom 01.09.2026): Eine
+// ruhende Achse muss exakt 0 liefern. Liegt hier statt in controls.js,
+// damit Regel, Aufrufer und Tests denselben Wert lesen.
+export const RAUSCHTOR = 0.015;
+
+export function totzoneFuer(rolle, totzone, rauschtor = RAUSCHTOR) {
+  const zone = STICKROLLEN.has(rolle) ? totzone : Math.min(totzone, GRUNDTOTZONE);
+  return Math.max(zone, rauschtor);
+}
+
 // Empfindlichkeit: Faktor auf den fertigen Kurvenwert, seit 01.09.2026 ohne
 // Kappung (Willis Auftrag). Der Faktor skaliert damit die Missionsrate:
 // 1,5 heißt anderthalbfache Maximalrate bei Vollausschlag. Die alte Kappung

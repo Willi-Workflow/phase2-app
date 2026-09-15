@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mitKurve, groessterAusschlag, mitEmpfindlichkeit, empfindlichkeitFuer, mitRuhelage, glaette, MISSIONS_EMPFINDLICHKEITEN } from "../js/kurve.js";
+import { mitKurve, groessterAusschlag, mitEmpfindlichkeit, empfindlichkeitFuer, mitRuhelage, glaette, MISSIONS_EMPFINDLICHKEITEN, totzoneFuer, STICKROLLEN, GRUNDTOTZONE, RAUSCHTOR } from "../js/kurve.js";
 
 test("glaette: Zeitkonstante 0 heißt aus, der neue Wert gilt sofort", () => {
   assert.equal(glaette(0, 1, 16, 0), 1);
@@ -160,4 +160,41 @@ test("MISSIONS_EMPFINDLICHKEITEN: 25 bis 150 Prozent in Fünferschritten", () =>
   for (const alt of [0.25, 0.5, 0.75, 1, 1.25, 1.5]) {
     assert.ok(MISSIONS_EMPFINDLICHKEITEN.includes(alt), `fehlt: ${alt}`);
   }
+});
+
+test("totzoneFuer: die große Zone nur am Stick, der Rest bis zur Vorgabe", () => {
+  // Willis Auftrag vom 15.09.2026: Der tote Mittelbereich soll den Stick der
+  // Prüfung nachstellen. Pedale und Schubhebel folgen dem Regler nur bis zur
+  // bisherigen Vorgabe und bleiben dann stehen; das feste Rauschtor ist für
+  // jede Achse die Untergrenze.
+  assert.deepEqual([...STICKROLLEN].sort(), ["stickX", "stickY"]);
+  assert.equal(GRUNDTOTZONE, 0.10);
+  for (const rolle of ["stickX", "stickY"]) {
+    assert.equal(totzoneFuer(rolle, 0.5, RAUSCHTOR), 0.5);
+    assert.equal(totzoneFuer(rolle, 0.1, RAUSCHTOR), 0.1);
+    assert.equal(totzoneFuer(rolle, 0, RAUSCHTOR), RAUSCHTOR);
+  }
+  for (const rolle of ["ruder", "schub", undefined]) {
+    assert.equal(totzoneFuer(rolle, 0.5, RAUSCHTOR), GRUNDTOTZONE);   // gedeckelt
+    assert.equal(totzoneFuer(rolle, 0.3, RAUSCHTOR), GRUNDTOTZONE);   // gedeckelt
+    assert.equal(totzoneFuer(rolle, 0.02, RAUSCHTOR), 0.02);          // darunter folgt er
+    assert.equal(totzoneFuer(rolle, 0, RAUSCHTOR), RAUSCHTOR);
+  }
+  // Ohne übergebenes Tor gilt dasselbe, die Regel kennt ihren eigenen Wert.
+  assert.equal(totzoneFuer("schub", 0.5), GRUNDTOTZONE);
+});
+
+test("Große Stick-Totzone lässt Pedale und Schub bedienbar", () => {
+  // Gegenprobe über die ganze Kette: Bei Regler 0,5 ist der halbe Stickweg
+  // tot, am Schub bleibt es bei der Vorgabe von 0,10, der Hebel behält also
+  // seinen Weg. Beide erreichen weiter den vollen Ausschlag.
+  const stick = (w) => mitKurve(w, totzoneFuer("stickX", 0.5), 0);
+  const schub = (w) => mitKurve(w, totzoneFuer("schub", 0.5), 0);
+  assert.equal(stick(0.4), 0);
+  assert.ok(Math.abs(schub(0.4) - 1 / 3) < 0.001); // (0,4 - 0,1) / (1 - 0,1)
+  assert.equal(stick(1), 1);
+  assert.equal(schub(1), 1);
+  // Und die tote Mitte bleibt dort erhalten: ein leicht danebenstehender
+  // Hebel bewegt die Nadel von Mission 2 nicht.
+  assert.equal(schub(0.08), 0);
 });
