@@ -633,7 +633,7 @@ export function erzeugeUebung1({ speicher, controls }) {
       const wert = Math.round(erfuellung * faktor);
       const zeilen = [
         `<span>Abschüsse: ${werte.treffer} · Erfüllung ${Math.round(trefferErfuellung(werte.treffer, dauer))} % (Bestwert ${TREFFER_BESTWERT} je Minute)</span>`,
-        `<span>Zeit auf dem Rumpf: ${werte.deckungsquote} %</span>`,
+        `<span>Zeit in der Trefferzone: ${werte.deckungsquote} %</span>`,
         `<span>Zeit bis zum ersten Treffer: ${werte.ersterTrefferS == null ? "–" : `${werte.ersterTrefferS} s`}</span>`,
         `<span>Mittlere Zeit je Treffer: ${werte.mittelS == null ? "–" : `${werte.mittelS} s`}</span>`,
         slaWerte ? `<span>Letter-Task: ${slaWerte.erkannt} erkannt · ${slaWerte.verpasst} verpasst · ${slaWerte.fehlalarm} Fehlalarm · Erfüllung ${Math.round(letterErfuellung(slaWerte))} %</span>` : "",

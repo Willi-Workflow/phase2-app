@@ -19,7 +19,15 @@ const RATENROLLEN = new Set(["stickX", "stickY", "ruder"]);
 // überwiegend mit feinen, kleinen Ausschlägen an Stick, Schub und Ruder).
 // Totzone: die tote Mitte, in der der Stick noch keinen Steuereingang erzeugt.
 // Sie fängt das Mittenspiel des Sticks ab, damit ein ruhig gehaltener Stick
-// wirklich nichts bewegt; von 6 auf 10 Prozent angehoben.
+// wirklich nichts bewegt; von 6 auf 10 Prozent angehoben. Der Regler reicht
+// seit dem 15.09.2026 bis 50 Prozent (Willis Auftrag): Der Stick der echten
+// Prüfung hat einen spürbar toten Mittelbereich, und damit lässt er sich
+// nachstellen. Jenseits der Zone streckt mitKurve den Restweg zurück auf den
+// vollen Bereich, der Vollausschlag bleibt also erreichbar.
+// ACHTUNG: Der Wert gilt für alle Achsen, auch für Schub und Pedale. Bei
+// großen Zonen bekommt der Schubhebel dieselbe tote Mitte; in Mission 3
+// steuert er eine Sollgeschwindigkeit, dort entsteht dann ein flacher
+// Bereich um die Bandmitte. Eine Trennung je Rolle ist nicht gebaut.
 // Expo: staucht die Mittellage, kleine Ausschläge wirken sanft, der volle
 // Ausschlag bleibt voll. Beide Werte sind im Controls-Dialog live verstellbar
 // und werden je Profil gespeichert.
@@ -337,7 +345,8 @@ export function erzeugeControls(speicher) {
           <span class="knopfplatz"></span>
         </div>
         <h3 class="abschnitt">STEUERGEFÜHL</h3>
-        <div class="reglerzeile"><span class="reglertitel">Totzone</span><span class="skala">0</span><input type="range" id="totzone" min="0" max="0.2" step="0.01"><span class="skala">0,2</span><span class="reglerwert" id="totzone-wert"></span></div>
+        <div class="reglerzeile"><span class="reglertitel">Totzone</span><span class="skala">0</span><input type="range" id="totzone" min="0" max="0.5" step="0.01"><span class="skala">0,5</span><span class="reglerwert" id="totzone-wert"></span></div>
+        <p class="reglerhinweis">Die tote Mitte, in der noch nichts passiert; damit lässt sich der Stick der Prüfung nachstellen. Der Vollausschlag bleibt voll, der Restweg wird gestreckt. Achtung: Der Wert gilt für alle Achsen, ein großer Wert legt also auch die Mitte von Schubhebel und Pedalen still. Der gewohnte Bereich liegt bei 0,10.</p>
         <div class="reglerzeile"><span class="reglertitel">Expo</span><span class="skala">0</span><input type="range" id="expo" min="0" max="1" step="0.05"><span class="skala">1</span><span class="reglerwert" id="expo-wert"></span></div>
         <div class="reglerzeile"><span class="reglertitel">Empfindlichkeit</span><span class="skala">0,5</span><input type="range" id="empfindlichkeit" min="0.5" max="5" step="0.05"><span class="skala">5</span><span class="reglerwert" id="empfindlichkeit-wert"></span></div>
         <div class="reglerzeile"><span class="reglertitel">Glättung</span><span class="skala">aus</span><input type="range" id="glaettung" min="0" max="250" step="10"><span class="skala">250</span><span class="reglerwert" id="glaettung-wert"></span></div>

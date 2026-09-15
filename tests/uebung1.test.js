@@ -204,10 +204,12 @@ test("sichtmasse: Kreis am Flieger verankert, alter Anblick bei 16:9", () => {
   // Auf breiten Schirmen ist dieselbe Rumpfbreite ein kleinerer Breitenanteil.
   assert.ok(sichtmasse(21 / 9).trefferR < m.trefferR);
   assert.ok(Math.abs(m.verhaeltnis - 9 / 16) < 1e-12);
-  // Die Trefferzone bleibt auf dem Rumpf: am Modell vermessen ragt der
-  // Kreisrand ab 0,08 Spannweiten heraus, die Tragflächen beginnen bei
-  // rund 0,08, das Fahrwerk steht bei 0,15 (entwurf/rumpf-messung.html).
-  assert.ok(TREFFER_JE_SPANNWEITE > 0 && TREFFER_JE_SPANNWEITE <= 0.12);
+  // Die Trefferzone bleibt in der Silhouette: am Modell vermessen ist die
+  // rund 0,30 Spannweiten hoch, das Fahrwerk steht bei 0,15
+  // (entwurf/rumpf-messung.html). Senkrecht ist damit der Rand erreicht,
+  // waagerecht liegt die Zone ab 0,08 schon auf den Tragflächen. Die
+  // Schranke hält diesen Stand fest: größer nur mit neuer Messung.
+  assert.ok(TREFFER_JE_SPANNWEITE > 0 && TREFFER_JE_SPANNWEITE <= 0.15);
   // Die Maße folgen der Sichtgeometrie aus den exportierten Konstanten.
   const halbeHoehe = Math.tan((BLICKWINKEL * Math.PI) / 360) * FLUGDISTANZ;
   assert.ok(Math.abs(m.trefferR - (TREFFER_JE_SPANNWEITE * SPANNWEITE) / (2 * halbeHoehe * (16 / 9))) < 1e-12);

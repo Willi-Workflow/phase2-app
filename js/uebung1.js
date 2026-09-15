@@ -31,13 +31,21 @@ export const KREIS_JE_SPANNWEITE = 1.15;
 // Flügeln). Am Modell vermessen (entwurf/rumpf-messung.html misst die
 // Silhouette von hinten, wie sie im Lauf steht): Ein Kreis von 0,06
 // Spannweiten liegt noch ganz auf dem Rumpf, ab 0,08 ragt sein Rand heraus,
-// dort beginnen auch die Tragflächen, das Fahrwerk steht bei 0,15. Gewählt
-// sind 0,10: Das deckt den Rumpfkörper mit etwas Luft und greift dabei rund
-// 0,02 Spannweiten auf den Flügelansatz über, bleibt also von den
-// Flächen draußen weg, ohne den Treffer auf Pixelarbeit zu verengen. Zum
-// Vergleich: der gezeichnete Kreis hat rund 0,53 Spannweiten Radius, die
-// Zone ist rund ein Fünftel davon.
-export const TREFFER_JE_SPANNWEITE = 0.10;
+// dort beginnen auch die Tragflächen, das Fahrwerk steht bei 0,15.
+// Am 15.09.2026 auf Willis Auftrag von 0,10 auf 0,15 vergrößert: Die Zone
+// umschließt damit den Rumpf samt Fahrwerk (senkrecht reicht sie bis an den
+// Rand der Silhouette, die rund 0,30 Spannweiten hoch ist), statt nur den
+// Rumpfkern zu treffen. Der Flächeninhalt ist gut das Doppelte (mal 2,25),
+// gegenüber dem Stand vor dem 14.09. bleibt der Radius trotzdem
+// dreieinhalbmal so streng (0,0072 statt 0,0250 der Bildbreite bei 16:9).
+// Waagerecht greift die Zone dafür rund 0,07 Spannweiten auf die
+// Tragflächen über statt 0,02 wie bei 0,10, also knapp ein Drittel des Wegs
+// zur Flügelspitze: Willis Regel von oben ist nur noch grob gewahrt, und
+// weil das Modell ein Doppeldecker ist, liegt rund die Hälfte der
+// Kreisfläche zwischen den Flächen über freiem Himmel. Zum Vergleich: der
+// gezeichnete Kreis hat rund 0,53 Spannweiten Radius, die Zone ist gut ein
+// Viertel davon.
+export const TREFFER_JE_SPANNWEITE = 0.15;
 
 // Sichtmaße bei echtem Seitenverhältnis (Breite durch Höhe): scheinbare
 // Spannweite als Höhenanteil (für den gezeichneten Kreis), Trefferradius in
@@ -325,9 +333,10 @@ export function erfuellung1(treffer, dauerMin, slaWerte) {
   return (1 - LETTER_GEWICHT) * abschuss + LETTER_GEWICHT * letterErfuellung(slaWerte);
 }
 
-// Anteil der Laufzeit, in dem das Fadenkreuz auf dem Rumpf lag, in ganzen
-// Prozent. Seit dem 14.09.2026 misst das die rumpfgroße Trefferzone, nicht
-// mehr den sichtbaren Kreis: Der liegt rund fünfmal weiter und damit viel
+// Anteil der Laufzeit, in dem das Fadenkreuz auf dem Flugzeugkörper lag, in
+// ganzen Prozent. Seit dem 14.09.2026 misst das die Trefferzone, nicht
+// mehr den sichtbaren Kreis: Der reicht seit der Vergrößerung vom 15.09.2026
+// rund dreieinhalbmal so weit (vorher rund fünfmal) und liegt damit viel
 // öfter auf dem Flieger, als hier gezählt wird. Reine Anzeige, die führende
 // Kennzahl sind die Abschüsse. Die Zeiten daneben folgen den Messgrößen des
 // Originals (Zeit bis zum ersten Treffer, mittlere Zeit je Treffer).

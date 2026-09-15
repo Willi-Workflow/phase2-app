@@ -91,22 +91,32 @@ Willis Festlegung, ersetzt die Deckungsregel oben:
   Anblick von 5,5 Prozent Bildbreite. Der Lauf setzt die Kreisgröße in
   Bildpunkten je Fenstergröße (passeGroesseAn), damit der Kreis auf jedem
   Schirm proportional zum Flieger bleibt.
-- Die Trefferzone ist nicht mehr der sichtbare Kreis, sondern rumpfgroß:
-  Radius TREFFER_JE_SPANNWEITE 0,10 der Spannweite. Am Modell vermessen
-  mit `entwurf/rumpf-messung.html`: Die Seite zeichnet die Silhouette von
-  hinten in der Lage des Laufs und wertet sie selbst aus, indem sie je
-  Radius abtastet, wie viel vom Kreisrand noch auf dem Flugzeug liegt.
+- Die Trefferzone ist nicht mehr der sichtbare Kreis, sondern am
+  Flugzeugkörper bemessen: Radius TREFFER_JE_SPANNWEITE 0,15 der
+  Spannweite. Am Modell vermessen mit `entwurf/rumpf-messung.html`: Die
+  Seite zeichnet die Silhouette von hinten in der Lage des Laufs und
+  wertet sie selbst aus, indem sie je Radius abtastet, wie viel vom
+  Kreisrand noch auf dem Flugzeug liegt.
   Ergebnis: bis rund 0,06 trägt der Rumpf den ganzen Kreis, ab 0,08 ragt
   der Rand heraus, dort beginnen die Tragflächen, das Fahrwerk steht bei
-  0,15. Die gewählten 0,10 decken den Rumpfkörper mit etwas Luft und
-  greifen dabei rund 0,02 Spannweiten auf den Flügelansatz über; draußen
-  auf den Flächen zählt nichts mehr. Der gezeichnete Kreis (Radius rund
-  0,53 Spannweiten) bleibt als Zielhilfe deutlich größer als die Zone.
-- Folge für die Wertung: Die Zone ist bei 16:9 rund fünfmal strenger als
-  der bisherige Deckungsradius (0,0048 statt 0,025 der Bildbreite), der
-  Flächeninhalt rund ein Siebenundzwanzigstel; auf breiteren Schirmen
-  noch strenger. TREFFER_BESTWERT 12 stammt aus der alten Zone und ist
-  nach Willis ersten Läufen neu zu eichen. Weil sich die Schwierigkeit
+  0,15. Am 15.09.2026 auf Willis Auftrag von 0,10 auf 0,15 vergrößert:
+  Die Zone umschließt jetzt Rumpf samt Fahrwerk und reicht senkrecht bis
+  an den Rand der Silhouette (die rund 0,30 Spannweiten hoch ist).
+  Waagerecht greift sie dabei rund 0,07 Spannweiten auf die Tragflächen
+  über statt 0,02 wie bei 0,10, also knapp ein Drittel des Wegs zur
+  Flügelspitze; weil das Modell ein Doppeldecker ist, liegt rund die
+  Hälfte der Kreisfläche zwischen den Flächen über freiem Himmel. Willis
+  Regel vom 14.09. ("nicht draußen auf den Flächen") ist damit nur noch
+  grob gewahrt, das ist bei der nächsten Sichtung zu bestätigen. Der
+  gezeichnete Kreis (Radius rund 0,53 Spannweiten) bleibt als Zielhilfe
+  deutlich größer als die Zone, die gut ein Viertel davon misst.
+- Folge für die Wertung: Die Zone ist bei 16:9 dreieinhalbmal strenger
+  als der Deckungsradius vor dem 14.09.2026 (0,0072 statt 0,025 der
+  Bildbreite), der Flächeninhalt rund ein Zwölftel; auf breiteren
+  Schirmen noch strenger. Zwischen dem 14. und 15.09.2026 lag sie bei
+  0,10 Spannweiten und war damit fünfmal strenger. TREFFER_BESTWERT 12
+  stammt aus der alten Zone und ist nach Willis ersten Läufen neu zu
+  eichen. Weil sich die Schwierigkeit
   selbst geändert hat, sind die alten Läufe nicht umrechenbar (anders als
   bei den Formeländerungen vom 07.09. und 14.09.). Damit die Maßstäbe
   später trennbar bleiben, tragen neue Läufe das Feld `zone` mit dem

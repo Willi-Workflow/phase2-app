@@ -35,7 +35,7 @@ Vorbereitungs-App für die fliegerische Phase II der Bundeswehr. Zwei Personen (
 **Controls:** Gamepad-API.
 - Rollen: Stick quer, Stick längs, Schub, Ruder, dazu Knöpfe (flankengesteuert, jeder Knopf jedes Geräts zählt, sofern die Übung nichts anderes verlangt).
 - Anlernen statt fester Achsennummern: "Zuweisen" klicken, Achse bewegen, der größte Ausschlag gegenüber der eingefrorenen Ruhelage gewinnt. Die Suche läuft über alle verbundenen Geräte gleichzeitig, damit Joystick, separater Schubhebel und Ruderpedale parallel nutzbar sind. Gespeichert wird je Rolle Gerätekennung, Achsennummer und Umkehrung.
-- Totzone, Umkehrung je Rolle und Empfindlichkeit einstellbar, gespeichert je Profil.
+- Totzone, Umkehrung je Rolle und Empfindlichkeit einstellbar, gespeichert je Profil. Die Totzone reicht seit dem 15.09.2026 bis 0,5 statt bis 0,2 (Willis Auftrag): Der Stick der echten Prüfung hat einen spürbar toten Mittelbereich, der sich damit nachstellen lässt. Sie gilt für alle Achsen gemeinsam, also auch für Schub und Pedale; eine Trennung je Rolle ist nicht gebaut.
 - Abfrage je Bild über requestAnimationFrame, Verbindungs-Ereignisse nur für die Statusanzeige. Hinweis in der Oberfläche, dass Geräte erst nach einem Tastendruck am Gerät erscheinen (Chrome-Datenschutzregel).
 - Tastatur als Ersatzsteuerung, damit ohne angeschlossene Geräte geübt werden kann.
 

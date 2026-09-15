@@ -121,6 +121,23 @@ test("mitKurve: totzone wird auf den Bereich 0 bis 0.9 begrenzt", () => {
   assert.equal(mitKurve(1, 5, 0), 1); // extreme Totzone wirkt wie 0.9
 });
 
+test("mitKurve: große Totzone streckt den Restweg, Vollausschlag bleibt voll", () => {
+  // Der Regler reicht seit 15.09.2026 bis 0,5 (Willis Auftrag, toter
+  // Mittelbereich des Prüfungssticks). Bei 0,5 liegt die halbe Achse in der
+  // Zone, der Rest wird auf den vollen Bereich gestreckt.
+  assert.equal(mitKurve(0.49, 0.5, 0), 0);
+  assert.equal(mitKurve(-0.49, 0.5, 0), 0);
+  assert.equal(mitKurve(0.5, 0.5, 0), 0);   // Rand der Zone, stetiger Übergang
+  assert.equal(mitKurve(0.75, 0.5, 0), 0.5); // halber Restweg, halber Wert
+  assert.equal(mitKurve(-0.75, 0.5, 0), -0.5);
+  assert.ok(Math.abs(mitKurve(0.6, 0.5, 0) - 0.2) < 1e-12);
+  // Vollausschlag bleibt in beiden Richtungen voll, auch mit Expo.
+  assert.equal(mitKurve(1, 0.5, 0), 1);
+  assert.equal(mitKurve(-1, 0.5, 0), -1);
+  assert.equal(mitKurve(1, 0.5, 0.4), 1);
+  assert.equal(mitKurve(-1, 0.5, 1), -1);
+});
+
 test("groessterAusschlag waehlt groesseres rohen Delta, nicht Rundungsartefakt", () => {
   const basen = [
     { geraet: "A", achsen: [0] },
