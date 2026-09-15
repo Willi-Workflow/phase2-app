@@ -237,27 +237,109 @@ export function kennzahl3(punkteListe) {
   return Math.round(punkteListe.reduce((summe, p) => summe + p, 0) / punkteListe.length);
 }
 
-// Rechenaufgaben seit 29.08.2026 (Willis Auftrag): nur Plus und Minus, und
-// eine anpassende Stufe deckelt die Operandengröße. Ergebnisse bleiben
-// immer zwischen 0 und 99, die Operanden werden so gewürfelt, dass kein
-// Neuwürfeln nötig ist. Die Leiter ist seit 03.09.2026 feiner gestuft,
-// damit die Treppenregel nur langsam steigt; der Einstieg liegt nach
-// Willis Nachjustierung vom selben Tag einstellig bei Deckel 9 (Aufgaben
-// wie 4+9), nicht mehr bei Deckel 5 (1+2 war zu leicht).
+// Rechenaufgaben seit 29.08.2026 (Willis Auftrag) mit einer anpassenden
+// Stufe, die die Operandengröße deckelt. Die Operanden werden so
+// gewürfelt, dass kein Neuwürfeln nötig ist. Die Leiter ist seit
+// 03.09.2026 feiner gestuft, damit die Treppenregel nur langsam steigt;
+// der Einstieg liegt nach Willis Nachjustierung vom selben Tag einstellig
+// bei Deckel 9 (Aufgaben wie 4+9), nicht mehr bei Deckel 5 (1+2 war zu
+// leicht).
 export const RECHENSTUFEN_MAX = 8;
 const STUFENDECKEL = [9, 15, 20, 30, 40, 55, 70, 85, 99]; // größter Operand je Stufe
 
+// Vier Rechenarten seit 14.09.2026 (Willis Auftrag): Mal und Geteilt
+// kommen dazu, und bei Minus darf das Ergebnis ins Negative laufen.
+//
+// Harte Grenze bleibt die Ansage: Klänge gibt es nur für die Zahlen 0 bis
+// 99 (klaenge/zahlen/n0 bis n99) und für die Rechenzeichen. BEIDE
+// Operanden müssen darum ganzzahlig zwischen 0 und 99 liegen. Das
+// Ergebnis wird nicht angesagt und darf außerhalb liegen, also auch über
+// 99 (Malnehmen) oder unter null (Minus).
+//
+// Verteilung über die neun Sprossen. Die Leiter steigt erst nach drei
+// Richtigen in Folge und beginnt jeden Lauf wieder unten (Willis Wahl vom
+// 03.09.2026), die Sprossen sind also teuer: Stufe 3 erreicht frühestens,
+// wer neun Aufgaben am Stück getroffen hat, Stufe 5 erst nach fünfzehn.
+// Die erste Fassung vom 14.09.2026 hängte Mal und negative Differenzen an
+// Stufe 3 und Teilen an Stufe 5. Nachgemessen über je 1500 simulierte
+// Fünf-Minuten-Läufe kam Teilen damit 0,03 mal je Lauf vor, war also
+// praktisch nicht vorhanden, und Willis Auftrag blieb auf dem Papier.
+// Darum jetzt tief gehängt: Nur die unterste Sprosse bleibt reines Plus
+// und Minus im Positiven, damit der Einstieg leicht ist; ab der ersten
+// kommen Malnehmen und negative Differenzen dazu, ab der zweiten das
+// Teilen (die anspruchsvollste Art, weil sie rückwärts gedacht wird).
+// Gemessen ergibt das je Fünf-Minuten-Lauf bei 70 Prozent Trefferquote
+// rund 3,6 Malaufgaben, 1,2 Teilungen und 1,6 negative Ergebnisse; die
+// Schwierigkeit steuern weiter die Zahlengrößen über STUFENDECKEL.
+const MAL_AB_STUFE = 1;
+const NEGATIV_AB_STUFE = 1;
+const GETEILT_AB_STUFE = 2;
+
+// Rechenarten, die auf einer Stufe vorkommen können. Die Auswahl darunter
+// würfelt gleichverteilt aus dieser Liste.
+export function rechenarten(stufe) {
+  const s = begrenze(Math.floor(stufe), 0, RECHENSTUFEN_MAX);
+  const arten = ["+", "-"];
+  if (s >= MAL_AB_STUFE) arten.push("*");
+  if (s >= GETEILT_AB_STUFE) arten.push("/");
+  return arten;
+}
+
+// Malnehmen muss im Cockpit in rund zehn Sekunden zu schaffen sein. Ein
+// Faktor bleibt darum immer einstellig (2 bis 9), der zweite wächst mit
+// der Stufe von 10 auf 20. Größtes Produkt ist damit 9 mal 20, also 180;
+// beide Faktoren bleiben weit unter 100 und sind ansagbar. Welcher der
+// beiden vorn steht, entscheidet der Wurf, damit auch "3 mal 14" kommt.
+const MAL_KLEIN_MAX = 9;
+const MAL_GROSS_START = 10;
+const MAL_GROSS_MAX = 20;
+
+function wuerfleMal(stufe, rnd) {
+  const grossDeckel = begrenze(MAL_GROSS_START + 2 * (stufe - MAL_AB_STUFE), MAL_GROSS_START, MAL_GROSS_MAX);
+  const klein = 2 + wuerfelIndex(MAL_KLEIN_MAX - 1, rnd);   // 2 bis 9
+  const gross = 2 + wuerfelIndex(grossDeckel - 1, rnd);     // 2 bis grossDeckel
+  const [a, b] = rnd() < 0.5 ? [klein, gross] : [gross, klein];
+  return { a, op: "*", b, antwort: a * b };
+}
+
+// Teilen wird rückwärts gebaut, aus Teiler und Ergebnis: So geht es immer
+// glatt auf, es wird nie durch null geteilt, und es muss nichts neu
+// gewürfelt werden. Der Dividend ist das Produkt der beiden und bleibt
+// unter dem Stufendeckel (und damit unter 100), also ansagbar. Auf den
+// ersten beiden Sprossen mit Geteilt bleibt der Teiler bei höchstens 5
+// (Hälfte bis Fünftel), darüber geht er bis 9.
+const TEILER_MIN = 2;
+
+function wuerfleGeteilt(stufe, deckel, rnd) {
+  // Der zweite Deckel sichert, dass zum Teiler immer ein Ergebnis von
+  // mindestens 2 passt, ohne den Dividenden über den Stufendeckel zu heben.
+  const teilerMax = Math.min(stufe >= GETEILT_AB_STUFE + 2 ? 9 : 5, Math.floor(deckel / 2));
+  const teiler = TEILER_MIN + wuerfelIndex(teilerMax - TEILER_MIN + 1, rnd);
+  const ergebnis = 2 + wuerfelIndex(Math.floor(deckel / teiler) - 1, rnd);
+  return { a: teiler * ergebnis, op: "/", b: teiler, antwort: ergebnis };
+}
+
 export function erzeugeRechenaufgabe(rnd = Math.random, stufe = 0) {
-  const deckel = STUFENDECKEL[begrenze(Math.floor(stufe), 0, RECHENSTUFEN_MAX)];
-  const op = rnd() < 0.5 ? "+" : "-";
+  const s = begrenze(Math.floor(stufe), 0, RECHENSTUFEN_MAX);
+  const deckel = STUFENDECKEL[s];
+  const arten = rechenarten(s);
+  const op = arten[wuerfelIndex(arten.length, rnd)];
   if (op === "+") {
     const a = 1 + wuerfelIndex(deckel, rnd);                    // 1 bis deckel
-    const b = wuerfelIndex(Math.min(deckel, 99 - a) + 1, rnd);  // Summe bleibt <= 99
+    // Summe weiter bei 99 gedeckelt: Willi hat nur Minus ins Negative
+    // geöffnet, Plus bleibt wie gehabt zweistellig.
+    const b = wuerfelIndex(Math.min(deckel, 99 - a) + 1, rnd);
     return { a, op, b, antwort: a + b };
   }
-  const a = 1 + wuerfelIndex(deckel, rnd);                      // 1 bis deckel
-  const b = wuerfelIndex(a + 1, rnd);                           // 0 bis a: Ergebnis >= 0
-  return { a, op, b, antwort: a - b };
+  if (op === "-") {
+    const a = 1 + wuerfelIndex(deckel, rnd);                    // 1 bis deckel
+    // Ab NEGATIV_AB_STUFE darf b größer als a sein, das Ergebnis geht dann
+    // ins Minus; darunter bleibt b bei höchstens a, Ergebnis also >= 0.
+    const b = s >= NEGATIV_AB_STUFE ? wuerfelIndex(deckel + 1, rnd) : wuerfelIndex(a + 1, rnd);
+    return { a, op, b, antwort: a - b };
+  }
+  if (op === "*") return wuerfleMal(s, rnd);
+  return wuerfleGeteilt(s, deckel, rnd);
 }
 
 // Treppenregel seit 03.09.2026 (Willis Festlegung): Erst drei Richtige in
@@ -278,21 +360,49 @@ export function passeRechenstufeAn(stand, richtig) {
 }
 
 // Fünf gemischte Antwortmöglichkeiten: die richtige Antwort plus vier
-// eindeutige, positive Ablenker aus ihrer Nähe (±1, ±2, ±10). Der
-// Kandidatenpool wird vor der Auswahl gemischt. Reicht die Nähe nicht für
-// vier eindeutige Werte, füllt eine Schlussschleife mit weiter entfernten,
-// aber weiterhin eindeutigen Werten auf.
+// eindeutige Ablenker aus ihrer Nähe, zwei dicht daneben (±1, ±2) und
+// zwei weiter weg. Der Kandidatenpool wird vor der Auswahl gemischt.
+//
+// Zwei Anpassungen vom 14.09.2026 (Willis Auftrag, Rechenarten erweitert):
+// Ablenker dürfen null oder negativ sein, sobald die Antwort selbst dort
+// liegt. Wären sie auch dann auf positiv gezwungen, stäche bei einem
+// negativen Ergebnis die richtige Antwort als einzige negative Zahl sofort
+// heraus, ohne dass jemand rechnen müsste. Bei positiver Antwort bleiben
+// sie dagegen positiv: Plus, Mal und Geteilt liefern nie ein Ergebnis
+// unter 1, ein Ablenker unter 1 wäre dort ohne jedes Rechnen auszuschließen
+// und verschenkte einen der fünf Knöpfe. Und der weite Ablenker wächst mit
+// der Größe der Antwort, rund ein Fünftel davon, mindestens 3 und höchstens
+// 20: Bei einer Antwort von 3 wären ±10 keine ernsthafte Wahl, bei einem
+// Produkt von 180 wären sie zu dicht am Rest. Bei den bisherigen
+// zweistelligen Antworten bleibt es praktisch bei ±10.
+const ABLENKER_WEIT_MIN = 3;
+const ABLENKER_WEIT_MAX = 20;
+
+export function ablenkerStreuung(antwort) {
+  return begrenze(Math.round(Math.abs(antwort) / 5), ABLENKER_WEIT_MIN, ABLENKER_WEIT_MAX);
+}
+
 export function antworten5(aufgabe, rnd = Math.random) {
   const antwort = aufgabe.antwort;
-  const kandidaten = [antwort - 1, antwort + 1, antwort - 2, antwort + 2, antwort - 10, antwort + 10];
+  const weit = ablenkerStreuung(antwort);
+  // Die Schwelle ist die Antwort selbst und nicht die Rechenart: Bei einer
+  // Antwort von genau 0 müssen negative Ablenker erlaubt bleiben, sonst
+  // wäre die 0 die einzige nicht positive Zahl der Liste und damit verraten.
+  const zulaessig = (k) => k !== antwort && (antwort <= 0 || k > 0);
+  // Die sechs Verschiebungen sind wegen weit >= 3 immer paarweise
+  // verschieden und nie null.
+  const kandidaten = [antwort - 1, antwort + 1, antwort - 2, antwort + 2, antwort - weit, antwort + weit];
   const eindeutig = [];
   for (const k of mische(kandidaten, rnd)) {
-    if (k > 0 && k !== antwort && !eindeutig.includes(k)) eindeutig.push(k);
+    if (zulaessig(k)) eindeutig.push(k);
     if (eindeutig.length === 4) break;
   }
+  // Nur bei Antwort 1 bleiben aus der Nähe weniger als vier zulässige Werte
+  // übrig (0 und die beiden negativen fallen weg); dann füllt eine
+  // Schlussschleife mit weiter entfernten, aber eindeutigen Werten auf.
   for (let k = 3; eindeutig.length < 4; k++) {
     const kandidat = antwort + k;
-    if (kandidat > 0 && kandidat !== antwort && !eindeutig.includes(kandidat)) eindeutig.push(kandidat);
+    if (zulaessig(kandidat) && !eindeutig.includes(kandidat)) eindeutig.push(kandidat);
   }
   return mische([antwort, ...eindeutig], rnd);
 }

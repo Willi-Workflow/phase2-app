@@ -26,7 +26,10 @@ Unter `entwurf/bilder/`:
 
 - Rollen aus der bestehenden Controls-Anlage (`js/controls.js`): Stick quer und Stick längs bewegen das Fadenkreuz, das Seitenruder bewegt den Strich, der Schubregler die Nadel. Die Tastatur-Ersatzsteuerung der Controls-Anlage gilt unverändert.
 - Steuerlogik als Rate: Die Auslenkung der Achse bestimmt die Geschwindigkeit des Elements (Stick und Ruder um die Ruhelage, Schub um die Mittelstellung). So verlangt das Halten echte Arbeit.
-- Drift (Willis Festlegung, am 24.08.2026 verschärft): Jedes aktive Element wandert zusätzlich mit einer sich träge ändernden Zufallsdrift, spürbar kräftig. Ein losgelassenes Element läuft binnen weniger Sekunden aus der Deckung.
+- Kein Gegensteuern mehr (Willis Auftrag vom 14.09.2026): Die Zufallsdrift ist bei allen drei Steuerelementen ersatzlos entfernt, nicht auf null gestellt, sondern aus dem Modul heraus. Ein losgelassenes Element bleibt stehen, wo es steht. Bis dahin galt: jedes aktive Element wandert mit einer sich träge ändernden Zufallsdrift (Festlegung vom 24.08.2026, am 01.09. und 07.09.2026 schrittweise abgeschwächt).
+- Achsenrastung am Stick (Willis Auftrag vom 14.09.2026): Der Stick gibt nur noch waagerechte oder senkrechte Bewegung aus, nie beides zugleich. Die Achse mit dem größeren Ausschlag führt, die andere bekommt die Eingabe 0 und läuft mit der normalen Trägheit aus, statt hart abzureißen. Die führende Achse behält ihre Führung, bis die andere sie um 0,08 Ausschlag überholt: Ohne diese Haltewirkung kippte die Führung bei schräg gehaltenem Stick durch das normale Handzittern mehrmals je Sekunde, und es entstand wieder eine Diagonale.
+- Invertierte Hochachse (Willis Auftrag vom 14.09.2026): Die senkrechte Stickachse wirkt wie beim Fliegen im Simulator, ziehen lässt das Fadenkreuz steigen. Querachse, Ruder und Schub bleiben unverändert.
+- Offen seit dem 14.09.2026: Die Bestwerte (Stick 7, Ruder 4, Schub 4 je Minute) stammen aus Läufen mit Gegensteuern und fallen ohne Drift zu freundlich aus. Beim Schub ist es mehr als Feinschliff: Die Nadel hatte als einziges Element gar keine Trägheit, das Halten kam allein aus dem Gegensteuern; bei mittig stehendem Hebel steht sie jetzt still. Beides gehört nach den ersten neuen Läufen neu geeicht, Willi entscheidet.
 - Elemente bleiben in ihren Grenzen: Fadenkreuz im Rahmen, Strich zwischen den Rahmenkanten, Nadel zwischen 40 und 160 Knoten.
 
 ## Treffer-Logik
@@ -56,7 +59,7 @@ Unter `entwurf/bilder/`:
 
 Nach dem Baumuster der Missionen 4 und 5:
 
-- `js/uebung2.js`: reine Logik ohne DOM. Raten- und Driftrechnung je Takt (Zeitschritt einspeisbar), Grenzen, Deckungsprüfung, Haltezeit- und Trefferverwaltung, Neusetzung (Zufall einspeisbar), Kombitreffer, Kennzahl. Tests unter `tests/`.
+- `js/uebung2.js`: reine Logik ohne DOM. Ratenrechnung je Takt samt Achsenrastung (Zeitschritt einspeisbar), Grenzen, Deckungsprüfung, Haltezeit- und Trefferverwaltung, Neusetzung (Zufall einspeisbar), Kombitreffer, Kennzahl. Die Driftrechnung ist am 14.09.2026 entfallen. Tests unter `tests/`.
 - `js/uebung2-lauf.js`: Vollbild-Ablauf mit requestAnimationFrame, SVG-Zeichnung von Rahmen, Kreuz, Zielkreis, Fadenkreuz, Strich und Geschwindigkeitsanzeige, Achsenabfrage über die Controls-Anlage, Einstellung (Steuerelement-Auswahl und Testdauer) und Hinweistext, Ergebnistafel, Abbruchwege.
 - `js/mission.js`: Eintrag `2: erzeugeUebung2` in der Zuordnung `UEBUNGEN`.
 - `stil.css`: Klassen für die SMT-Bühne (schwarzer Grund, Linienfarben, Kopfzeile).
@@ -69,7 +72,7 @@ Nach dem Baumuster der Missionen 4 und 5:
 
 ## Prüfung
 
-- Logiktests mit `node --test tests/*.test.js`: Raten- und Driftintegration (deterministisch mit eingespeistem Zufall und festem Zeitschritt), Grenzen, Deckungstoleranzen, Haltezeit über Taktgrenzen, Neusetzung (nie alter Sollwert), Kombitreffer-Bedingung (nur gewählte Elemente zählen), Kennzahlrechnung, Auswahlregeln (mindestens ein Element).
+- Logiktests mit `node --test tests/*.test.js`: Ratenintegration und Achsenrastung samt Haltewirkung und invertierter Hochachse (deterministisch mit eingespeistem Zufall und festem Zeitschritt), Nachweis, dass sich ohne Eingabe nichts mehr bewegt, Grenzen, Deckungstoleranzen, Haltezeit über Taktgrenzen, Neusetzung (nie alter Sollwert), Kombitreffer-Bedingung (nur gewählte Elemente zählen), Kennzahlrechnung, Auswahlregeln (mindestens ein Element).
 - Sichtprüfung headless in Chrome gegen die Referenzbilder; ein Probegeschirr `entwurf/uebung2-probe.html` nach dem Muster der Missionen 4 und 5, mit einspeisbaren Achsenwerten für die headless Prüfung.
 - Die Geräteprüfung mit dem echten Thrustmaster bleibt als bekannter offener Punkt bestehen und ist nicht Teil dieses Entwurfs.
 

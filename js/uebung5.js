@@ -27,15 +27,27 @@ for (let r = 200; r <= 4000; r += 100) for (let t = 2; t <= 12; t++) {
   if (h >= 1000 && h <= 8900) RATEN_PAARE.push({ r, t, h });
 }
 
-// Anzeigeraster der Instrumente für Instrumentenaufgaben: Der Fahrtmesser
-// zeigt nur diese Geschwindigkeiten an, der Höhenmesser nur Hunderterschritte
-// zwischen 1000 und 9900 ft, das Variometer nur Werte bis 2000 ft/min. Wer
-// den gegebenen Wert am Zeiger abliest, darf ihn also nur dort auch finden.
-const WZG_PAARE_FAHRTMESSER = WZG_PAARE;
+// Anzeigeraster der Instrumente für Instrumentenaufgaben: Der Höhenmesser
+// zeigt nur Hunderterschritte zwischen 1000 und 9900 ft, das Variometer nur
+// Werte bis 2000 ft/min. Wer den gegebenen Wert am Zeiger abliest, darf ihn
+// also nur dort auch finden. Der Fahrtmesser braucht keine eigene Liste, er
+// zeigt jede Geschwindigkeit aus GESCHWINDIGKEITEN an.
 const RATEN_PAARE_HOEHENMESSER = RATEN_PAARE.filter((p) => p.h >= 1000);
 const RATEN_PAARE_VARIOMETER = RATEN_PAARE.filter((p) => p.r <= 2000);
 
+// Dreisatzfreundliche Paare (Willis Auftrag vom 14.09.2026): Geht die
+// Geschwindigkeit glatt durch 60 auf, ergibt das Herunterrechnen auf eine
+// Minute eine ganze Zahl (240 kt sind 4 NM je Minute, 180 NM in 45 Minuten
+// sind 4 NM je Minute). Bei 80, 100 und 200 kt ist die Minute krumm.
+const WZG_PAARE_GLATT = WZG_PAARE.filter((p) => Number.isInteger(p.v / 60));
+
 const zufallAus = (feld, rnd) => feld[Math.floor(rnd() * feld.length)];
+
+// Anteil der Aufgaben, die aus den dreisatzfreundlichen Paaren kommen. Der
+// Rest wird weiter aus dem ganzen Bestand gezogen, damit keine
+// Geschwindigkeit und keine Zeit aus den Aufgaben verschwindet.
+export const DREISATZ_ANTEIL = 0.5;
+const ziehePaar = (rnd) => zufallAus(rnd() < DREISATZ_ANTEIL ? WZG_PAARE_GLATT : WZG_PAARE, rnd);
 
 // Jedes Prinzip kommt mindestens einmal vor, der Rest wird gewürfelt.
 export function waehlePrinzipien(anzahl, rnd = Math.random) {
@@ -90,7 +102,7 @@ export function erzeugeAufgabe(prinzip, rnd = Math.random, mitInstrument = false
   }
 
   if (mitInstrument) {
-    const { v, t, s } = zufallAus(WZG_PAARE_FAHRTMESSER, rnd);
+    const { v, t, s } = ziehePaar(rnd);
     if (prinzip === "zeit") return {
       prinzip,
       frage: `Du fliegst mit deiner aktuellen Geschwindigkeit (Fahrtmesser). Das Ziel liegt ${s} NM entfernt. Berechne die Flugzeit in Minuten.`,
@@ -109,7 +121,7 @@ export function erzeugeAufgabe(prinzip, rnd = Math.random, mitInstrument = false
     };
   }
 
-  const { v, t, s } = zufallAus(WZG_PAARE, rnd);
+  const { v, t, s } = ziehePaar(rnd);
   if (prinzip === "zeit") return {
     prinzip,
     frage: `Du fliegst ${v} kt. Das Ziel liegt ${s} NM entfernt. Berechne die Flugzeit in Minuten.`,
@@ -211,6 +223,11 @@ export function pruefeEingabe(text, antwort) {
 // NM je Minute (wenn v/60 glatt ist), der Stundenbruch (wenn die Minuten
 // ein griffiger Teil einer Stunde sind) oder die nackte Formel. Bei den
 // Raten streicht der Nullen-Trick beidseitig die Hunderter weg.
+// Seit 14.09.2026 kommt der Dreisatz als eigener, benannter Weg dazu: erst
+// auf eine Einheit herunterrechnen (eine Minute, eine Stunde, eine NM), dann
+// auf die gesuchte Menge hochrechnen. Wo er der schnellste Weg ist, ist er
+// der gezeigte; wo ein Kniff schneller geht, steht er als sicherer Weg
+// darunter.
 const zk = (n) => String(n).replace(".", ","); // Zahl mit Komma
 const istGlatt = (n) => Number.isInteger(n * 2); // ganz oder ,5
 // Je Minutenzahl der Stundenbruch in Worten und die Rechenoperation in
@@ -233,49 +250,144 @@ const STUNDENBRUECHE = {
 };
 
 export const TIPPS5 = {
-  zeit: "Knoten geteilt durch 60 sind NM je Minute: 120 kt = 2, 90 kt = 1,5. Zeit = Weg geteilt durch NM je Minute. Bei krummen Knoten (80, 100, 200) teile Weg durch Knoten: Das ergibt die Stunden, etwa 20 NM bei 80 kt = eine Viertelstunde.",
-  weg: "Erst die Geschwindigkeit in NM je Minute umdenken (kt geteilt durch 60), dann mal die Minuten. Bei griffigen Zeiten hilft der Stundenbruch: 15 min = Viertelstunde, 45 min = Dreiviertelstunde.",
-  geschwindigkeit: "Weg geteilt durch Minuten ergibt NM je Minute, mal 60 sind es Knoten. Bei griffigen Zeiten direkt über den Stundenbruch: 30 min = halbe Stunde, also Weg mal 2.",
-  rate: "Rate gesucht: Nullen der Höhe streichen, klein teilen, Nullen wieder dran (4800 durch 8: 48 durch 8 = 6, also 600 ft/min). Zeit gesucht: auf beiden Seiten gleich viele Nullen streichen und nichts anhängen (4800 durch 1200: 48 durch 12 = 4 Minuten).",
+  zeit: "Knoten geteilt durch 60 sind NM je Minute: 120 kt = 2, 90 kt = 1,5. Zeit = Weg geteilt durch NM je Minute. Bei krummen Knoten (80, 100, 200) teile Weg durch Knoten: Das ergibt die Stunden, etwa 20 NM bei 80 kt = eine Viertelstunde. Der Dreisatz geht immer: erst eine Minute oder eine NM ausrechnen, dann auf den gesuchten Wert hoch.",
+  weg: "Erst die Geschwindigkeit in NM je Minute umdenken (kt geteilt durch 60), dann mal die Minuten. Bei griffigen Zeiten hilft der Stundenbruch: 15 min = Viertelstunde, 45 min = Dreiviertelstunde. Das ist der Dreisatz: herunter auf eine Minute, hoch auf die Minutenzahl der Aufgabe.",
+  geschwindigkeit: "Weg geteilt durch Minuten ergibt NM je Minute, mal 60 sind es Knoten. Bei griffigen Zeiten direkt über den Stundenbruch: 30 min = halbe Stunde, also Weg mal 2. Der Dreisatz ist derselbe Gedanke in zwei Schritten: herunter auf eine Minute, hoch auf 60 Minuten.",
+  rate: "Rate gesucht: Nullen der Höhe streichen, klein teilen, Nullen wieder dran (4800 durch 8: 48 durch 8 = 6, also 600 ft/min). Zeit gesucht: auf beiden Seiten gleich viele Nullen streichen und nichts anhängen (4800 durch 1200: 48 durch 12 = 4 Minuten). Sicher geht auch hier der Dreisatz: Was bringt eine Minute, und wie oft brauchst du sie?",
 };
+
+// Bausteine des Dreisatzes. Jeder gibt die zwei Schritte in Worten zurück,
+// mit den echten Zahlen der Aufgabe, oder null, wenn der Schritt auf die eine
+// Einheit krumm herauskäme. Krumme Zwischenwerte helfen niemandem, dort
+// bleibt es beim Kniff.
+
+// Weg über die eine Minute: Knoten geteilt durch 60 sind NM je Minute.
+// Möglich, sobald v/60 ganz oder ,5 ist (also nicht bei 80, 100 und 200 kt).
+function dreisatzMinute(aufgabe) {
+  const { v, t, s } = aufgabe.werte;
+  if (aufgabe.prinzip === "geschwindigkeit") {
+    const je = s / t;
+    if (!istGlatt(je)) return null;
+    return [
+      `${s} NM in ${t} Minuten, also ${s} geteilt durch ${t} = ${zk(je)} NM in einer Minute.`,
+      `${zk(je)} NM mal 60 Minuten = ${v} kt.`,
+    ];
+  }
+  const je = v / 60;
+  if (!istGlatt(je)) return null;
+  const herunter = `${v} kt heißt ${v} NM in 60 Minuten, also ${v} geteilt durch 60 = ${zk(je)} NM in einer Minute.`;
+  if (aufgabe.prinzip === "weg") return [herunter, `${zk(je)} NM mal ${t} Minuten = ${s} NM.`];
+  if (!Number.isInteger(s / je)) return null;
+  return [herunter, `${s} NM geteilt durch ${zk(je)} NM = ${t} Minuten.`];
+}
+
+// Weg über die eine NM, für die krummen Knoten: 60 geteilt durch die Knoten
+// sind die Minuten je NM, und die sind bei 80, 100 und 200 kt glatt (0,75 /
+// 0,6 / 0,3). Nur bei gesuchter Zeit brauchbar, sonst müsste man durch einen
+// Kommawert teilen. Die Prüfung mit 6000 hält die Nachkommastellen klein.
+function dreisatzProNM(aufgabe) {
+  const { v, t, s } = aufgabe.werte;
+  if (aufgabe.prinzip !== "zeit" || !Number.isInteger(6000 / v)) return null;
+  const proNM = 60 / v;
+  return [
+    `${v} NM brauchen 60 Minuten, eine NM also 60 geteilt durch ${v} = ${zk(proNM)} Minuten.`,
+    `${s} NM mal ${zk(proNM)} = ${t} Minuten.`,
+  ];
+}
+
+// Weg über die eine Stunde, für die krummen Knoten bei Weg und
+// Geschwindigkeit: Die Knoten sind schon die NM je Stunde, und der
+// Stundenanteil der Minuten geht bei genau diesen Paaren glatt auf (45
+// Minuten sind 0,75 Stunden). Die Prüfung mit 100 hält die Nachkommastellen
+// klein, sie schließt die krummen Drittelstunden aus.
+function dreisatzStunde(aufgabe) {
+  const { v, t, s } = aufgabe.werte;
+  // Bei genau 60 Minuten steht die Aufgabe schon auf der einen Stunde, da
+  // gibt es keinen zweiten Schritt.
+  if (t === 60 || !Number.isInteger((100 * t) / 60)) return null;
+  const stunden = t / 60;
+  const anteil = `${t} Minuten sind ${t} geteilt durch 60 = ${zk(stunden)} Stunden.`;
+  if (aufgabe.prinzip === "weg") return [
+    anteil,
+    `Eine Stunde bringt ${v} NM, also ${zk(stunden)} mal ${v} = ${s} NM.`,
+  ];
+  return [
+    anteil,
+    `In ${zk(stunden)} Stunden sind es ${s} NM, in einer Stunde also ${s} geteilt durch ${zk(stunden)} = ${v} kt.`,
+  ];
+}
+
+// Bei den Raten ist die eine Minute immer glatt, denn die Höhe ist das
+// Produkt aus Rate und Minuten. Ist die Rate gesucht, ist das Herunterrechnen
+// schon die Antwort; ist die Zeit gesucht, wird von der einen Minute aus
+// hochgerechnet.
+function dreisatzRate(aufgabe) {
+  const { r, t, h } = aufgabe.werte;
+  if (aufgabe.antwort === t) return [
+    `Eine Minute bringt ${r} ft.`,
+    `Für ${h} ft brauchst du ${h} geteilt durch ${r} = ${t} Minuten.`,
+  ];
+  return [
+    `${t} Minuten bringen ${h} ft.`,
+    `Eine Minute bringt ${h} geteilt durch ${t} = ${r} ft, das sind ${r} ft/min.`,
+  ];
+}
+
+// Als gezeigter Weg beginnt der Dreisatz die Liste, als sicherer Weg steht er
+// unter dem Kniff und sagt das in der ersten Zeile.
+const alsWeg = (schritte) => [`Dreisatz, Schritt 1: ${schritte[0]}`, `Dreisatz, Schritt 2: ${schritte[1]}`];
+const alsHinweis = (schritte) => (schritte ? [
+  `Sicher geht auch der Dreisatz, Schritt 1: ${schritte[0]}`,
+  `Dreisatz, Schritt 2: ${schritte[1]}`,
+] : []);
 
 export function loesungsweg(aufgabe) {
   const w = aufgabe.werte;
   if (!w) return [];
   if (aufgabe.prinzip === "rate") {
     const { r, t, h } = w;
+    // Der Nullen-Trick bleibt der schnellste Weg, der Dreisatz steht darunter.
+    const dreisatz = alsHinweis(dreisatzRate(aufgabe));
     if (aufgabe.antwort === t) return [
       `Nullen weg: aus ${h} ft und ${r} ft/min werden ${h / 100} und ${r / 100}.`,
       `${h / 100} geteilt durch ${r / 100} = ${t} Minuten.`,
+      ...dreisatz,
     ];
     return [
       `Nullen weg: aus ${h} ft werden ${h / 100}.`,
       `${h / 100} geteilt durch ${t} Minuten = ${r / 100}, Nullen dran: ${r} ft/min.`,
+      ...dreisatz,
     ];
   }
   const { v, t, s } = w;
-  const je = v / 60;
   const bruch = STUNDENBRUECHE[t];
+  const minute = dreisatzMinute(aufgabe); // null, wenn die eine Minute krumm ist
   if (aufgabe.prinzip === "zeit") {
-    if (istGlatt(je) && Number.isInteger(s / je)) return [
-      `${v} kt sind ${zk(je)} NM je Minute.`,
-      `${s} NM geteilt durch ${zk(je)} = ${t} Minuten.`,
-    ];
+    // Geht die eine Minute auf, ist der Dreisatz selbst der schnellste Weg.
+    if (minute) return alsWeg(minute);
     // Krumme Knoten (80/100/200): Weg durch Knoten ergibt die Stunden,
     // und die sind über den ganzen Wertepool immer ein griffiger Bruch.
+    // Der Dreisatz kommt hier über die eine NM ans Ziel.
+    const dreisatz = alsHinweis(dreisatzProNM(aufgabe));
     if (bruch) return [
       `${s} NM geteilt durch ${v} kt = ${bruch.wort}.`,
       `Also ${t} Minuten.`,
+      ...dreisatz,
     ];
     return [
       `Zeit = Weg mal 60, geteilt durch die Knoten.`,
       `${s} mal 60 = ${s * 60}, geteilt durch ${v} = ${t} Minuten.`,
+      ...dreisatz,
     ];
   }
+  // Ist die eine Minute krumm (80, 100 und 200 kt), führt der Dreisatz über
+  // die eine Stunde ans Ziel, denn die Knoten sind die NM je Stunde.
+  const sicher = alsHinweis(minute ?? dreisatzStunde(aufgabe));
   if (aufgabe.prinzip === "weg") {
-    // Bei genau einer Stunde ist nichts zu rechnen, ab über einer Stunde
-    // ist der Stundenbruch griffiger als die NM je Minute (90 kt mal 5
-    // schlägt 1,5 mal 300).
+    // Bei genau einer Stunde ist nichts zu rechnen: Die Aufgabe steht schon
+    // auf der einen Einheit, ein zweiter Schritt wäre nur Ballast. Ab über
+    // einer Stunde ist der Stundenbruch griffiger als die NM je Minute
+    // (90 kt mal 5 schlägt 1,5 mal 300), der Dreisatz steht dann darunter.
     if (t === 60) return [
       `60 Minuten sind genau eine Stunde.`,
       `Der Weg entspricht den Knoten: ${s} NM.`,
@@ -283,22 +395,21 @@ export function loesungsweg(aufgabe) {
     if (t > 60 && bruch) return [
       `${t} Minuten sind ${bruch.wort}.`,
       `${v} kt ${bruch.weg} = ${s} NM.`,
+      ...sicher,
     ];
-    if (istGlatt(je)) return [
-      `${v} kt sind ${zk(je)} NM je Minute.`,
-      `${zk(je)} mal ${t} Minuten = ${s} NM.`,
-    ];
+    if (minute) return alsWeg(minute);
     if (bruch) return [
       `${t} Minuten sind ${bruch.wort}.`,
       `${v} kt ${bruch.weg} = ${s} NM.`,
+      ...sicher,
     ];
     return [
       `Weg = Knoten mal Minuten, geteilt durch 60.`,
       `${v} mal ${t} = ${v * t}, geteilt durch 60 = ${s} NM.`,
+      ...sicher,
     ];
   }
   // Prinzip Geschwindigkeit: v gesucht, gleiche Routenordnung wie beim Weg.
-  const jeWeg = s / t;
   if (t === 60) return [
     `60 Minuten sind genau eine Stunde.`,
     `Die Knoten entsprechen dem Weg: ${v} kt.`,
@@ -306,18 +417,18 @@ export function loesungsweg(aufgabe) {
   if (t > 60 && bruch) return [
     `${t} Minuten sind ${bruch.wort}.`,
     `${s} NM ${bruch.tempo} = ${v} kt.`,
+    ...sicher,
   ];
-  if (istGlatt(jeWeg)) return [
-    `${s} NM in ${t} Minuten sind ${zk(jeWeg)} NM je Minute.`,
-    `${zk(jeWeg)} mal 60 = ${v} kt.`,
-  ];
+  if (minute) return alsWeg(minute);
   if (bruch) return [
     `${t} Minuten sind ${bruch.wort}.`,
     `${s} NM ${bruch.tempo} = ${v} kt.`,
+    ...sicher,
   ];
   return [
     `Knoten = Weg mal 60, geteilt durch die Minuten.`,
     `${s} mal 60 = ${s * 60}, geteilt durch ${t} = ${v} kt.`,
+    ...sicher,
   ];
 }
 

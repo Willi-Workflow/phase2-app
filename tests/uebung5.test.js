@@ -337,22 +337,29 @@ test("erzeugeAufgabe: werte tragen die Rohzahlen stimmig zur Aufgabe", () => {
 });
 
 test("loesungsweg: wählt je Zahlenlage die schnellste Route", () => {
+  // Geht die eine Minute glatt auf, ist der Dreisatz selbst der schnellste
+  // Weg und wird seit dem 14.09.2026 auch so benannt.
   const zeitGlatt = { prinzip: "zeit", antwort: 15, werte: { v: 120, t: 15, s: 30 } };
   assert.deepEqual(loesungsweg(zeitGlatt), [
-    "120 kt sind 2 NM je Minute.",
-    "30 NM geteilt durch 2 = 15 Minuten.",
+    "Dreisatz, Schritt 1: 120 kt heißt 120 NM in 60 Minuten, also 120 geteilt durch 60 = 2 NM in einer Minute.",
+    "Dreisatz, Schritt 2: 30 NM geteilt durch 2 NM = 15 Minuten.",
   ]);
   // Krumme Knoten: Weg durch Knoten ergibt die Stunden (Prüfer-Befund
   // vom 08.09.2026, die Formelroute mit s mal 60 war nicht der Kopfweg).
+  // Der Dreisatz kommt hier über die eine NM ans Ziel und steht darunter.
   const zeitKrumm = { prinzip: "zeit", antwort: 120, werte: { v: 100, t: 120, s: 200 } };
   assert.deepEqual(loesungsweg(zeitKrumm), [
     "200 NM geteilt durch 100 kt = zwei Stunden.",
     "Also 120 Minuten.",
+    "Sicher geht auch der Dreisatz, Schritt 1: 100 NM brauchen 60 Minuten, eine NM also 60 geteilt durch 100 = 0,6 Minuten.",
+    "Dreisatz, Schritt 2: 200 NM mal 0,6 = 120 Minuten.",
   ]);
   const zeitViertel = { prinzip: "zeit", antwort: 15, werte: { v: 80, t: 15, s: 20 } };
   assert.deepEqual(loesungsweg(zeitViertel), [
     "20 NM geteilt durch 80 kt = eine Viertelstunde.",
     "Also 15 Minuten.",
+    "Sicher geht auch der Dreisatz, Schritt 1: 80 NM brauchen 60 Minuten, eine NM also 60 geteilt durch 80 = 0,75 Minuten.",
+    "Dreisatz, Schritt 2: 20 NM mal 0,75 = 15 Minuten.",
   ]);
   // Genau eine Stunde: nichts zu rechnen, ab über einer Stunde schlägt
   // der Stundenbruch die NM je Minute.
@@ -365,43 +372,198 @@ test("loesungsweg: wählt je Zahlenlage die schnellste Route", () => {
   assert.deepEqual(loesungsweg(wegLang), [
     "300 Minuten sind fünf Stunden.",
     "90 kt mal 5 = 450 NM.",
+    "Sicher geht auch der Dreisatz, Schritt 1: 90 kt heißt 90 NM in 60 Minuten, also 90 geteilt durch 60 = 1,5 NM in einer Minute.",
+    "Dreisatz, Schritt 2: 1,5 NM mal 300 Minuten = 450 NM.",
   ]);
   const tempoStunde = { prinzip: "geschwindigkeit", antwort: 90, werte: { v: 90, t: 60, s: 90 } };
   assert.deepEqual(loesungsweg(tempoStunde), [
     "60 Minuten sind genau eine Stunde.",
     "Die Knoten entsprechen dem Weg: 90 kt.",
   ]);
+  // Krumme Knoten beim Weg: Die eine Minute wäre krumm, die eine Stunde
+  // nicht, denn die Knoten sind schon die NM je Stunde.
   const wegBruch = { prinzip: "weg", antwort: 75, werte: { v: 100, t: 45, s: 75 } };
   assert.deepEqual(loesungsweg(wegBruch), [
     "45 Minuten sind eine Dreiviertelstunde.",
     "100 kt mal 3, geteilt durch 4 = 75 NM.",
+    "Sicher geht auch der Dreisatz, Schritt 1: 45 Minuten sind 45 geteilt durch 60 = 0,75 Stunden.",
+    "Dreisatz, Schritt 2: Eine Stunde bringt 100 NM, also 0,75 mal 100 = 75 NM.",
   ]);
   const tempoGlatt = { prinzip: "geschwindigkeit", antwort: 120, werte: { v: 120, t: 18, s: 36 } };
   assert.deepEqual(loesungsweg(tempoGlatt), [
-    "36 NM in 18 Minuten sind 2 NM je Minute.",
-    "2 mal 60 = 120 kt.",
+    "Dreisatz, Schritt 1: 36 NM in 18 Minuten, also 36 geteilt durch 18 = 2 NM in einer Minute.",
+    "Dreisatz, Schritt 2: 2 NM mal 60 Minuten = 120 kt.",
   ]);
   const tempoBruch = { prinzip: "geschwindigkeit", antwort: 100, werte: { v: 100, t: 45, s: 75 } };
   assert.deepEqual(loesungsweg(tempoBruch), [
     "45 Minuten sind eine Dreiviertelstunde.",
     "75 NM mal 4, geteilt durch 3 = 100 kt.",
+    "Sicher geht auch der Dreisatz, Schritt 1: 45 Minuten sind 45 geteilt durch 60 = 0,75 Stunden.",
+    "Dreisatz, Schritt 2: In 0,75 Stunden sind es 75 NM, in einer Stunde also 75 geteilt durch 0,75 = 100 kt.",
   ]);
   const rateGesucht = { prinzip: "rate", antwort: 600, werte: { r: 600, t: 8, h: 4800 } };
   assert.deepEqual(loesungsweg(rateGesucht), [
     "Nullen weg: aus 4800 ft werden 48.",
     "48 geteilt durch 8 Minuten = 6, Nullen dran: 600 ft/min.",
+    "Sicher geht auch der Dreisatz, Schritt 1: 8 Minuten bringen 4800 ft.",
+    "Dreisatz, Schritt 2: Eine Minute bringt 4800 geteilt durch 8 = 600 ft, das sind 600 ft/min.",
   ]);
   const zeitAusRate = { prinzip: "rate", antwort: 4, werte: { r: 1200, t: 4, h: 4800 } };
   assert.deepEqual(loesungsweg(zeitAusRate), [
     "Nullen weg: aus 4800 ft und 1200 ft/min werden 48 und 12.",
     "48 geteilt durch 12 = 4 Minuten.",
+    "Sicher geht auch der Dreisatz, Schritt 1: Eine Minute bringt 1200 ft.",
+    "Dreisatz, Schritt 2: Für 4800 ft brauchst du 4800 geteilt durch 1200 = 4 Minuten.",
   ]);
   // Ohne werte (fremde alte Aufgabe) still und leise leer.
   assert.deepEqual(loesungsweg({ prinzip: "zeit", antwort: 1 }), []);
 });
 
-test("TIPPS5: je Prinzip ein Merktipp", () => {
+// Dreisatz seit Willis Änderung vom 14.09.2026: erst auf eine Einheit
+// herunterrechnen, dann auf die gesuchte Menge hoch. Die folgenden Prüfungen
+// halten fest, wann er der gezeigte Weg ist, wann er neben dem Kniff steht
+// und dass er dabei immer mit den echten Zahlen der Aufgabe rechnet.
+const dreisatzzeilen = (zeilen) => zeilen.filter((z) => z.includes("Dreisatz"));
+const enthaeltZahl = (text, n) => new RegExp(`(?<![\\d,])${n}(?![\\d,])`).test(text);
+
+// Prüft jede Rechnung der Form "A geteilt durch B = C" beziehungsweise
+// "A mal B = C" in einer Zeile nach, damit keine Zeile etwas behauptet, was
+// nicht aufgeht.
+const RECHNUNG = /(\d+(?:,\d+)?)\s*(?:NM|kt|ft|Minuten|Stunden)?\s+(geteilt durch|mal)\s+(\d+(?:,\d+)?)\s*(?:NM|kt|ft|Minuten|Stunden)?\s*=\s*(\d+(?:,\d+)?)/g;
+function rechnungenStimmen(zeile) {
+  let gesehen = 0;
+  for (const t of zeile.matchAll(RECHNUNG)) {
+    const zahl = (x) => Number(x.replace(",", "."));
+    const soll = t[2] === "mal" ? zahl(t[1]) * zahl(t[3]) : zahl(t[1]) / zahl(t[3]);
+    if (Math.abs(soll - zahl(t[4])) > 1e-9) return false;
+    gesehen += 1;
+  }
+  return gesehen > 0;
+}
+
+test("loesungsweg: wo der Dreisatz der schnellste Weg ist, ist er der gezeigte", () => {
+  // Willis Beispiel aus dem Auftrag: 180 NM in 45 Minuten sind 4 NM je Minute.
+  const tempo = { prinzip: "geschwindigkeit", antwort: 240, werte: { v: 240, t: 45, s: 180 } };
+  assert.deepEqual(loesungsweg(tempo), [
+    "Dreisatz, Schritt 1: 180 NM in 45 Minuten, also 180 geteilt durch 45 = 4 NM in einer Minute.",
+    "Dreisatz, Schritt 2: 4 NM mal 60 Minuten = 240 kt.",
+  ]);
+  const weg = { prinzip: "weg", antwort: 180, werte: { v: 240, t: 45, s: 180 } };
+  assert.deepEqual(loesungsweg(weg), [
+    "Dreisatz, Schritt 1: 240 kt heißt 240 NM in 60 Minuten, also 240 geteilt durch 60 = 4 NM in einer Minute.",
+    "Dreisatz, Schritt 2: 4 NM mal 45 Minuten = 180 NM.",
+  ]);
+  const zeit = { prinzip: "zeit", antwort: 45, werte: { v: 240, t: 45, s: 180 } };
+  assert.deepEqual(loesungsweg(zeit), [
+    "Dreisatz, Schritt 1: 240 kt heißt 240 NM in 60 Minuten, also 240 geteilt durch 60 = 4 NM in einer Minute.",
+    "Dreisatz, Schritt 2: 180 NM geteilt durch 4 NM = 45 Minuten.",
+  ]);
+  // Der Dreisatz eröffnet die Liste, er ist hier nicht bloß Beiwerk.
+  for (const aufgabe of [tempo, weg, zeit]) {
+    assert.ok(loesungsweg(aufgabe)[0].startsWith("Dreisatz, Schritt 1:"));
+  }
+});
+
+test("loesungsweg: wo ein Kniff schneller ist, steht der Dreisatz daneben", () => {
+  // Stundenbruch und Nullen-Trick bleiben oben, der Dreisatz kommt darunter
+  // und sagt in der ersten Zeile, dass er der sichere Weg ist.
+  const faelle = [
+    { prinzip: "zeit", antwort: 30, werte: { v: 200, t: 30, s: 100 } },
+    { prinzip: "weg", antwort: 60, werte: { v: 80, t: 45, s: 60 } },
+    { prinzip: "geschwindigkeit", antwort: 90, werte: { v: 90, t: 120, s: 180 } },
+    { prinzip: "rate", antwort: 500, werte: { r: 500, t: 6, h: 3000 } },
+    { prinzip: "rate", antwort: 6, werte: { r: 500, t: 6, h: 3000 } },
+  ];
+  for (const aufgabe of faelle) {
+    const zeilen = loesungsweg(aufgabe);
+    assert.equal(zeilen.length, 4, JSON.stringify(aufgabe.werte));
+    assert.ok(!zeilen[0].includes("Dreisatz"));
+    assert.ok(zeilen[2].startsWith("Sicher geht auch der Dreisatz, Schritt 1:"));
+    assert.ok(zeilen[3].startsWith("Dreisatz, Schritt 2:"));
+  }
+});
+
+test("loesungsweg: die Dreisatz-Schritte rechnen mit den echten Zahlen der Aufgabe", () => {
+  for (let i = 0; i < 400; i++) {
+    for (const prinzip of PRINZIPIEN) {
+      const a = erzeugeAufgabe(prinzip, Math.random, Math.random() < 0.5);
+      const zeilen = dreisatzzeilen(loesungsweg(a));
+      if (zeilen.length === 0) continue; // glatte Stunde, siehe eigene Prüfung
+      assert.equal(zeilen.length, 2, `${prinzip}: ${JSON.stringify(a.werte)}`);
+      const gegeben = prinzip === "rate"
+        ? [a.werte.h, a.antwort === a.werte.t ? a.werte.r : a.werte.t]
+        : { zeit: [a.werte.v, a.werte.s], weg: [a.werte.v, a.werte.t], geschwindigkeit: [a.werte.s, a.werte.t] }[prinzip];
+      const block = zeilen.join(" ");
+      for (const n of gegeben) assert.ok(enthaeltZahl(block, n), `${n} fehlt in: ${block}`);
+      // Die letzte Zeile endet auf der Antwort der Aufgabe.
+      assert.ok(new RegExp(`= ${a.antwort}(?![\\d,])`).test(zeilen[1]), zeilen[1]);
+      // Und jede Rechnung darin geht auch wirklich auf.
+      assert.ok(rechnungenStimmen(zeilen[1]), zeilen[1]);
+    }
+  }
+});
+
+test("loesungsweg: nur die glatte Stunde kommt ohne Dreisatz aus", () => {
+  // Bei genau 60 Minuten steht die Aufgabe schon auf der einen Stunde, ein
+  // zweiter Schritt wäre Ballast. Überall sonst gibt es den Dreisatz.
+  for (let i = 0; i < 400; i++) {
+    for (const prinzip of PRINZIPIEN) {
+      const a = erzeugeAufgabe(prinzip, Math.random, Math.random() < 0.5);
+      const ohneDreisatz = dreisatzzeilen(loesungsweg(a)).length === 0;
+      if (!ohneDreisatz) continue;
+      assert.equal(a.werte.t, 60, `${prinzip}: ${JSON.stringify(a.werte)}`);
+      assert.ok(prinzip === "weg" || prinzip === "geschwindigkeit", prinzip);
+    }
+  }
+  assert.equal(dreisatzzeilen(loesungsweg({
+    prinzip: "weg", antwort: 90, werte: { v: 90, t: 60, s: 90 },
+  })).length, 0);
+});
+
+test("erzeugeAufgabe: glatt teilbare Paare kommen regelmäßig vor", () => {
+  // Willis Änderung vom 14.09.2026: Es soll regelmäßig Aufgaben geben, bei
+  // denen das Herunterrechnen auf eine Minute glatt aufgeht (180 NM in 45
+  // Minuten sind 4 NM je Minute). Die Vielfalt darf darunter nicht leiden,
+  // darum muss weiterhin jede Geschwindigkeit und jede Zeit vorkommen.
+  const tempi = new Set();
+  const zeiten = new Set();
+  let glatt = 0;
+  let gesamt = 0;
+  for (let i = 0; i < 1500; i++) {
+    const prinzip = ["zeit", "weg", "geschwindigkeit"][i % 3];
+    const a = erzeugeAufgabe(prinzip, Math.random, i % 4 === 0);
+    tempi.add(a.werte.v);
+    zeiten.add(a.werte.t);
+    gesamt += 1;
+    if (Number.isInteger(a.werte.v / 60)) glatt += 1;
+  }
+  assert.ok(glatt / gesamt > 0.65, `Anteil glatter Paare: ${glatt / gesamt}`);
+  assert.ok(glatt / gesamt < 0.95, `Anteil glatter Paare: ${glatt / gesamt}`);
+  assert.equal(tempi.size, 10);
+  assert.equal(zeiten.size, 12);
+  for (const v of [80, 100, 200]) assert.ok(tempi.has(v), `${v} kt fehlt`);
+});
+
+test("erzeugeAufgabe: die glatten Paare tragen den Dreisatz als gezeigten Weg", () => {
+  // Gegenprobe zur Aufgabenerzeugung: Wo die Minute aufgeht, eröffnet der
+  // Dreisatz die Liste, es sei denn, die Aufgabe steht auf genau einer Stunde.
+  let gezeigt = 0;
+  for (let i = 0; i < 600; i++) {
+    const prinzip = ["zeit", "weg", "geschwindigkeit"][i % 3];
+    const a = erzeugeAufgabe(prinzip, Math.random, false);
+    if (!Number.isInteger(a.werte.v / 60)) continue;
+    const zeilen = loesungsweg(a);
+    if (a.werte.t === 60 && prinzip !== "zeit") continue;
+    if (a.werte.t > 60 && prinzip !== "zeit") continue; // dort schlägt der Stundenbruch
+    assert.ok(zeilen[0].startsWith("Dreisatz, Schritt 1:"), `${prinzip}: ${zeilen[0]}`);
+    gezeigt += 1;
+  }
+  assert.ok(gezeigt > 100, `zu wenige Fälle geprüft: ${gezeigt}`);
+});
+
+test("TIPPS5: je Prinzip ein Merktipp, und jeder benennt den Dreisatz", () => {
   for (const prinzip of PRINZIPIEN) {
     assert.ok(typeof TIPPS5[prinzip] === "string" && TIPPS5[prinzip].length > 20, prinzip);
+    assert.ok(TIPPS5[prinzip].includes("Dreisatz"), prinzip);
   }
 });

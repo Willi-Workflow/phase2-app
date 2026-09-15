@@ -7,6 +7,7 @@ import {
   momentanfehler, saeulenfehler, durchgangspunkte, kennzahl3,
   erzeugeRechenaufgabe, antworten5, pedalwahl, RECHENSTUFEN_MAX, erfuellung3,
   passeRechenstufeAn, rechenstandStart, ANSTIEG_SERIE, schiebeZone,
+  rechenarten, ablenkerStreuung,
 } from "../js/uebung3.js";
 import { svgUhr, svgSaeule, uhrwinkel, saeulenanteil } from "../js/uebung3-bild.js";
 
@@ -339,26 +340,96 @@ test("kennzahl3: gerundetes Mittel, leere Liste 0", () => {
   assert.equal(kennzahl3([70, 71]), 71);
 });
 
-test("erzeugeRechenaufgabe: nur Plus und Minus, Grenzen je Stufe", () => {
-  // Willis Auftrag vom 29.08.2026: keine Malaufgaben mehr, und die Stufe
-  // deckelt die Operanden; seit 03.09.2026 feinere Leiter ab Deckel 5.
+test("erzeugeRechenaufgabe: vier Rechenarten, Grenzen und Ansagbarkeit je Stufe", () => {
+  // Willis Auftrag vom 14.09.2026: Mal und Geteilt kommen dazu, Minus darf
+  // ins Negative gehen. Harte Randbedingung bleibt die Ansage: Es gibt
+  // Klänge nur für 0 bis 99, also müssen BEIDE Operanden dort liegen und
+  // ganzzahlig sein. Das Ergebnis wird nicht angesagt und darf negativ oder
+  // größer sein.
+  const gesehen = new Set();
   for (let stufe = 0; stufe <= RECHENSTUFEN_MAX; stufe++) {
     for (let i = 0; i < 300; i++) {
       const a = erzeugeRechenaufgabe(Math.random, stufe);
-      assert.ok(["+", "-"].includes(a.op));
-      assert.ok(a.antwort >= 0 && a.antwort <= 99);
+      assert.ok(["+", "-", "*", "/"].includes(a.op));
+      gesehen.add(a.op);
+      assert.ok(rechenarten(stufe).includes(a.op), `Stufe ${stufe}: ${a.op} nicht vorgesehen`);
+      // Ansagbarkeit: ganzzahlig und im Klangvorrat n0 bis n99.
+      for (const wert of [a.a, a.b]) {
+        assert.ok(Number.isInteger(wert), `Stufe ${stufe}: ${wert} nicht ganzzahlig`);
+        assert.ok(wert >= 0 && wert <= 99, `Stufe ${stufe}: ${wert} nicht ansagbar`);
+      }
+      assert.ok(Number.isInteger(a.antwort));
       const deckel = [9, 15, 20, 30, 40, 55, 70, 85, 99][stufe];
-      assert.ok(a.a >= 1 && a.a <= deckel, `Stufe ${stufe}: a=${a.a}`);
-      assert.ok(a.b >= 0 && a.b <= deckel, `Stufe ${stufe}: b=${a.b}`);
-      if (a.op === "+") assert.equal(a.antwort, a.a + a.b);
-      else assert.equal(a.antwort, a.a - a.b);
+      if (a.op === "+") {
+        assert.equal(a.antwort, a.a + a.b);
+        assert.ok(a.antwort <= 99); // Plus bleibt bewusst zweistellig
+        assert.ok(a.a >= 1 && a.a <= deckel, `Stufe ${stufe}: a=${a.a}`);
+      } else if (a.op === "-") {
+        assert.equal(a.antwort, a.a - a.b);
+        assert.ok(a.a >= 1 && a.a <= deckel, `Stufe ${stufe}: a=${a.a}`);
+        assert.ok(a.b <= deckel, `Stufe ${stufe}: b=${a.b}`);
+        // Auf der untersten Sprosse bleibt Minus im Positiven.
+        if (stufe < 1) assert.ok(a.antwort >= 0, `Stufe ${stufe} soll nicht negativ werden`);
+      } else if (a.op === "*") {
+        assert.equal(a.antwort, a.a * a.b);
+        // Fliegbar im Kopf: ein Faktor bleibt einstellig.
+        assert.ok(Math.min(a.a, a.b) <= 9, `Stufe ${stufe}: ${a.a} mal ${a.b} zu schwer`);
+      } else {
+        // Teilen muss glatt aufgehen und darf nie durch 0 oder 1 teilen.
+        assert.ok(a.b >= 2, `Stufe ${stufe}: Teiler ${a.b}`);
+        assert.equal(a.a % a.b, 0, `Stufe ${stufe}: ${a.a} geteilt durch ${a.b} geht nicht auf`);
+        assert.equal(a.antwort, a.a / a.b);
+        assert.ok(a.a <= deckel, `Stufe ${stufe}: Dividend ${a.a} über dem Deckel`);
+      }
     }
   }
-  // Ohne Stufenangabe gilt Stufe 0 (einstellig), jenseits wird geklemmt.
+  // Über alle Stufen müssen alle vier Rechenarten vorgekommen sein.
+  assert.deepEqual([...gesehen].sort(), ["*", "+", "-", "/"]);
+  // Ohne Stufenangabe gilt Stufe 0 (einstellig, nur Plus und Minus),
+  // jenseits wird geklemmt.
   const leicht = erzeugeRechenaufgabe(() => 0.99);
   assert.ok(leicht.a <= 9 && leicht.b <= 9);
+  assert.ok(["+", "-"].includes(leicht.op));
   const geklemmt = erzeugeRechenaufgabe(() => 0.99, 99);
-  assert.ok(geklemmt.a <= 99);
+  assert.ok(geklemmt.a <= 99 && geklemmt.b <= 99);
+});
+
+test("rechenarten: unterste Sprosse nur Plus und Minus, Mal ab 1, Geteilt ab 2", () => {
+  // Nur der Einstieg bleibt leicht. Tief gehängt nach der Messung vom
+  // 14.09.2026: Auf Stufe 5 wäre Teilen im Lauf praktisch nie vorgekommen.
+  assert.deepEqual(rechenarten(0), ["+", "-"]);
+  assert.deepEqual(rechenarten(1), ["+", "-", "*"]);
+  assert.deepEqual(rechenarten(2), ["+", "-", "*", "/"]);
+  assert.deepEqual(rechenarten(RECHENSTUFEN_MAX), ["+", "-", "*", "/"]);
+  assert.deepEqual(rechenarten(99), ["+", "-", "*", "/"]); // geklemmt
+});
+
+test("Rechenarten kommen in einem echten Lauf wirklich vor", () => {
+  // Gegenprobe zur Messung: Ein Fünf-Minuten-Lauf bringt rund 30 Aufgaben,
+  // die Stufe steigt nach drei Richtigen und fällt bei jedem Fehler. Selbst
+  // bei mäßiger Trefferquote müssen alle vier Arten und negative Ergebnisse
+  // auftauchen, sonst steht Willis Auftrag nur auf dem Papier.
+  const gesehen = new Set();
+  let negativ = 0;
+  for (let lauf = 0; lauf < 200; lauf++) {
+    let stand = rechenstandStart();
+    for (let i = 0; i < 30; i++) {
+      const a = erzeugeRechenaufgabe(Math.random, stand.stufe);
+      gesehen.add(a.op);
+      if (a.antwort < 0) negativ++;
+      stand = passeRechenstufeAn(stand, Math.random() < 0.7);
+    }
+  }
+  assert.deepEqual([...gesehen].sort(), ["*", "+", "-", "/"]);
+  assert.ok(negativ > 50, `zu wenige negative Ergebnisse: ${negativ} in 200 Läufen`);
+});
+
+test("erzeugeRechenaufgabe: negative Ergebnisse kommen oben wirklich vor", () => {
+  let negativ = 0;
+  for (let i = 0; i < 2000; i++) {
+    if (erzeugeRechenaufgabe(Math.random, RECHENSTUFEN_MAX).antwort < 0) negativ++;
+  }
+  assert.ok(negativ > 0, "auf der obersten Sprosse fehlen negative Ergebnisse");
 });
 
 test("passeRechenstufeAn: drei Richtige heben, jeder Fehler senkt", () => {
@@ -398,37 +469,79 @@ test("erzeugeRechenaufgabe ist mit gleichem Zufall gleich", () => {
   assert.deepEqual(a, b);
 });
 
-test("antworten5: fünf eindeutige Werte inklusive der Antwort, Ablenker alle positiv", () => {
-  for (let i = 0; i < 500; i++) {
-    const aufgabe = erzeugeRechenaufgabe(Math.random);
-    const werte = antworten5(aufgabe, Math.random);
-    assert.equal(werte.length, 5);
-    assert.ok(werte.includes(aufgabe.antwort));
-    assert.equal(new Set(werte).size, 5);
-    // Die Antwort selbst darf bei Minusaufgaben 0 sein, die vier Ablenker
-    // sind laut Vorgabe immer positiv.
-    const ablenker = werte.filter((w) => w !== aufgabe.antwort);
-    assert.equal(ablenker.length, 4);
-    assert.ok(ablenker.every((w) => w > 0));
+test("antworten5: fünf eindeutige, ganzzahlige Werte inklusive der Antwort", () => {
+  // Seit dem 14.09.2026 dürfen Ablenker null oder negativ sein: Wären sie
+  // weiter auf positiv gezwungen, stäche bei einem negativen Ergebnis die
+  // richtige Antwort als einzige negative Zahl heraus, ohne dass jemand
+  // rechnen müsste. Geprüft wird über alle Stufen, damit auch Produkte und
+  // negative Ergebnisse vorkommen.
+  for (let stufe = 0; stufe <= RECHENSTUFEN_MAX; stufe++) {
+    for (let i = 0; i < 200; i++) {
+      const aufgabe = erzeugeRechenaufgabe(Math.random, stufe);
+      const werte = antworten5(aufgabe, Math.random);
+      assert.equal(werte.length, 5);
+      assert.ok(werte.includes(aufgabe.antwort));
+      assert.equal(new Set(werte).size, 5);
+      assert.ok(werte.every((w) => Number.isInteger(w)));
+    }
   }
 });
 
-test("antworten5: Ablenker liegen nah an der Antwort", () => {
+test("antworten5: Ablenker liegen nah an der Antwort, der weite wächst mit ihr", () => {
+  // Nah sind immer ±1 und ±2, dazu ein weiter Ablenker von rund einem
+  // Fünftel der Antwort (mindestens 3, höchstens 20).
+  assert.equal(ablenkerStreuung(56), 11);
+  assert.equal(ablenkerStreuung(3), 3);     // Untergrenze greift
+  assert.equal(ablenkerStreuung(180), 20);  // Obergrenze greift
+  assert.equal(ablenkerStreuung(-40), 8);   // Betrag zählt
+
   const aufgabe = { a: 47, op: "+", b: 9, antwort: 56 };
   const werte = antworten5(aufgabe, () => 0); // ohne Mischen prüfbar über den Inhalt
-  const erwartetNah = [55, 57, 54, 58, 46, 66]; // ±1, ±2, ±10
+  const erwartetNah = [55, 57, 54, 58, 45, 67]; // ±1, ±2, ±11
   for (const w of werte) {
     if (w === 56) continue;
     assert.ok(erwartetNah.includes(w), `${w} liegt nicht in der erwarteten Nähe`);
   }
 });
 
-test("antworten5 füllt bei kleiner Antwort weiter entfernte, aber eindeutige Werte auf", () => {
-  const aufgabe = { a: 5, op: "-", b: 5, antwort: 0 };
-  const werte = antworten5(aufgabe, Math.random);
-  assert.equal(werte.length, 5);
-  assert.equal(new Set(werte).size, 5);
-  assert.ok(werte.every((w) => w >= 0));
+test("antworten5 bleibt bei Antwort 0 und bei negativer Antwort eindeutig", () => {
+  for (const aufgabe of [
+    { a: 5, op: "-", b: 5, antwort: 0 },
+    { a: 4, op: "-", b: 30, antwort: -26 },
+  ]) {
+    const werte = antworten5(aufgabe, Math.random);
+    assert.equal(werte.length, 5);
+    assert.equal(new Set(werte).size, 5);
+    assert.ok(werte.includes(aufgabe.antwort));
+  }
+});
+
+test("antworten5: kein Ablenker, der ohne Rechnen ausscheidet", () => {
+  // Bei positiver Antwort bleiben alle Ablenker positiv. Ein Ablenker unter
+  // 1 wäre bei Plus, Mal und Geteilt ohne jede Rechnung auszuschließen und
+  // verschenkte einen der fünf Knöpfe; im Einstieg traf das jede vierte
+  // Aufgabe. Bei Antwort 0 und darunter bleiben nicht positive Ablenker
+  // dagegen nötig, sonst wäre die Antwort die einzige ihrer Art.
+  for (let stufe = 0; stufe <= RECHENSTUFEN_MAX; stufe++) {
+    for (let i = 0; i < 300; i++) {
+      const aufgabe = erzeugeRechenaufgabe(Math.random, stufe);
+      const werte = antworten5(aufgabe, Math.random);
+      assert.equal(new Set(werte).size, 5);
+      const ablenker = werte.filter((w) => w !== aufgabe.antwort);
+      if (aufgabe.antwort > 0) {
+        assert.ok(ablenker.every((w) => w > 0), `Stufe ${stufe}: ${aufgabe.antwort} mit ${ablenker}`);
+      } else {
+        // Die Antwort darf nie die einzige nicht positive Zahl der Liste sein.
+        assert.ok(werte.filter((w) => w <= 0).length >= 2, `Stufe ${stufe}: ${werte}`);
+      }
+    }
+  }
+  // Antwort 1 ist der engste Fall: aus der Nähe bleiben nur 2, 3 und 4,
+  // der vierte Ablenker kommt aus der Schlussschleife.
+  const knapp = antworten5({ a: 5, op: "-", b: 4, antwort: 1 }, Math.random);
+  assert.equal(new Set(knapp).size, 5);
+  assert.ok(knapp.includes(1));
+  assert.ok(knapp.every((w) => w > 0));
 });
 
 test("antworten5 ist mit gleichem Zufall gleich", () => {

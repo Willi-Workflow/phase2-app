@@ -105,9 +105,21 @@ Start zu Ziel). Durchgänge folgen am Stück, bis die Testdauer um ist.
   Antwort oder Fensterablauf folgt nach 1,2 s die nächste, bis der
   Durchgang endet; unter 8 s Restzeit startet keine neue Aufgabe mehr,
   eine am Durchgangsende offene zählt als verpasst. Nur angesagt, nicht angezeigt (wie im Original über Gehör),
-  mit 350 ms Sprechpause zwischen Zahl, Zeichen und Zahl: nur noch a+b
-  (Ergebnis höchstens 99) und a-b (Ergebnis mindestens 0); das
-  Einmaleins ist seit dem 29.08.2026 raus (Willis Entscheid).
+  mit 350 ms Sprechpause zwischen Zahl, Zeichen und Zahl.
+- Rechenarten seit dem 14.09.2026 (Willis Auftrag, hebt den Entscheid vom
+  29.08.2026 auf, mit dem das Einmaleins draußen war): Plus, Minus, Mal
+  und Geteilt. Plus bleibt bei einem Ergebnis bis 99, Minus darf ins
+  Negative reichen, Malnehmen hält einen Faktor einstellig (größtes
+  Produkt 9 mal 20), Teilen wird rückwärts aus Teiler und Ergebnis
+  gebaut und geht darum immer glatt auf, nie durch null oder eins.
+  Harte Randbedingung ist die Ansage: Es gibt Klänge nur für 0 bis 99,
+  also liegen BEIDE Operanden dort und sind ganzzahlig; das Ergebnis wird
+  nicht angesagt und darf darüber oder darunter liegen.
+  Verteilung über die Stufenleiter: Die unterste Sprosse bleibt reines
+  Plus und Minus im Positiven, ab Sprosse 1 kommen Mal und negative
+  Differenzen dazu, ab Sprosse 2 das Teilen. Tief gehängt nach einer
+  Messung über je 1500 simulierte Läufe: Auf Sprosse 5 wäre Teilen
+  0,03 mal je Fünf-Minuten-Lauf vorgekommen, also praktisch nie.
 - Anpassende Schwierigkeit seit dem 03.09.2026 (Willis Entscheid, ohne
   Vorbild im Original, dort ist keine Schwierigkeitsregel beschrieben):
   eine Stufenleiter deckelt die Operanden (9/15/20/30/40/55/70/85/99,
@@ -120,9 +132,17 @@ Start zu Ziel). Durchgänge folgen am Stück, bis die Testdauer um ist.
   Zahl. Die Dateien kommen als Kopie aus der Bundeswehr-Lern-App
   (`~/Desktop/Claude/Bundeswehr/App/stimme`, n0 bis n99 plus op_plus,
   op_minus, op_mal) nach `klaenge/zahlen/` mit eigener HERKUNFT.md;
-  Ersatz ist die Browser-Sprachausgabe.
+  op_geteilt kam am 14.09.2026 dazu (eigens erzeugt, Willis Freigabe,
+  Herkunft und Prüfung stehen in derselben HERKUNFT.md). Ersatz ist die
+  Browser-Sprachausgabe.
 - Fünf Antwortknöpfe am unteren Rand (richtiger Wert plus vier eindeutige
-  Ablenker in der Nähe). Die Pedale wählen über fünf gleich breite Zonen
+  Ablenker in der Nähe). Der weite Ablenker wächst seit dem 14.09.2026
+  mit der Größe der Antwort (rund ein Fünftel, mindestens 3, höchstens
+  20), und Ablenker dürfen null oder negativ sein, sobald die Antwort es
+  sein kann: Sonst stäche die richtige Antwort bei einem negativen
+  Ergebnis als einzige negative Zahl heraus, ohne dass jemand rechnen
+  müsste. Ist die Antwort dagegen zwingend positiv, bleiben auch die
+  Ablenker positiv, damit kein Knopf verschenkt wird. Die Pedale wählen über fünf gleich breite Zonen
   des Ausschlags den Knopf (der gewählte hebt sich hervor), die
   Schusstaste bestätigt. Ohne Bestätigung bis zur nächsten Aufgabe zählt
   die Aufgabe als verpasst. In der Kopfrechen-Übung wählen ohne

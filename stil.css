@@ -903,7 +903,10 @@ main { position: relative; z-index: 1; }
 .schnellmitte .frage { font-size: clamp(17px, 2vw, 22px); line-height: 1.5; color: var(--hell); letter-spacing: 0.04em; }
 .loesungsweg { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 6px; }
 .loesungsweg .wegkopf { color: #35e0d0; letter-spacing: 0.22em; font-size: 13px; }
-.loesungsweg .wegzeile { color: var(--hell); font-size: 16px; letter-spacing: 0.05em; }
+/* Breite und Zeilenhöhe seit 14.09.2026: Mit dem Dreisatz stehen bis zu
+   vier Zeilen im Block, die längste hat rund 130 Zeichen. Ohne Deckel
+   liefe sie auf schmalen Fenstern aus dem Bild. */
+.loesungsweg .wegzeile { color: var(--hell); font-size: 16px; letter-spacing: 0.05em; max-width: 68ch; line-height: 1.45; text-align: center; }
 .loesungsweg .wegtipp { color: var(--gedeckt); font-size: 13px; letter-spacing: 0.06em; max-width: 60ch; margin-top: 6px; line-height: 1.5; }
 .loesungsweg .wegweiter { color: var(--gedeckt); font-size: 12px; letter-spacing: 0.2em; margin-top: 8px; }
 

@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   TESTDAUERN, ELEMENTE, HALTEZEIT_MS, NADEL_MIN, NADEL_MAX,
-  ZIELKREIS_R, STRICH_TOLERANZ, NADEL_TOLERANZ, SOLL_KT, RAHMEN_VERHAELTNIS, FADEN_RAND,
+  ZIELKREIS_R, STRICH_TOLERANZ, SOLL_KT, FADEN_RAND,
   erzeugeLaufzustand, takt, zufallsFadenkreuz, zufallsStrich,
   inDeckung, punkte, pruefeAuswahl, zufallsNadel, deckungsquote, erfuellung2,
 } from "../js/uebung2.js";
@@ -29,11 +29,10 @@ test("Rahmenwerte des Nachbaus", () => {
 
 test("takt: Stickrate läuft an statt sofort voll anzuliegen", () => {
   // Willis Rückmeldung vom 01.09.2026 ("zu direkt, gerade bei Mission 2"):
-  // Die Sollrate baut sich wie in Mission 1 über die Anlaufzeit auf. Drift
-  // stillgelegt, damit nur die Eingabe misst.
+  // Die Sollrate baut sich wie in Mission 1 über die Anlaufzeit auf. Seit
+  // dem 14.09.2026 wirkt ohnehin nur noch die Eingabe, kein Gegensteuern.
   const rnd = saatZufall(7);
   const z = erzeugeLaufzustand(ALLE, rnd);
-  for (const d of [z.drift.fx, z.drift.fy, z.drift.strich, z.drift.nadel]) { d.ziel = 0; d.wert = 0; d.restMs = 1e9; }
   z.fadenkreuz = { x: 0.5, y: 0.5 };
   takt(z, { ...RUHE, stickX: 1 }, 50, rnd);
   const erster = z.fadenkreuz.x - 0.5;
@@ -76,31 +75,169 @@ test("takt: Stickauslenkung bewegt das Fadenkreuz mit begrenzter Rate", () => {
   assert.ok(z.fadenkreuz.x - vorher.x < 0.1);
 });
 
+test("takt: Diagonaleingabe bewegt nur die dominante Achse", () => {
+  // Willis Auftrag vom 14.09.2026: keine Diagonalen mehr. Die schwächer
+  // ausgelenkte Achse bekommt die Eingabe 0 und steht in diesem Takt still.
+  const rnd = saatZufall(5);
+  const waagerecht = erzeugeLaufzustand(["stick"], rnd);
+  waagerecht.fadenkreuz = { x: 0.5, y: 0.5 };
+  for (let i = 0; i < 10; i++) takt(waagerecht, { ...RUHE, stickX: 0.8, stickY: 0.3 }, 50, rnd);
+  assert.ok(waagerecht.fadenkreuz.x > 0.5);
+  assert.equal(waagerecht.fadenkreuz.y, 0.5);
+
+  const senkrecht = erzeugeLaufzustand(["stick"], rnd);
+  senkrecht.fadenkreuz = { x: 0.5, y: 0.5 };
+  for (let i = 0; i < 10; i++) takt(senkrecht, { ...RUHE, stickX: 0.3, stickY: 0.8 }, 50, rnd);
+  assert.equal(senkrecht.fadenkreuz.x, 0.5);
+  assert.ok(senkrecht.fadenkreuz.y < 0.5); // invertiert: ziehen lässt es steigen
+
+  // Dieselbe Rastung im negativen Viertel: Die Führung hängt am Betrag, das
+  // Vorzeichen geht ungekürzt in die geführte Achse.
+  const linksHoch = erzeugeLaufzustand(["stick"], rnd);
+  linksHoch.fadenkreuz = { x: 0.5, y: 0.5 };
+  for (let i = 0; i < 10; i++) takt(linksHoch, { ...RUHE, stickX: -0.8, stickY: -0.3 }, 50, rnd);
+  assert.ok(linksHoch.fadenkreuz.x < 0.5);
+  assert.equal(linksHoch.fadenkreuz.y, 0.5);
+
+  const gedrueckt = erzeugeLaufzustand(["stick"], rnd);
+  gedrueckt.fadenkreuz = { x: 0.5, y: 0.5 };
+  for (let i = 0; i < 10; i++) takt(gedrueckt, { ...RUHE, stickX: -0.3, stickY: -0.8 }, 50, rnd);
+  assert.equal(gedrueckt.fadenkreuz.x, 0.5);
+  assert.ok(gedrueckt.fadenkreuz.y > 0.5); // invertiert: drücken lässt es sinken
+
+  // Gleichstand ist deterministisch geregelt: Er geht an die Waagerechte.
+  const gleich = erzeugeLaufzustand(["stick"], rnd);
+  gleich.fadenkreuz = { x: 0.5, y: 0.5 };
+  takt(gleich, { ...RUHE, stickX: 0.5, stickY: 0.5 }, 50, rnd);
+  assert.ok(gleich.fadenkreuz.x > 0.5);
+  assert.equal(gleich.fadenkreuz.y, 0.5);
+
+  // Gleichstand auch im negativen Viertel, damit der Betragsvergleich nicht
+  // am Vorzeichen kippt.
+  const gleichNegativ = erzeugeLaufzustand(["stick"], rnd);
+  gleichNegativ.fadenkreuz = { x: 0.5, y: 0.5 };
+  takt(gleichNegativ, { ...RUHE, stickX: -0.5, stickY: -0.5 }, 50, rnd);
+  assert.ok(gleichNegativ.fadenkreuz.x < 0.5);
+  assert.equal(gleichNegativ.fadenkreuz.y, 0.5);
+});
+
+test("takt: die Führung hält gegen Handzittern, wechselt aber auf Ansage", () => {
+  // Prüferbefund vom 14.09.2026: Ohne Haltewirkung kippte die Führung bei
+  // schräg gehaltenem Stick durch das normale Handzittern mehrmals je
+  // Sekunde, und weil die unterlegene Achse ausläuft, trugen beide Achsen
+  // dauerhaft eine Rate. Genau das ist die Diagonale, die weg sollte.
+  const z = erzeugeLaufzustand(["stick"], saatZufall(7));
+  let beideAktiv = 0;
+  for (let i = 0; i < 300; i++) {
+    const zittern = 0.015 * Math.sin(i * 0.9); // rund 2,5 Hz, lebensechte Amplitude
+    takt(z, { stickX: 0.6 + zittern, stickY: 0.6 - zittern, ruder: 0, schub: 0 }, 16.7, saatZufall(3));
+    if (Math.abs(z.rate.fx) > 1e-9 && Math.abs(z.rate.fy) > 1e-9) beideAktiv++;
+  }
+  assert.equal(beideAktiv, 0, "bei Handzittern am Gleichstand entsteht wieder eine Diagonale");
+
+  // Ein gewollter Richtungswechsel führt den Stick weit über den Vorsprung
+  // hinaus und muss die Führung weiterhin übernehmen.
+  const w = erzeugeLaufzustand(["stick"], saatZufall(9));
+  for (let i = 0; i < 30; i++) takt(w, { stickX: 0.9, stickY: 0, ruder: 0, schub: 0 }, 16.7, saatZufall(3));
+  assert.equal(w.fuehrung, "quer");
+  for (let i = 0; i < 30; i++) takt(w, { stickX: 0, stickY: 0.9, ruder: 0, schub: 0 }, 16.7, saatZufall(3));
+  assert.equal(w.fuehrung, "laengs");
+});
+
+test("takt: die unterlegene Achse läuft aus statt hart zu stoppen", () => {
+  // Gerastert wird die Eingabe, nicht die Rate: Wechselt die Führung auf die
+  // andere Achse, trägt die alte ihren Restschwung noch aus (Willis Vorgabe
+  // vom 14.09.2026, sauberes Auslaufen statt Sprung).
+  const rnd = saatZufall(59);
+  const z = erzeugeLaufzustand(["stick"], rnd);
+  z.fadenkreuz = { x: 0.5, y: 0.5 };
+  for (let i = 0; i < 19; i++) takt(z, { ...RUHE, stickY: 1 }, 50, rnd);
+  const vorletzt = z.fadenkreuz.y;
+  takt(z, { ...RUHE, stickY: 1 }, 50, rnd);
+  const vorWechsel = z.fadenkreuz.y;
+  const schrittGezogen = vorletzt - vorWechsel; // Weg im letzten Takt mit Eingabe
+  assert.ok(vorWechsel < 0.5);
+  takt(z, { ...RUHE, stickX: 1, stickY: 0.2 }, 50, rnd);
+  const schrittAusgelaufen = vorWechsel - z.fadenkreuz.y;
+  // Zwei Schranken, beide nötig: nach oben zeigt sie, dass die Achse nicht
+  // abreißt, nach unten, dass sie wirklich ausläuft und nicht voll weiterzieht.
+  assert.ok(schrittAusgelaufen > 0.005, "die senkrechte Achse stoppt hart");
+  assert.ok(schrittAusgelaufen < schrittGezogen, "die senkrechte Achse läuft nicht aus, sie zieht voll weiter");
+  assert.ok(z.fadenkreuz.x > 0.5, "die neue Führungsachse zieht an");
+});
+
+test("takt: die Hochachse ist invertiert, ziehen lässt das Fadenkreuz steigen", () => {
+  // Willis Auftrag vom 14.09.2026, Richtung wie im Simulator. Im Bild wächst
+  // y nach unten, Steigen heißt also kleineres y.
+  const rnd = saatZufall(53);
+  const ziehen = erzeugeLaufzustand(["stick"], rnd);
+  ziehen.fadenkreuz = { x: 0.5, y: 0.5 };
+  takt(ziehen, { ...RUHE, stickY: 1 }, 50, rnd);
+  assert.ok(ziehen.fadenkreuz.y < 0.5, "ziehen muss das Fadenkreuz steigen lassen");
+
+  const druecken = erzeugeLaufzustand(["stick"], rnd);
+  druecken.fadenkreuz = { x: 0.5, y: 0.5 };
+  takt(druecken, { ...RUHE, stickY: -1 }, 50, rnd);
+  assert.ok(druecken.fadenkreuz.y > 0.5, "drücken muss das Fadenkreuz sinken lassen");
+
+  // Waagerechte, Ruder und Schub behalten ihre bisherige Richtung.
+  const uebrige = erzeugeLaufzustand(ALLE, rnd);
+  uebrige.fadenkreuz = { x: 0.5, y: 0.5 };
+  uebrige.strich.x = 0.5;
+  uebrige.nadel = 100;
+  takt(uebrige, { stickX: 1, stickY: 0, ruder: 1, schub: 1 }, 50, rnd);
+  assert.ok(uebrige.fadenkreuz.x > 0.5);
+  assert.ok(uebrige.strich.x > 0.5);
+  assert.ok(uebrige.nadel > 100);
+});
+
 test("takt: Grenzen halten alle Elemente im erlaubten Bereich", () => {
+  // Seit der Achsenrastung vom 14.09.2026 fährt der Stick die beiden Achsen
+  // nacheinander an die Grenze, eine diagonale Eingabe bewegt nur noch eine.
   const rnd = saatZufall(13);
   const z = erzeugeLaufzustand(ALLE, rnd);
-  for (let i = 0; i < 200; i++) takt(z, { stickX: 1, stickY: 1, ruder: 1, schub: 1 }, 50, rnd);
+  for (let i = 0; i < 200; i++) takt(z, { stickX: 1, stickY: 0, ruder: 1, schub: 1 }, 50, rnd);
+  for (let i = 0; i < 200; i++) takt(z, { stickX: 0, stickY: -1, ruder: 1, schub: 1 }, 50, rnd);
   // Das Fadenkreuz bleibt innerhalb des Randabstands, nie am Bildrand.
+  // Senkrecht drücken (negativer Wert) lässt es sinken, also y wachsen.
   assert.ok(z.fadenkreuz.x <= 1 - FADEN_RAND && z.fadenkreuz.y <= 1 - FADEN_RAND);
   assert.ok(z.strich.x <= 1);
   assert.ok(z.nadel <= NADEL_MAX);
-  for (let i = 0; i < 400; i++) takt(z, { stickX: -1, stickY: -1, ruder: -1, schub: -1 }, 50, rnd);
+  for (let i = 0; i < 400; i++) takt(z, { stickX: -1, stickY: 0, ruder: -1, schub: -1 }, 50, rnd);
+  for (let i = 0; i < 400; i++) takt(z, { stickX: 0, stickY: 1, ruder: -1, schub: -1 }, 50, rnd);
   assert.ok(z.fadenkreuz.x >= FADEN_RAND && z.fadenkreuz.y >= FADEN_RAND);
   assert.ok(z.strich.x >= 0);
   assert.ok(z.nadel >= NADEL_MIN);
 });
 
-test("takt: Drift bewegt ein losgelassenes Element aus der Deckung", () => {
+test("takt: ohne Eingabe bewegt sich nichts, es gibt kein Gegensteuern mehr", () => {
+  // Willis Auftrag vom 14.09.2026: Die Drift ist raus, nicht auf 0 gesetzt.
+  // Zwanzig Sekunden Ruhe dürfen keinen einzigen Schritt Weg erzeugen, in
+  // keiner Richtung und bei keinem der drei Steuerelemente.
   const rnd = saatZufall(17);
   const z = erzeugeLaufzustand(ALLE, rnd);
-  z.fadenkreuz.x = 0.5; z.fadenkreuz.y = 0.5;
-  let dauerMs = 0;
-  while (Math.hypot(z.fadenkreuz.x - 0.5, z.fadenkreuz.y - 0.5) <= ZIELKREIS_R && dauerMs < 60000) {
-    takt(z, RUHE, 50, rnd);
-    dauerMs += 50;
-  }
-  assert.ok(dauerMs < 15000, `Drift zu schwach, nach ${dauerMs} ms noch in Deckung`);
-  assert.ok(dauerMs > 300, "Drift zu stark, Deckung sofort verloren");
+  const start = { x: z.fadenkreuz.x, y: z.fadenkreuz.y, strich: z.strich.x, nadel: z.nadel };
+  for (let i = 0; i < 400; i++) takt(z, RUHE, 50, rnd);
+  assert.equal(z.fadenkreuz.x, start.x);
+  assert.equal(z.fadenkreuz.y, start.y);
+  assert.equal(z.strich.x, start.strich);
+  assert.equal(z.nadel, start.nadel);
+  assert.equal(z.treffer.stick + z.treffer.ruder + z.treffer.schub, 0);
+  assert.equal(z.deckungMs.stick + z.deckungMs.ruder + z.deckungMs.schub, 0);
+  assert.equal(z.drift, undefined); // das Feld ist aus dem Laufzustand entfernt
+});
+
+test("takt: eine in Deckung gelegte Nadel bleibt ohne Eingabe in Deckung", () => {
+  // Gegenprobe zum Gegensteuern: Früher schob die Drift die Nadel wieder
+  // heraus, jetzt hält sie von selbst und der Treffer fällt nach der
+  // Haltezeit ohne weiteres Zutun.
+  const rnd = saatZufall(61);
+  const z = erzeugeLaufzustand(["schub"], rnd);
+  z.nadel = z.soll;
+  let ereignisse = [];
+  for (let i = 0; i < 20; i++) ereignisse = takt(z, RUHE, 50, rnd);
+  assert.deepEqual(ereignisse, [{ element: "schub", kombi: false }]);
+  assert.equal(z.deckungMs.schub, 1000);
 });
 
 test("takt: nicht gewählte Elemente bleiben unbewegt", () => {
@@ -136,8 +273,9 @@ test("Neusetzung: liefert auch bei entartetem Zufall eine gültige Lage", () => 
 });
 
 function halteInDeckung(z, element, rnd) {
-  // Setzt das Element in Deckung und hält es rechnerisch eine Sekunde:
-  // Deckung vor jedem Takt erneuern, weil die Drift dagegen arbeitet.
+  // Setzt das Element in Deckung und hält es rechnerisch eine Sekunde. Die
+  // Deckung wird vor jedem Takt erneuert, damit der Nachschwung der Rate die
+  // Probe nicht stört (Gegensteuern gibt es seit 14.09.2026 keines mehr).
   let ereignisse = [];
   for (let i = 0; i < 20 && ereignisse.length === 0; i++) {
     if (element === "stick") { z.fadenkreuz.x = 0.5; z.fadenkreuz.y = 0.5; }

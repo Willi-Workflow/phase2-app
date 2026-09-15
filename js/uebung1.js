@@ -3,8 +3,10 @@
 // mit träger Zufallsdrift voraus und darf das Bild verlassen, dann zeigt ein
 // Pfeil am Bildrand die Richtung. Reine Logik ohne DOM und
 // ohne three.js, Zufall und Zeitschritt sind einspeisbar (node --test).
-// Die Drifthelfer sind bewusst eine Kopie aus uebung2.js; das gemeinsame
-// Laufgerüst zieht die Sammel-Härtung später heraus.
+// Die Drifthelfer waren bis zum 14.09.2026 eine bewusste Kopie aus
+// uebung2.js. Dort ist das Gegensteuern seitdem auf Willis Auftrag ganz
+// entfernt, Mission 1 ist damit der einzige Ort mit dieser Rechnung; eine
+// Zusammenlegung steht nicht mehr an.
 
 export const TESTDAUERN = [3, 5, 10]; // Minuten
 export const HALTEZEIT_MS = 1000;

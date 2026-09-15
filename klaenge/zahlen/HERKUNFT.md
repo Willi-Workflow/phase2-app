@@ -22,6 +22,15 @@ Die Klang-URLs tragen seither die Marke ?v=2 (klangVon in
 js/uebung3-lauf.js). Die Bundeswehr-Lern-App nutzt weiterhin die alten
 Fassungen.
 
+op_geteilt.mp3 kam am 14.09.2026 dazu (Willis Freigabe für die
+Erzeugung), weil Mission 3 seitdem auch Geteilt-Aufgaben ansagt.
+Gleiche Herkunft wie die fünf Reparaturen: Ralf DE Doku,
+jJxw1Rvgr2c60UdJHPBn, eleven_multilingual_v2, previous_text
+"zweiundvierzig " und next_text " sieben" als Aussprachekontext.
+Randstille war keine zu beschneiden. Geprüft über die Kette
+"42 geteilt durch 7", zurücktranskribiert mit ElevenLabs Scribe:
+"Zweiundvierzig geteilt durch sieben", also wortgenau.
+
 Verwendet werden sie in Mission 3 (60s Instrumentenflug) für die
 angesagten Rechenaufgaben der Stufe 4: Abspielfolge Zahl, Rechenzeichen,
 Zahl. Ersatz bei fehlendem Klang ist die Sprachausgabe des Browsers.

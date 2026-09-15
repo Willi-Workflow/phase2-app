@@ -32,10 +32,15 @@ const AUFGABENBLENDE_MS = 400; // Luft zwischen Zwischenanzeige und Aufgabenbild
 // (Willis Auftrag: langsamer ansagen). Alle Klänge werden beim Anlegen des
 // Sprechers vorgeladen, damit im Lauf nichts nachlädt. Fehlt ein Klang,
 // liest ersatzweise die Browser-Sprachausgabe die betroffene Stelle.
+// Seit 14.09.2026 (Willis Auftrag) sind wieder alle vier Rechenarten in
+// der Übung, "geteilt durch" ist dazugekommen. Der Klang op_geteilt wird
+// parallel erzeugt; fehlt er beim Laden noch, spricht die Browser-Stimme
+// das Wort aus der Tabelle (Ersatzweg unten in sprich).
 const OPERATOREN = [
   { zeichen: "+", datei: "op_plus", wort: "plus" },
   { zeichen: "-", datei: "op_minus", wort: "minus" },
   { zeichen: "*", datei: "op_mal", wort: "mal" },
+  { zeichen: "/", datei: "op_geteilt", wort: "geteilt durch" },
 ];
 const OP_DATEI = Object.fromEntries(OPERATOREN.map((o) => [o.zeichen, o.datei]));
 const WORT_VON_DATEI = Object.fromEntries(OPERATOREN.map((o) => [o.datei, o.wort]));
