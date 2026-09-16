@@ -119,24 +119,26 @@ export function takt(z, eingaben, dtMs, rnd = Math.random) {
   if (aktiv.includes("stick")) {
     // Rastung auf die dominante Achse (Willis Auftrag vom 14.09.2026, keine
     // Diagonalen mehr): Verglichen werden die Beträge beider Auslenkungen,
-    // die unterlegene Achse bekommt in diesem Takt die Eingabe 0. Bewusst
-    // die Eingabe und nicht die Rate: Die Rate läuft mit ANLAUF_MS träge an
-    // und klingt mit derselben Zeitkonstante wieder ab. Eine hart auf 0
-    // gesetzte Rate würde die laufende Bewegung abreißen lassen, die Eingabe
-    // 0 lässt die unterlegene Achse sauber auslaufen, während die dominante
-    // anzieht. Der Weg zum Ziel ist damit rechtwinklig, der Fang selbst
-    // (Zielkreis, Haltezeit) bleibt unberührt.
+    // die unterlegene Achse bekommt in diesem Takt die Eingabe 0.
+    // Seit dem 17.09.2026 wird zusätzlich ihre RATE hart auf 0 gesetzt
+    // (Willis Auftrag: "das Fadenkreuz soll sich auch nur waagerecht und
+    // senkrecht bewegen"). Die erste Fassung hatte nur die Eingabe
+    // genullt und die Rate mit ANLAUF_MS auslaufen lassen; beim
+    // Richtungswechsel trugen dadurch rund eine Sekunde lang beide Achsen
+    // eine Rate, und das Fadenkreuz beschrieb einen Bogen statt eines
+    // rechten Winkels. Jetzt bewegt es sich zu jedem Zeitpunkt auf genau
+    // einer Achse. Der Preis ist ein harter Übergang beim Wechsel, die
+    // Trägheit der führenden Achse bleibt davon unberührt.
+    // Der Fang selbst (Zielkreis, Haltezeit) bleibt unverändert.
     // Gleichstand geht deterministisch an die Waagerechte, auch im Ruhefall
     // 0 gegen 0: Derselbe Eingabestand soll immer dieselbe Bewegung ergeben,
     // und bei Gleichstand ist die Wahl ohnehin beliebig.
     // Haltewirkung (Prüferbefund vom 14.09.2026): Ohne sie kippte die
     // Führung bei schräg gehaltenem Stick durch das normale Handzittern
-    // mehrmals je Sekunde hin und her. Weil die unterlegene Achse bewusst
-    // ausläuft statt abzureißen, trugen dann beide Achsen dauerhaft eine
-    // Rate, und es entstand wieder genau die Diagonale, die weg sollte.
-    // Die führende Achse behält darum ihre Führung, bis die andere sie um
-    // RASTUNG_VORSPRUNG überholt. Das Zittern liegt weit darunter, ein
-    // gewollter Richtungswechsel weit darüber.
+    // mehrmals je Sekunde hin und her, und das Fadenkreuz zappelte im
+    // Zickzack. Die führende Achse behält darum ihre Führung, bis die
+    // andere sie um RASTUNG_VORSPRUNG überholt. Das Zittern liegt weit
+    // darunter, ein gewollter Richtungswechsel weit darüber.
     const vorher = z.fuehrung ?? "quer";
     const querBetrag = Math.abs(eingaben.stickX);
     const laengsBetrag = Math.abs(eingaben.stickY);
@@ -154,6 +156,10 @@ export function takt(z, eingaben, dtMs, rnd = Math.random) {
     const laengs = waagerechtFuehrt ? 0 : -eingaben.stickY;
     z.rate.fx += (quer * RATE_STICK - z.rate.fx) * glatt;
     z.rate.fy += (laengs * RATE_STICK - z.rate.fy) * glatt;
+    // Die unterlegene Achse steht sofort still, sonst entstünde beim
+    // Wechsel wieder ein Bogen (siehe oben).
+    if (waagerechtFuehrt) z.rate.fy = 0;
+    else z.rate.fx = 0;
     z.fadenkreuz.x = begrenze(z.fadenkreuz.x + z.rate.fx * dt, FADEN_RAND, 1 - FADEN_RAND);
     z.fadenkreuz.y = begrenze(z.fadenkreuz.y + z.rate.fy * dt, FADEN_RAND, 1 - FADEN_RAND);
   }

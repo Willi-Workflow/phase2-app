@@ -144,26 +144,36 @@ test("takt: die Führung hält gegen Handzittern, wechselt aber auf Ansage", () 
   assert.equal(w.fuehrung, "laengs");
 });
 
-test("takt: die unterlegene Achse läuft aus statt hart zu stoppen", () => {
-  // Gerastert wird die Eingabe, nicht die Rate: Wechselt die Führung auf die
-  // andere Achse, trägt die alte ihren Restschwung noch aus (Willis Vorgabe
-  // vom 14.09.2026, sauberes Auslaufen statt Sprung).
+test("takt: beim Führungswechsel steht die alte Achse sofort still", () => {
+  // Willis Auftrag vom 17.09.2026: Das Fadenkreuz soll sich nur waagerecht
+  // oder senkrecht bewegen. Die erste Fassung vom 14.09. nullte nur die
+  // Eingabe und ließ die Rate auslaufen; beim Wechsel trugen dadurch rund
+  // eine Sekunde lang beide Achsen eine Rate und das Fadenkreuz beschrieb
+  // einen Bogen. Jetzt steht die unterlegene Achse sofort.
   const rnd = saatZufall(59);
   const z = erzeugeLaufzustand(["stick"], rnd);
   z.fadenkreuz = { x: 0.5, y: 0.5 };
-  for (let i = 0; i < 19; i++) takt(z, { ...RUHE, stickY: 1 }, 50, rnd);
-  const vorletzt = z.fadenkreuz.y;
-  takt(z, { ...RUHE, stickY: 1 }, 50, rnd);
-  const vorWechsel = z.fadenkreuz.y;
-  const schrittGezogen = vorletzt - vorWechsel; // Weg im letzten Takt mit Eingabe
-  assert.ok(vorWechsel < 0.5);
+  for (let i = 0; i < 20; i++) takt(z, { ...RUHE, stickY: 1 }, 50, rnd);
+  const vorWechsel = { x: z.fadenkreuz.x, y: z.fadenkreuz.y };
+  assert.ok(vorWechsel.y < 0.5, "die senkrechte Achse hat nicht gezogen");
   takt(z, { ...RUHE, stickX: 1, stickY: 0.2 }, 50, rnd);
-  const schrittAusgelaufen = vorWechsel - z.fadenkreuz.y;
-  // Zwei Schranken, beide nötig: nach oben zeigt sie, dass die Achse nicht
-  // abreißt, nach unten, dass sie wirklich ausläuft und nicht voll weiterzieht.
-  assert.ok(schrittAusgelaufen > 0.005, "die senkrechte Achse stoppt hart");
-  assert.ok(schrittAusgelaufen < schrittGezogen, "die senkrechte Achse läuft nicht aus, sie zieht voll weiter");
-  assert.ok(z.fadenkreuz.x > 0.5, "die neue Führungsachse zieht an");
+  assert.equal(z.fadenkreuz.y, vorWechsel.y, "die senkrechte Achse läuft noch aus");
+  assert.ok(z.fadenkreuz.x > vorWechsel.x, "die neue Führungsachse zieht nicht an");
+  assert.equal(z.rate.fy, 0);
+});
+
+test("takt: das Fadenkreuz bewegt sich nie auf beiden Achsen zugleich", () => {
+  // Gegenprobe über einen langen Flug mit wandernder Diagonaleingabe: In
+  // keinem Takt darf sich sowohl x als auch y ändern.
+  const rnd = saatZufall(17);
+  const z = erzeugeLaufzustand(["stick"], rnd);
+  let schraeg = 0;
+  for (let i = 0; i < 3000; i++) {
+    const vorher = { x: z.fadenkreuz.x, y: z.fadenkreuz.y };
+    takt(z, { ...RUHE, stickX: Math.sin(i / 37), stickY: Math.cos(i / 23) }, 16.7, rnd);
+    if (z.fadenkreuz.x !== vorher.x && z.fadenkreuz.y !== vorher.y) schraeg++;
+  }
+  assert.equal(schraeg, 0, "das Fadenkreuz bewegte sich schräg");
 });
 
 test("takt: die Hochachse ist invertiert, ziehen lässt das Fadenkreuz steigen", () => {
