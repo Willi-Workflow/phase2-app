@@ -129,3 +129,17 @@ Willis Festlegung, ersetzt die Deckungsregel oben:
   den Tests. Die Probeseite `entwurf/uebung1-probe.html` fährt den
   Produktivweg und zeigt damit die neue Zone. Die übrige Bildgeometrie
   (Kegel, Sprünge, Umlauf) bleibt bewusst in der alten virtuellen Welt.
+
+## Änderung vom 17.09.2026: Das Zielflugzeug fliegt geradeaus
+
+Willis Auftrag: "lasse bei Mission 1 das Flugzeug nur geradeaus fliegen
+und keine leichten Kurven oder Bewegungen". Die träge Zufallsdrift des
+Ziels ist damit ersatzlos entfallen, samt der leichten Querlage, die sie
+dem Netz gab. Das Ziel hält Kurs und Höhe; jede Bewegung im Bild kommt
+allein aus dem Eigenflug (Gieren, Nicken, Rollen) und aus dem
+Blicksprung nach einem Treffer.
+
+Der Höhenhalt an der eigenen Flugebene bleibt stehen, wirkt aber nur
+noch als Sicherheitsnetz: Ohne Drift liegt das Ziel ohnehin auf der
+Ebene, er greift erst, wenn ein Blicksprung an den Nickanschlag es
+davon wegschiebt.

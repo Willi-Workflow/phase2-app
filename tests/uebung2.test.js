@@ -126,14 +126,24 @@ test("takt: die Führung hält gegen Handzittern, wechselt aber auf Ansage", () 
   // schräg gehaltenem Stick durch das normale Handzittern mehrmals je
   // Sekunde, und weil die unterlegene Achse ausläuft, trugen beide Achsen
   // dauerhaft eine Rate. Genau das ist die Diagonale, die weg sollte.
+  // Geprüft wird der Weg des Fadenkreuzes und die Zahl der Führungswechsel,
+  // nicht mehr, ob beide Raten zugleich stehen: Seit der harten Nullung vom
+  // 17.09.2026 ist immer genau eine Rate 0, diese Frage wäre also von selbst
+  // erfüllt und hielte die Haltewirkung nicht mehr fest. Ohne Haltewirkung
+  // kippt die Führung hier 85mal und das Fadenkreuz zappelt senkrecht mit.
   const z = erzeugeLaufzustand(["stick"], saatZufall(7));
-  let beideAktiv = 0;
+  let senkrechtBewegt = 0;
+  let wechsel = 0;
+  let letzteFuehrung = z.fuehrung;
   for (let i = 0; i < 300; i++) {
     const zittern = 0.015 * Math.sin(i * 0.9); // rund 2,5 Hz, lebensechte Amplitude
+    const vorherY = z.fadenkreuz.y;
     takt(z, { stickX: 0.6 + zittern, stickY: 0.6 - zittern, ruder: 0, schub: 0 }, 16.7, saatZufall(3));
-    if (Math.abs(z.rate.fx) > 1e-9 && Math.abs(z.rate.fy) > 1e-9) beideAktiv++;
+    if (z.fadenkreuz.y !== vorherY) senkrechtBewegt++;
+    if (z.fuehrung !== letzteFuehrung) { wechsel++; letzteFuehrung = z.fuehrung; }
   }
-  assert.equal(beideAktiv, 0, "bei Handzittern am Gleichstand entsteht wieder eine Diagonale");
+  assert.equal(wechsel, 0, "bei Handzittern am Gleichstand kippt die Führung hin und her");
+  assert.equal(senkrechtBewegt, 0, "bei Handzittern am Gleichstand zappelt das Fadenkreuz im Zickzack");
 
   // Ein gewollter Richtungswechsel führt den Stick weit über den Vorsprung
   // hinaus und muss die Führung weiterhin übernehmen.
@@ -163,17 +173,60 @@ test("takt: beim Führungswechsel steht die alte Achse sofort still", () => {
 });
 
 test("takt: das Fadenkreuz bewegt sich nie auf beiden Achsen zugleich", () => {
-  // Gegenprobe über einen langen Flug mit wandernder Diagonaleingabe: In
-  // keinem Takt darf sich sowohl x als auch y ändern.
+  // Gegenprobe über einen langen Flug mit wandernder Diagonaleingabe.
+  // Geprüft werden die Raten, nicht die Lage: Am Rahmenrand schneidet die
+  // Begrenzung eine Bewegung ab, dort bliebe eine echte Diagonale unbemerkt.
+  // Die Lageprobe läuft zusätzlich mit, lässt aber die Takte mit Treffer aus,
+  // weil die Neusetzung x und y im selben Takt versetzt.
+  // Die Deckung wird dafür regelmäßig erzwungen (65 Takte am Stück sind mehr
+  // als die Haltezeit): Ohne das fällt in diesem Lauf kein einziger Treffer,
+  // die Ausnahme oben liefe ins Leere und die Takte direkt nach einer
+  // Neusetzung wären gar nicht geprüft. Genau dort trägt die Rate der alten
+  // Führung weiter, während das Fadenkreuz woanders neu steht.
   const rnd = saatZufall(17);
   const z = erzeugeLaufzustand(["stick"], rnd);
-  let schraeg = 0;
+  let schraegeRate = 0;
+  let schraegeLage = 0;
+  let bewegt = 0;
+  let treffer = 0;
   for (let i = 0; i < 3000; i++) {
+    if (i % 400 < 65) { z.fadenkreuz.x = 0.5; z.fadenkreuz.y = 0.5; }
     const vorher = { x: z.fadenkreuz.x, y: z.fadenkreuz.y };
-    takt(z, { ...RUHE, stickX: Math.sin(i / 37), stickY: Math.cos(i / 23) }, 16.7, rnd);
-    if (z.fadenkreuz.x !== vorher.x && z.fadenkreuz.y !== vorher.y) schraeg++;
+    const ereignisse = takt(z, { ...RUHE, stickX: Math.sin(i / 37), stickY: Math.cos(i / 23) }, 16.7, rnd);
+    treffer += ereignisse.length;
+    if (z.rate.fx !== 0 && z.rate.fy !== 0) schraegeRate++;
+    if (z.fadenkreuz.x !== vorher.x || z.fadenkreuz.y !== vorher.y) bewegt++;
+    if (ereignisse.length === 0 && z.fadenkreuz.x !== vorher.x && z.fadenkreuz.y !== vorher.y) schraegeLage++;
   }
-  assert.equal(schraeg, 0, "das Fadenkreuz bewegte sich schräg");
+  assert.equal(schraegeRate, 0, "beide Achsen trugen zugleich eine Rate");
+  assert.equal(schraegeLage, 0, "das Fadenkreuz bewegte sich schräg");
+  // Schranken gegen eine leerlaufende Probe: Das Fadenkreuz muss sich
+  // tatsächlich bewegt haben, und es muss wirklich Treffer gegeben haben,
+  // sonst wäre oben nichts beziehungsweise nicht alles geprüft.
+  assert.ok(bewegt > 2500, "das Fadenkreuz stand fast still, die Probe sagt nichts aus");
+  assert.ok(treffer > 0, "kein Treffer im Lauf, die Neusetzung wurde nicht mitgeprüft");
+});
+
+test("takt: die führende Achse schwenkt nach dem Loslassen nach", () => {
+  // Gegenstück zur harten Nullung: Sie darf nur die unterlegene Achse
+  // treffen. Das Nachschwenken der führenden Achse ist der Kern der
+  // Trägheit (ANLAUF_MS) und die Treue zum Original, wo das Fadenkreuz beim
+  // Einfangen über das Ziel hinausläuft. Ohne diese Probe könnte eine
+  // Vereinfachung beide Raten nullen, ohne dass ein Test es merkt.
+  const rnd = saatZufall(23);
+  const z = erzeugeLaufzustand(["stick"], rnd);
+  z.fadenkreuz = { x: 0.3, y: 0.2 }; // abseits des Zielkreises, sonst setzt ein Treffer neu
+  for (let i = 0; i < 60; i++) takt(z, { ...RUHE, stickX: 0.2 }, 16.7, rnd);
+  const beimLoslassen = z.fadenkreuz.x;
+  assert.ok(z.rate.fx > 0.09, "die Rate ist nicht angelaufen");
+  for (let i = 0; i < 400; i++) takt(z, { ...RUHE }, 16.7, rnd);
+  const nachlauf = z.fadenkreuz.x - beimLoslassen;
+  // Der Nachlauf ist rund Rate mal Anlaufzeit, hier etwa 0.04 Feldbreiten,
+  // also gut ein Zielkreisdurchmesser. Zwei Schranken: dass er da ist und
+  // dass er nicht ins Endlose läuft.
+  assert.ok(nachlauf > ZIELKREIS_R, `das Fadenkreuz schwenkt nicht nach (${nachlauf})`);
+  assert.ok(nachlauf < 0.06, `das Fadenkreuz läuft zu weit nach (${nachlauf})`);
+  assert.ok(Math.abs(z.rate.fx) < 0.001, "die Rate klingt nicht ab");
 });
 
 test("takt: die Hochachse ist invertiert, ziehen lässt das Fadenkreuz steigen", () => {

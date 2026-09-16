@@ -552,7 +552,6 @@ export function erzeugeUebung1({ speicher, controls }) {
       // Ziel fliegt voraus), dann neigt die eigene Kurve die Flächen.
       ZIEL_LAGE.setFromAxisAngle(ACHSE_Z, zustand.roll);
       ZIEL_LAGE.multiply(LAGE_HILF.setFromAxisAngle(ACHSE_X, -zustand.nick));
-      ZIEL_LAGE.multiply(LAGE_HILF.setFromAxisAngle(ACHSE_Z, -zustand.drift.zx.wert * 6));
       flugzeug.quaternion.copy(ZIEL_LAGE);
       renderer.render(szene, kamera);
 

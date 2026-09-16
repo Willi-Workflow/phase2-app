@@ -34,6 +34,9 @@ export const FADEN_RAND = 0.06;
 // liegt bei rund 0,01 bis 0,02 Ausschlag, ein gewollter Richtungswechsel
 // führt den Stick weit über 0,08 hinaus.
 const RASTUNG_VORSPRUNG = 0.08;
+// Anteil am größeren Ausschlag, damit die Haltewirkung unabhängig vom
+// Empfindlichkeitsfaktor greift (siehe takt).
+const RASTUNG_ANTEIL = 0.15;
 const RATE_STICK = 0.56;
 const RATE_RUDER = 0.5;
 const RATE_NADEL = 30;
@@ -127,9 +130,18 @@ export function takt(z, eingaben, dtMs, rnd = Math.random) {
     // Richtungswechsel trugen dadurch rund eine Sekunde lang beide Achsen
     // eine Rate, und das Fadenkreuz beschrieb einen Bogen statt eines
     // rechten Winkels. Jetzt bewegt es sich zu jedem Zeitpunkt auf genau
-    // einer Achse. Der Preis ist ein harter Übergang beim Wechsel, die
-    // Trägheit der führenden Achse bleibt davon unberührt.
+    // einer Achse. Der Preis ist ein harter Übergang beim Wechsel; das
+    // Nachschwenken nach dem Loslassen bleibt unberührt, weil die Führung
+    // dabei stehen bleibt und nur die führende Achse Rate trägt.
     // Der Fang selbst (Zielkreis, Haltezeit) bleibt unverändert.
+    // Nebenwirkung, nachgemessen am 17.09.2026 und noch nicht entschieden:
+    // Ein einziger Takt Ausschlag über RASTUNG_VORSPRUNG auf der Gegenachse
+    // würgt die laufende Bewegung vollständig ab (0,56 je Sekunde auf 0,
+    // Abtrift quer dazu rund 0,001 Feldbreiten). Der Stick bekommt damit
+    // eine perfekte Bremse: Statt beim Fang die trägen 0,05 je Sekunde
+    // einzuhalten, darf man mit voller Rate anfliegen und auf dem Ziel
+    // stehen bleiben. Das ist die Stelle, an der das Vorbild verloren geht,
+    // denn genau dort läuft im SMT-Video das Fadenkreuz über das Ziel hinaus.
     // Gleichstand geht deterministisch an die Waagerechte, auch im Ruhefall
     // 0 gegen 0: Derselbe Eingabestand soll immer dieselbe Bewegung ergeben,
     // und bei Gleichstand ist die Wahl ohnehin beliebig.
@@ -137,13 +149,26 @@ export function takt(z, eingaben, dtMs, rnd = Math.random) {
     // Führung bei schräg gehaltenem Stick durch das normale Handzittern
     // mehrmals je Sekunde hin und her, und das Fadenkreuz zappelte im
     // Zickzack. Die führende Achse behält darum ihre Führung, bis die
-    // andere sie um RASTUNG_VORSPRUNG überholt. Das Zittern liegt weit
-    // darunter, ein gewollter Richtungswechsel weit darüber.
+    // andere sie um einen Vorsprung überholt.
+    // Der Vorsprung wächst seit dem 17.09.2026 mit dem Ausschlag mit
+    // (Prüferbefund): Der Takt bekommt die Achswerte bereits mit dem
+    // Empfindlichkeitsfaktor multipliziert, bei Willis Faktor 5 also
+    // fünffach. Ein fester Vorsprung von 0,08 war damit praktisch
+    // wirkungslos, nachgemessen kippte die Führung bei schräg gehaltenem
+    // Stick 171 mal in zehn Sekunden, und seit die unterlegene Achse hart
+    // stillgesetzt wird, stotterte das Fadenkreuz dabei. Ein Anteil am
+    // größeren der beiden Beträge ist dagegen unabhängig davon, wie stark
+    // die Achswerte skaliert ankommen; der feste Wert bleibt als
+    // Untergrenze für kleine Ausschläge.
     const vorher = z.fuehrung ?? "quer";
     const querBetrag = Math.abs(eingaben.stickX);
     const laengsBetrag = Math.abs(eingaben.stickY);
-    if (vorher === "quer" && laengsBetrag > querBetrag + RASTUNG_VORSPRUNG) z.fuehrung = "laengs";
-    else if (vorher === "laengs" && querBetrag > laengsBetrag + RASTUNG_VORSPRUNG) z.fuehrung = "quer";
+    const vorsprung = Math.max(
+      RASTUNG_VORSPRUNG,
+      RASTUNG_ANTEIL * Math.max(querBetrag, laengsBetrag),
+    );
+    if (vorher === "quer" && laengsBetrag > querBetrag + vorsprung) z.fuehrung = "laengs";
+    else if (vorher === "laengs" && querBetrag > laengsBetrag + vorsprung) z.fuehrung = "quer";
     else z.fuehrung = vorher;
     const waagerechtFuehrt = z.fuehrung === "quer";
     const quer = waagerechtFuehrt ? eingaben.stickX : 0;

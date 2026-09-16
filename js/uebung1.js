@@ -1,12 +1,13 @@
 // Übungslogik Mission 1 (Flugzeugverfolgung): Nachbau des PMT aus dem ICA.
 // Eigenflug: Stick rollt und nickt, Pedale gieren; das Zielflugzeug fliegt
-// mit träger Zufallsdrift voraus und darf das Bild verlassen, dann zeigt ein
-// Pfeil am Bildrand die Richtung. Reine Logik ohne DOM und
+// seit dem 17.09.2026 schnurgerade voraus (Willis Auftrag, vorher wanderte
+// es mit einer trägen Zufallsdrift) und darf das Bild verlassen, dann zeigt
+// ein Pfeil am Bildrand die Richtung. Reine Logik ohne DOM und
 // ohne three.js, Zufall und Zeitschritt sind einspeisbar (node --test).
 // Die Drifthelfer waren bis zum 14.09.2026 eine bewusste Kopie aus
-// uebung2.js. Dort ist das Gegensteuern seitdem auf Willis Auftrag ganz
-// entfernt, Mission 1 ist damit der einzige Ort mit dieser Rechnung; eine
-// Zusammenlegung steht nicht mehr an.
+// uebung2.js. Dort fiel das Gegensteuern am 14.09. weg, hier die
+// Zielbewegung am 17.09.2026; beide Module rechnen seither ohne Zufall im
+// Takt, die angekündigte Zusammenlegung ist gegenstandslos.
 
 export const TESTDAUERN = [3, 5, 10]; // Minuten
 export const HALTEZEIT_MS = 1000;
@@ -79,8 +80,8 @@ export const KEGEL = { xMin: 0.12, xMax: 0.88, yMin: 0.15, yMax: 0.85 };
 // entspricht UMLAUF Bildbreiten, dahinter kommt das Ziel von der anderen
 // Seite wieder herein. Senkrecht hält das Ziel seit 01.09.2026 die Höhe
 // der Kamera (Willis Auftrag "auf einer Ebene bleiben"): Es pendelt mit
-// der Drift um die eigene Flugebene statt um die Bildmitte, der alte
-// Bildschirm-Rückzug ist raus. Die Ebene liegt bei Nicklage 0 in der
+// eigenen Flugebene statt um die Bildmitte, der alte Bildschirm-Rückzug
+// ist raus. Die Ebene liegt bei Nicklage 0 in der
 // Bildmitte und wandert mit der eigenen Nase (siehe takt).
 const HOEHENHALT = 0.15; // je Sekunde Richtung Kamerahöhe
 export const MAXROLL = 1.0;            // rad, etwa 57 Grad
@@ -91,7 +92,7 @@ export const SICHTWINKEL = 1.64;       // rad
 // Bildbreiten je voller Eigendrehung: die waagerechte Rundum-Welt.
 export const UMLAUF = (2 * Math.PI) / SICHTWINKEL;
 
-// Raten bei Vollausschlag (je Sekunde) und Driftstärken. Steuerdynamik nach
+// Raten bei Vollausschlag (je Sekunde). Steuerdynamik nach
 // Simulator-Art, abgeglichen mit dem Vorführlauf im Video (12:40 bis 13:10):
 // Die Raten laufen träge an (Anlaufzeit), die Fluglage bleibt stehen statt
 // zurückzufedern, nur eine schwache Eigenstabilität richtet langsam auf.
@@ -119,30 +120,11 @@ const NICK_SICHT = 0.5;   // rad Blickneigung je Einheit Nickbewegung
 // unten, nur der Überschlag bleibt gesperrt.
 export const MAXNICK = 1.2; // rad, etwa 69 Grad
 const KOPPLUNG = 0.3;     // Kurvenzug bei vollem Rollen, Einheiten je Sekunde
-const DRIFT_ZIEL = 0.05;
-const DRIFTWECHSEL_MIN_MS = 1500;
-const DRIFTWECHSEL_MAX_MS = 3000;
+// Die Zufallsdrift des Zielflugzeugs ist am 17.09.2026 entfallen (Willis
+// Auftrag: "nur geradeaus fliegen, keine leichten Kurven"). Es hält seither
+// Kurs und Höhe; jede Bewegung im Bild kommt allein aus dem Eigenflug.
 
 const begrenze = (w, min, max) => Math.min(max, Math.max(min, w));
-
-function neueDrift(staerke, rnd) {
-  return {
-    ziel: (rnd() * 2 - 1) * staerke,
-    wert: 0,
-    restMs: DRIFTWECHSEL_MIN_MS + rnd() * (DRIFTWECHSEL_MAX_MS - DRIFTWECHSEL_MIN_MS),
-    staerke,
-  };
-}
-
-function taktDrift(d, dtMs, rnd) {
-  d.restMs -= dtMs;
-  if (d.restMs <= 0) {
-    d.ziel = (rnd() * 2 - 1) * d.staerke;
-    d.restMs = DRIFTWECHSEL_MIN_MS + rnd() * (DRIFTWECHSEL_MAX_MS - DRIFTWECHSEL_MIN_MS);
-  }
-  d.wert += (d.ziel - d.wert) * Math.min(1, dtMs / 600);
-  return d.wert;
-}
 
 const abstand = (a, b, verhaeltnis = BILDVERHAELTNIS) => Math.hypot(a.x - b.x, (a.y - b.y) * verhaeltnis);
 
@@ -215,7 +197,6 @@ export function erzeugeLaufzustand(rnd = Math.random) {
     rollRate: 0,
     nickRate: 0,
     gierRate: 0,
-    drift: { zx: neueDrift(DRIFT_ZIEL, rnd), zy: neueDrift(DRIFT_ZIEL, rnd) },
     halteMs: 0,
     treffer: 0,
     deckungMs: 0,
@@ -226,7 +207,8 @@ export function erzeugeLaufzustand(rnd = Math.random) {
 }
 
 // Ein Zeitschritt: Stick und Pedale bewegen den Blick, das Ziel wandert im
-// Sichtfeld entgegen; dazu kommt die eigene Drift des Zielflugzeugs.
+// Sichtfeld entgegen. Das Zielflugzeug selbst fliegt geradeaus, es trägt
+// seit dem 17.09.2026 keine eigene Bewegung mehr bei.
 export function takt(z, eingaben, dtMs, rnd = Math.random, masse) {
   const dt = dtMs / 1000;
 
@@ -262,15 +244,16 @@ export function takt(z, eingaben, dtMs, rnd = Math.random, masse) {
     if (w < -UMLAUF / 2) w += UMLAUF;
     return 0.5 + w;
   };
-  z.ziel.x = gewickelt(z.ziel.x - gierBewegung + taktDrift(z.drift.zx, dtMs, rnd) * dt);
+  z.ziel.x = gewickelt(z.ziel.x - gierBewegung);
   // Senkrecht hält das Ziel die eigene Flugebene: "eben" ist die Bildzeile,
   // auf der ein höhengleiches Flugzeug bei der aktuellen Nicklage steht
-  // (Nase hoch schiebt sie nach unten). Die Drift lässt es darum pendeln,
-  // der Höhenhalt zieht es dorthin zurück, nie zur Bildmitte: Wer die Nase
-  // oben hält, sieht das Ziel darum ehrlich unter sich durchrutschen.
+  // (Nase hoch schiebt sie nach unten). Der Höhenhalt zieht das Ziel auf
+  // diese Linie zurück, nie zur Bildmitte: Wer die Nase oben hält, sieht das
+  // Ziel darum ehrlich unter sich durchrutschen. Ohne Drift liegt es
+  // ohnehin auf der Ebene, der Halt wirkt seit dem 17.09.2026 nur noch als
+  // Sicherheitsnetz nach einem Blicksprung an den Nickanschlag.
   const eben = 0.5 + z.nick / NICK_SICHT;
-  z.ziel.y = z.ziel.y + nickAngewandt
-    + (taktDrift(z.drift.zy, dtMs, rnd) + (eben - z.ziel.y) * HOEHENHALT) * dt;
+  z.ziel.y = z.ziel.y + nickAngewandt + (eben - z.ziel.y) * HOEHENHALT * dt;
 
   z.testMs += dtMs;
   const ereignisse = [];

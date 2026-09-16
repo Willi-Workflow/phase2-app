@@ -72,7 +72,7 @@ test("Das Ziel darf den Bildschirm verlassen, ohne je an einer Wand zu hängen",
   assert.ok(z.ziel.y < 0);
   for (let i = 0; i < 340; i++) takt(z, { ...still, stickY: -1 }, 50, halb);
   // Waagerecht ist die Welt rund: ziel.x bleibt im Umlauffenster um die
-  // Bildmitte. Senkrecht driftet das Ziel frei (kein Rückzug mehr), bleibt
+  // Bildmitte. Senkrecht folgt das Ziel der Flugebene (kein Rückzug mehr), bleibt
   // über lange Läufe aber in der Reichweite des weiten Nickbereichs.
   for (let i = 0; i < 4000; i++) takt(z, { stickX: 1, stickY: 1, ruder: 1 }, 50, Math.random);
   assert.ok(Math.abs(z.ziel.x - 0.5) <= UMLAUF / 2 + 1e-9);
@@ -95,7 +95,6 @@ test("Das Ziel hält die Höhe der Kamera, nicht die Bildmitte", () => {
   // Ebene in der Bildmitte, ein weggestiegenes Ziel kommt dorthin zurück.
   const z = erzeugeLaufzustand(halb);
   z.ziel = { x: 0.5, y: 1.4 };
-  for (const d of [z.drift.zx, z.drift.zy]) { d.ziel = 0; d.wert = 0; d.restMs = 1e9; }
   for (let i = 0; i < 20; i++) takt(z, still, 50, halb);
   assert.ok(z.ziel.y < 1.4 && z.ziel.y > 0.5); // es kehrt zurück, nicht schlagartig
 
@@ -105,7 +104,6 @@ test("Das Ziel hält die Höhe der Kamera, nicht die Bildmitte", () => {
   const w = erzeugeLaufzustand(halb);
   w.nick = 0.6;
   w.ziel = { x: 0.5, y: 0.5 };
-  for (const d of [w.drift.zx, w.drift.zy]) { d.ziel = 0; d.wert = 0; d.restMs = 1e9; }
   for (let i = 0; i < 20; i++) takt(w, still, 50, halb);
   assert.ok(w.ziel.y > 0.5, `nicht zur Ebene gerutscht: ${w.ziel.y}`);
 });
@@ -116,7 +114,6 @@ test("Rollen dreht das Ziel mit der Kulisse um die Bildmitte", () => {
   // Bildschirm zu kleben (Willis Befund vom 01.09.2026).
   const z = erzeugeLaufzustand(halb);
   z.ziel = { x: 0.7, y: 0.5 };
-  for (const d of [z.drift.zx, z.drift.zy]) { d.ziel = 0; d.wert = 0; d.restMs = 1e9; }
   for (let i = 0; i < 10; i++) takt(z, { ...still, stickX: 1 }, 50, halb);
   assert.ok(z.ziel.y < 0.5, `nicht mitgedreht: ${z.ziel.y}`);
 });
@@ -437,4 +434,30 @@ test("Erfüllung Mission 1: Abschüsse je Minute am Bestwert gemessen, Buchstabe
   // Ohne Letter-Task zählen nur die Abschüsse, mit ihr die 70/30-Mischung.
   assert.equal(erfuellung1(36, 3, null), 100);
   assert.ok(Math.abs(erfuellung1(36, 3, { erkannt: 1, verpasst: 1, fehlalarm: 0 }) - (0.7 * 100 + 0.3 * 50)) < 1e-9);
+});
+
+test("Das Zielflugzeug fliegt geradeaus, ohne eigene Bewegung", () => {
+  // Willis Auftrag vom 17.09.2026: keine leichten Kurven mehr. Ohne eigene
+  // Eingabe darf sich das Ziel im Bild kein Stück bewegen, und zwar über
+  // Minuten, egal mit welchem Zufall.
+  const z = erzeugeLaufzustand(Math.random);
+  z.ziel = { x: 0.7, y: 0.5 };
+  for (let i = 0; i < 7200; i++) takt(z, still, 50, Math.random); // sechs Minuten
+  assert.equal(z.ziel.x, 0.7);
+  assert.equal(z.ziel.y, 0.5);
+
+  // Auch aus der Ebene heraus gibt es keine Zufallsbewegung, nur die
+  // Rückkehr auf die eigene Flugebene.
+  const w = erzeugeLaufzustand(Math.random);
+  w.ziel = { x: 0.3, y: 0.8 };
+  const schritte = [];
+  for (let i = 0; i < 5; i++) {
+    const vorher = w.ziel.y;
+    takt(w, still, 50, Math.random);
+    schritte.push(vorher - w.ziel.y);
+    assert.equal(w.ziel.x, 0.3, "waagerecht bewegt sich das Ziel von allein");
+  }
+  // Der Höhenhalt zieht stetig und monoton, ohne Zufallsanteil.
+  assert.ok(schritte.every((s) => s > 0));
+  for (let i = 1; i < schritte.length; i++) assert.ok(schritte[i] < schritte[i - 1]);
 });
