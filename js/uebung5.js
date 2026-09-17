@@ -8,65 +8,257 @@ import { zufallswerte } from "./instrumente.js";
 export const AUFGABENZEIT = 20; // Sekunden je Aufgabe
 export const TESTDAUERN = [5, 10, 30]; // Minuten
 export const PRINZIPIEN = ["zeit", "weg", "geschwindigkeit", "rate"];
+// Nur diese drei tragen zwei echte Dreisatzschritte: erst der Wert für eine
+// Minute, dann der gesuchte Wert. Bei den Raten wäre der erste Schritt schon
+// die Antwort ("eine Minute bringt 600 ft"), darum bleibt die Dreisatz-Übung
+// bei den dreien. Der gewertete Test und die Schnellrechnen-Übung fragen
+// weiterhin alle vier Prinzipien ab.
+export const DREISATZ_PRINZIPIEN = ["zeit", "weg", "geschwindigkeit"];
 
-// Wertelisten laut Entwurf: nur Paare, deren Ergebnis ganzzahlig ist und im
-// erlaubten Bereich liegt, einmal beim Laden gerechnet. Alle Werte bleiben
-// im Anzeigebereich der Instrumente (Fahrt bis 300 kt, Höhenänderung bis
-// 8900 ft), denn das Panel spiegelt die Aufgabenwerte auch dann, wenn sie
-// im Text stehen (Willis Vorgabe vom 25.08.2026).
-const GESCHWINDIGKEITEN = [60, 80, 90, 100, 120, 150, 180, 200, 240, 300];
-const ZEITEN = [12, 15, 20, 30, 45, 60, 90, 120, 150, 180, 240, 300];
-const WZG_PAARE = [];
-for (const v of GESCHWINDIGKEITEN) for (const t of ZEITEN) {
-  const s = (v * t) / 60;
-  if (Number.isInteger(s) && s >= 20 && s <= 1500) WZG_PAARE.push({ v, t, s });
+// Zahl mit Komma für die Oberfläche, und die Prüfung auf einen Zwischenwert,
+// der im Kopf trägt (ganz oder ,5). Beides steht oben, weil schon der
+// Aufgabenbestand damit gebaut wird.
+const zk = (n) => String(n).replace(".", ",");
+const istGlatt = (n) => Number.isInteger(n * 2);
+// Knoten, bei denen die eine Minute aufgeht: 240 kt sind 4 NM je Minute,
+// 210 kt sind 3,5. Das ist genau jeder Wert, der durch 30 teilbar ist.
+const minutenGlatt = (v) => istGlatt(v / 60);
+
+// Je Minutenzahl der Stundenbruch in Worten und die Rechenoperation in
+// beide Richtungen: weg rechnet s aus v (mal Stundenanteil), tempo rechnet
+// v aus s (die Umkehrung). Bei 45 Minuten ist der Doppelschritt über
+// Viertel der schnellste Kopfweg.
+// Seit 17.09.2026 entscheidet diese Tabelle zusätzlich, welche Zeiten als
+// glatter Stundenbruch gelten: Die Formel-Übung zieht nur aus ihnen, die
+// Dreisatz-Übung nur aus den Zeiten, die hier nicht stehen.
+const STUNDENBRUECHE = {
+  12: { wort: "ein Fünftel einer Stunde", weg: "geteilt durch 5", tempo: "mal 5" },
+  15: { wort: "eine Viertelstunde", weg: "geteilt durch 4", tempo: "mal 4" },
+  20: { wort: "ein Drittel einer Stunde", weg: "geteilt durch 3", tempo: "mal 3" },
+  30: { wort: "eine halbe Stunde", weg: "geteilt durch 2", tempo: "mal 2" },
+  40: { wort: "zwei Drittel einer Stunde", weg: "mal 2, geteilt durch 3", tempo: "mal 3, geteilt durch 2" },
+  45: { wort: "eine Dreiviertelstunde", weg: "mal 3, geteilt durch 4", tempo: "mal 4, geteilt durch 3" },
+  60: { wort: "genau eine Stunde", weg: "mal 1", tempo: "mal 1" },
+  90: { wort: "anderthalb Stunden", weg: "mal 1,5", tempo: "geteilt durch 1,5" },
+  120: { wort: "zwei Stunden", weg: "mal 2", tempo: "geteilt durch 2" },
+  150: { wort: "zweieinhalb Stunden", weg: "mal 2,5", tempo: "geteilt durch 2,5" },
+  180: { wort: "drei Stunden", weg: "mal 3", tempo: "geteilt durch 3" },
+  240: { wort: "vier Stunden", weg: "mal 4", tempo: "geteilt durch 4" },
+  300: { wort: "fünf Stunden", weg: "mal 5", tempo: "geteilt durch 5" },
+};
+export const STUNDENBRUCH_ZEITEN = Object.keys(STUNDENBRUECHE).map(Number);
+
+// Schwierigkeitsstufen (Willis Auftrag vom 17.09.2026), einstellbar im
+// gewerteten Test und in beiden Übungen getrennt. Gesteuert wird nicht die
+// Größe der Zahlen, sondern wie schwer der Zwischenwert ist. Willis Vorgabe
+// wörtlich: "Die Zahlen sollen nicht zu gross oder zu krumm werden aber
+// etwas anspruchsvoller, damit man mit Dreisatz nicht fast ohne Umrechnung
+// schon erkennbar ist was die Loesung ist."
+//
+// Stufe 1, LEICHT: Knoten durch 60 ergibt eine ganze, kleine Zahl (120 kt
+//   sind 2 NM je Minute, 300 kt sind 5). Die Stundenbrüche sind ein einziger
+//   Griff: Viertel-, Drittel- und halbe Stunde. Gerechnet werden muss
+//   trotzdem, der zweite Schritt ist eine Multiplikation mit 7 bis 14.
+// Stufe 2, MITTEL: Knoten durch 60 ergibt einen halben Wert (90 kt sind 1,5,
+//   150 kt sind 2,5), dazu die krummen Knoten 80, 100 und 200, bei denen die
+//   eine Minute gar nicht aufgeht und der Stundenbruch ran muss. Der
+//   Stundenbruch wird schwerer: Fünftel und Dreiviertelstunde.
+// Stufe 3, SCHWER: halbe Werte im oberen Bereich (210 kt sind 3,5 NM je
+//   Minute, 270 kt sind 4,5) und die Zweidrittel- und Dreiviertelstunde. Hier
+//   ist jeder zweite Schritt eine echte Multiplikation, keine Verdopplung:
+//   3,5 mal 26 rechnet niemand nebenbei ab.
+//
+// Auf keiner Stufe steht die Antwort ohne Rechnung da. Dafür sorgt der
+// Trivialfilter in wzgPaare: 60 kt wären 1 NM je Minute, 60 Minuten wären
+// eine ganze Stunde (dann entspricht der Weg schon den Knoten), und trügen
+// Knoten und Minuten dieselbe Zahl, stünde die gesuchte Zahl bereits im Text.
+// Die Zeiten der Dreisatz-Bestände sind bewusst keine griffigen
+// Stundenbrüche, sonst wäre der Umweg über die eine Minute überflüssig.
+export const STUFEN5 = [1, 2, 3];
+export const STUFENNAMEN = { 1: "LEICHT", 2: "MITTEL", 3: "SCHWER" };
+export const STUFE_STANDARD = 1;
+
+export const STUFENZAHLEN = {
+  1: {
+    tempi: [120, 180, 240, 300],          // 2, 3, 4, 5 NM je Minute
+    formelZeiten: [15, 20, 30],           // Viertel-, Drittel-, halbe Stunde
+    dreisatzZeiten: [7, 8, 11, 13, 14],   // kein Stundenbruch, kleiner zweiter Schritt
+    raten: [200, 300, 400, 500, 600, 800, 1000],
+    ratenZeiten: [3, 4, 5, 6],
+  },
+  2: {
+    tempi: [90, 150, 80, 100, 200],       // 1,5 und 2,5 NM je Minute, dazu die krummen Knoten
+    formelZeiten: [12, 30, 45, 90],
+    dreisatzZeiten: [8, 14, 16, 22, 26],  // gerade Zeiten, sonst wird der Weg krumm
+    raten: [250, 450, 600, 700, 900, 1200],
+    ratenZeiten: [4, 6, 7, 8],
+  },
+  3: {
+    tempi: [150, 210, 270, 100, 200],     // 2,5 / 3,5 / 4,5 NM je Minute, dazu die krummen Knoten
+    formelZeiten: [40, 45, 90],           // Zweidrittel-, Dreiviertel-, anderthalb Stunden
+    dreisatzZeiten: [14, 16, 22, 26, 28],
+    raten: [350, 550, 650, 750, 1100, 1300],
+    ratenZeiten: [4, 6, 7, 8],
+  },
+};
+
+// Anzeigegrenzen, die der Bestand einhalten muss: Der Höhenmesser zeigt nur
+// Hunderterschritte, und das Panel spiegelt die Aufgabenwerte auch dann,
+// wenn sie im Text stehen (Willis Vorgabe vom 25.08.2026). Der Fahrtmesser
+// zeigt jede Geschwindigkeit des Bestands (Raster 60 bis 320 kt), das
+// Variometer nur Hunderterschritte bis 2000 ft/min.
+const HOEHE_UNTEN = 1000;
+const HOEHE_OBEN = 8900;
+const VARIO_MAX = 2000;
+// Kürzeste und längste Strecke: unter 10 NM wird die Aufgabe albern, über
+// 1200 NM zu groß für einen Kopfrechenweg.
+const WEG_MIN = 10;
+const WEG_MAX = 1200;
+
+// Alle Weg-Zeit-Geschwindigkeits-Paare aus zwei Wertelisten, die ganzzahlig
+// aufgehen und nichts verschenken. Der Trivialfilter hält alles draußen,
+// dessen Antwort ohne Rechnung ablesbar wäre.
+function wzgPaare(tempi, zeiten) {
+  const paare = [];
+  for (const v of tempi) for (const t of zeiten) {
+    const s = (v * t) / 60;
+    if (!Number.isInteger(s) || s < WEG_MIN || s > WEG_MAX) continue;
+    if (v === 60 || t === 60 || v === t) continue;
+    paare.push({ v, t, s });
+  }
+  return paare;
 }
-const RATEN_PAARE = [];
-for (let r = 200; r <= 4000; r += 100) for (let t = 2; t <= 12; t++) {
-  const h = r * t;
-  if (h >= 1000 && h <= 8900) RATEN_PAARE.push({ r, t, h });
+
+// Ratenpaare: Die Höhe ist das Produkt aus Rate und Minuten und muss im
+// Raster des Höhenmessers liegen, denn jede Ratenaufgabe spiegelt ihre Höhe
+// aufs Panel.
+function ratenPaare(raten, zeiten) {
+  const paare = [];
+  for (const r of raten) for (const t of zeiten) {
+    const h = r * t;
+    if (h < HOEHE_UNTEN || h > HOEHE_OBEN || h % 100 !== 0) continue;
+    paare.push({ r, t, h });
+  }
+  return paare;
 }
 
-// Anzeigeraster der Instrumente für Instrumentenaufgaben: Der Höhenmesser
-// zeigt nur Hunderterschritte zwischen 1000 und 9900 ft, das Variometer nur
-// Werte bis 2000 ft/min. Wer den gegebenen Wert am Zeiger abliest, darf ihn
-// also nur dort auch finden. Der Fahrtmesser braucht keine eigene Liste, er
-// zeigt jede Geschwindigkeit aus GESCHWINDIGKEITEN an.
-const RATEN_PAARE_HOEHENMESSER = RATEN_PAARE.filter((p) => p.h >= 1000);
-const RATEN_PAARE_VARIOMETER = RATEN_PAARE.filter((p) => p.r <= 2000);
+// Der ganze Bestand je Stufe, einmal beim Laden gerechnet. formel und
+// dreisatz sind die beiden Methodenbestände (Willis Auftrag vom 17.09.2026:
+// "die erste Uebung soll Aufgaben abfragen, die sich mit den Formeln gut
+// loesen lassen und die zweite soll Aufgaben abfragen, die sich mit 3 Satz
+// gut loesen lassen"), gemischt ist der Bestand des gewerteten Tests.
+function baueBestand(stufe) {
+  const z = STUFENZAHLEN[stufe];
+  const formel = wzgPaare(z.tempi, z.formelZeiten);
+  const dreisatz = wzgPaare(z.tempi.filter(minutenGlatt), z.dreisatzZeiten);
+  const raten = ratenPaare(z.raten, z.ratenZeiten);
+  return {
+    formel,
+    dreisatz,
+    gemischt: [...formel, ...dreisatz],
+    raten,
+    // Die Höhe steht im Raster, sobald das Paar überhaupt gebaut wurde.
+    ratenHoehenmesser: raten,
+    ratenVariometer: raten.filter((p) => p.r % 100 === 0 && p.r <= VARIO_MAX),
+    // Zielhöhenaufgabe: Ausgangs- und Zielhöhe müssen beide ins Raster
+    // passen, also bleibt für die Differenz nur der Platz dazwischen.
+    ratenZielhoehe: raten.filter((p) => p.h <= HOEHE_OBEN - HOEHE_UNTEN),
+  };
+}
 
+const BESTAND = {};
+for (const stufe of STUFEN5) BESTAND[stufe] = baueBestand(stufe);
+
+// Gesamtbestand über alle Stufen, für Prüfungen und als Überblick.
+export const WZG_PAARE = STUFEN5.flatMap((s) => BESTAND[s].gemischt);
 // Dreisatzfreundliche Paare (Willis Auftrag vom 14.09.2026): Geht die
-// Geschwindigkeit glatt durch 60 auf, ergibt das Herunterrechnen auf eine
-// Minute eine ganze Zahl (240 kt sind 4 NM je Minute, 180 NM in 45 Minuten
-// sind 4 NM je Minute). Bei 80, 100 und 200 kt ist die Minute krumm.
-const WZG_PAARE_GLATT = WZG_PAARE.filter((p) => Number.isInteger(p.v / 60));
+// Geschwindigkeit glatt auf die eine Minute herunter, ergibt das eine
+// handliche Zahl (240 kt sind 4 NM je Minute, 210 kt sind 3,5). Bei 80, 100
+// und 200 kt ist die Minute krumm, dort trägt nur der Stundenbruch.
+export const WZG_PAARE_GLATT = WZG_PAARE.filter((p) => minutenGlatt(p.v));
+
+export function aufgabenbestand(stufe = STUFE_STANDARD) {
+  return BESTAND[STUFEN5.includes(stufe) ? stufe : STUFE_STANDARD];
+}
 
 const zufallAus = (feld, rnd) => feld[Math.floor(rnd() * feld.length)];
 
-// Anteil der Aufgaben, die aus den dreisatzfreundlichen Paaren kommen. Der
-// Rest wird weiter aus dem ganzen Bestand gezogen, damit keine
-// Geschwindigkeit und keine Zeit aus den Aufgaben verschwindet.
+// Anteil der Aufgaben, die im gewerteten Test aus dem Dreisatz-Bestand
+// kommen; der Rest kommt aus dem Formel-Bestand. So bleibt der Test gemischt,
+// während jede Übung bei ihrer Methode bleibt.
 export const DREISATZ_ANTEIL = 0.5;
-const ziehePaar = (rnd) => zufallAus(rnd() < DREISATZ_ANTEIL ? WZG_PAARE_GLATT : WZG_PAARE, rnd);
+function ziehePaar(bestand, methode, rnd) {
+  if (methode === "formel") return zufallAus(bestand.formel, rnd);
+  if (methode === "dreisatz") return zufallAus(bestand.dreisatz, rnd);
+  return zufallAus(rnd() < DREISATZ_ANTEIL ? bestand.dreisatz : bestand.formel, rnd);
+}
 
-// Jedes Prinzip kommt mindestens einmal vor, der Rest wird gewürfelt.
-export function waehlePrinzipien(anzahl, rnd = Math.random) {
-  const folge = [...PRINZIPIEN];
-  while (folge.length < anzahl) folge.push(zufallAus(PRINZIPIEN, rnd));
+// Jedes Prinzip kommt mindestens einmal vor, der Rest wird gewürfelt. Die
+// Dreisatz-Übung reicht ihre eigene, kürzere Prinzipienliste herein.
+export function waehlePrinzipien(anzahl, rnd = Math.random, prinzipien = PRINZIPIEN) {
+  const folge = [...prinzipien];
+  while (folge.length < anzahl) folge.push(zufallAus(prinzipien, rnd));
   return mische(folge.slice(0, anzahl), rnd);
+}
+
+// Zielhöhenaufgabe (Willis Auftrag vom 17.09.2026, wörtlich: "Du sollst in
+// Zeit X auf 3400 ft steigen (Instrument ist bereits bei 1000 ft und dies ist
+// zu beachten)"). Der Text nennt Zielhöhe und Zeit, die Ausgangshöhe hängt am
+// Höhenmesser. Der Bewerber bildet also erst die Differenz und rechnet dann
+// die Rate. Nur im gewerteten Test, nicht in den Übungen.
+function zielhoehenaufgabe(bestand, rnd) {
+  const { r, t, h } = zufallAus(bestand.ratenZielhoehe, rnd);
+  const steigen = rnd() < 0.5;
+  // Ausgangshöhe so würfeln, dass Ausgangs- und Zielhöhe im Raster bleiben.
+  // Träfe die Zielhöhe dabei die gesuchte Rate ("in 6 Minuten auf 1200 ft
+  // sinken", Antwort 1200 ft/min), stünde die Antwort ablesbar im Text. Solche
+  // Ausgangshöhen fallen darum weg. Betroffen ist nur das Sinken mit Raten ab
+  // 1000 ft/min; beim Steigen liegt die Zielhöhe immer über der Differenz und
+  // damit über der Rate, dort kann der Fall nicht eintreten. Es bleiben immer
+  // Ausgangshöhen übrig, der engste Bereich im Bestand hat zwei.
+  const von = steigen ? HOEHE_UNTEN : HOEHE_UNTEN + h;
+  const bis = steigen ? HOEHE_OBEN - h : HOEHE_OBEN;
+  const moeglich = [];
+  for (let wert = von; wert <= bis; wert += 100) {
+    if ((steigen ? wert + h : wert - h) !== r) moeglich.push(wert);
+  }
+  const start = zufallAus(moeglich, rnd);
+  const ziel = steigen ? start + h : start - h;
+  return {
+    prinzip: "rate",
+    frage: steigen
+      ? `Du sollst in ${t} Minuten auf ${ziel} ft steigen. Deine jetzige Höhe zeigt der Höhenmesser. Berechne die Steigrate in ft/min.`
+      : `Du sollst in ${t} Minuten auf ${ziel} ft sinken. Deine jetzige Höhe zeigt der Höhenmesser. Berechne die Sinkrate in ft/min.`,
+    antwort: r,
+    einheit: "ft/min",
+    instrument: { id: "hoehe", wert: start },
+    zielhoehe: { start, ziel, steigen },
+    tipp: "zielhoehe",
+    werte: { r, t, h },
+  };
 }
 
 // Bei mitInstrument entfällt der Gegebenwert im Text, stattdessen verweist
 // die Frage aufs Ablesen am Instrument, dessen Wert im Anzeigeraster liegen
 // muss. Beim Prinzip Geschwindigkeit stünde der gesuchte Wert sonst ablesbar
 // am Instrument, darum bleibt es dort immer bei der Textaufgabe.
-export function erzeugeAufgabe(prinzip, rnd = Math.random, mitInstrument = false) {
+// optionen: stufe (1 bis 3), methode ("formel", "dreisatz" oder "gemischt")
+// und mitZielhoehe (nur der gewertete Lauf setzt es).
+export function erzeugeAufgabe(prinzip, rnd = Math.random, mitInstrument = false, optionen = {}) {
+  const { stufe = STUFE_STANDARD, methode = "gemischt", mitZielhoehe = false } = optionen;
+  const bestand = aufgabenbestand(stufe);
   if (prinzip === "geschwindigkeit") mitInstrument = false;
 
   if (prinzip === "rate") {
     if (mitInstrument) {
+      // Anteil von 0,5 auf 0,75 (Prüferbefund vom 17.09.2026): Bei jeder
+      // zweiten Instrumenten-Rate kam die Zielhöhenaufgabe auf rund 0,8
+      // Stück je Fünf-Minuten-Lauf, Willi hätte sie in der Hälfte der
+      // kurzen Läufe gar nicht zu sehen bekommen. Er hat sie ausdrücklich
+      // bestellt, also kommt sie häufiger.
+      if (mitZielhoehe && rnd() < 0.75) return zielhoehenaufgabe(bestand, rnd);
       if (rnd() < 0.5) {
-        const { r, t, h } = zufallAus(RATEN_PAARE_HOEHENMESSER, rnd);
+        const { r, t, h } = zufallAus(bestand.ratenHoehenmesser, rnd);
         return {
           prinzip,
           frage: `Du musst deine aktuelle Höhe (Höhenmesser) in ${t} Minuten vollständig abbauen. Berechne die Sinkrate in ft/min.`,
@@ -76,7 +268,7 @@ export function erzeugeAufgabe(prinzip, rnd = Math.random, mitInstrument = false
           werte: { r, t, h },
         };
       }
-      const { r, t, h } = zufallAus(RATEN_PAARE_VARIOMETER, rnd);
+      const { r, t, h } = zufallAus(bestand.ratenVariometer, rnd);
       return {
         prinzip,
         frage: `Du sinkst mit deinem aktuellen Sinken (Variometer). Berechne die Flugzeit für ${h} ft in Minuten.`,
@@ -86,7 +278,7 @@ export function erzeugeAufgabe(prinzip, rnd = Math.random, mitInstrument = false
         werte: { r, t, h },
       };
     }
-    const { r, t, h } = zufallAus(RATEN_PAARE, rnd);
+    const { r, t, h } = zufallAus(bestand.raten, rnd);
     const sinken = rnd() < 0.5;
     return {
       prinzip,
@@ -102,7 +294,7 @@ export function erzeugeAufgabe(prinzip, rnd = Math.random, mitInstrument = false
   }
 
   if (mitInstrument) {
-    const { v, t, s } = ziehePaar(rnd);
+    const { v, t, s } = ziehePaar(bestand, methode, rnd);
     if (prinzip === "zeit") return {
       prinzip,
       frage: `Du fliegst mit deiner aktuellen Geschwindigkeit (Fahrtmesser). Das Ziel liegt ${s} NM entfernt. Berechne die Flugzeit in Minuten.`,
@@ -121,7 +313,7 @@ export function erzeugeAufgabe(prinzip, rnd = Math.random, mitInstrument = false
     };
   }
 
-  const { v, t, s } = ziehePaar(rnd);
+  const { v, t, s } = ziehePaar(bestand, methode, rnd);
   if (prinzip === "zeit") return {
     prinzip,
     frage: `Du fliegst ${v} kt. Das Ziel liegt ${s} NM entfernt. Berechne die Flugzeit in Minuten.`,
@@ -154,8 +346,10 @@ export function erzeugeAufgabe(prinzip, rnd = Math.random, mitInstrument = false
 // Zusätzlich wird rund ein Drittel der Aufgaben zu Instrumentenaufgaben, rein
 // zufällig verteilt über die Positionen, deren Prinzip nicht Geschwindigkeit
 // ist. Gibt es weniger geeignete Positionen als das Drittel, werden alle
-// geeigneten genommen.
-export function erzeugeLauf(anzahl, rnd = Math.random) {
+// geeigneten genommen. Nur hier kommt die Zielhöhenaufgabe vor, denn sie
+// gehört zum gewerteten Test und nicht in die Übungen.
+export function erzeugeLauf(anzahl, rnd = Math.random, optionen = {}) {
+  const einstellung = { methode: "gemischt", mitZielhoehe: true, ...optionen };
   const prinzipien = waehlePrinzipien(anzahl, rnd);
   const geeignete = prinzipien.reduce((liste, prinzip, i) => {
     if (prinzip !== "geschwindigkeit") liste.push(i);
@@ -164,7 +358,7 @@ export function erzeugeLauf(anzahl, rnd = Math.random) {
   const anzahlInstrument = Math.min(Math.round(anzahl / 3), geeignete.length);
   const instrumentPositionen = new Set(mische(geeignete, rnd).slice(0, anzahlInstrument));
   return prinzipien.map((prinzip, i) => ({
-    ...erzeugeAufgabe(prinzip, rnd, instrumentPositionen.has(i)),
+    ...erzeugeAufgabe(prinzip, rnd, instrumentPositionen.has(i), einstellung),
     form: rnd() < 0.5 ? "auswahl" : "eingabe",
   }));
 }
@@ -185,6 +379,16 @@ function sechzigerFehler(aufgabe) {
 export function ablenker(aufgabe, rnd = Math.random) {
   const a = aufgabe.antwort;
   const kandidaten = [];
+  // Der klassische Fehler der Zielhöhenaufgabe (Prüferbefund vom
+  // 17.09.2026): Wer die abgelesene Ausgangshöhe vergisst, teilt die
+  // Zielhöhe durch die Zeit. Genau darum geht es bei dieser Aufgabenform,
+  // also muss dieser Wert bei der Auswahlfrage zur Wahl stehen; sonst
+  // verpufft die Falle, weil der eigene Fehlwert gar nicht angeboten wird
+  // und der Bewerber stutzt, ohne zu verstehen warum.
+  if (aufgabe.zielhoehe) {
+    const ohneAbzug = Math.round(aufgabe.zielhoehe.ziel / aufgabe.werte.t);
+    if (ohneAbzug !== a) kandidaten.push(ohneAbzug);
+  }
   const fehler = sechzigerFehler(aufgabe);
   if (fehler && fehler !== a) kandidaten.push(fehler);
   kandidaten.push(...mische([0.5, 0.75, 0.9, 1.1, 1.25, 1.5, 2].map((f) => Math.round(a * f)), rnd));
@@ -228,32 +432,21 @@ export function pruefeEingabe(text, antwort) {
 // auf die gesuchte Menge hochrechnen. Wo er der schnellste Weg ist, ist er
 // der gezeigte; wo ein Kniff schneller geht, steht er als sicherer Weg
 // darunter.
-const zk = (n) => String(n).replace(".", ","); // Zahl mit Komma
-const istGlatt = (n) => Number.isInteger(n * 2); // ganz oder ,5
-// Je Minutenzahl der Stundenbruch in Worten und die Rechenoperation in
-// beide Richtungen: weg rechnet s aus v (mal Stundenanteil), tempo rechnet
-// v aus s (die Umkehrung). Bei 45 Minuten ist der Doppelschritt über
-// Viertel der schnellste Kopfweg.
-const STUNDENBRUECHE = {
-  12: { wort: "ein Fünftel einer Stunde", weg: "geteilt durch 5", tempo: "mal 5" },
-  15: { wort: "eine Viertelstunde", weg: "geteilt durch 4", tempo: "mal 4" },
-  20: { wort: "ein Drittel einer Stunde", weg: "geteilt durch 3", tempo: "mal 3" },
-  30: { wort: "eine halbe Stunde", weg: "geteilt durch 2", tempo: "mal 2" },
-  45: { wort: "eine Dreiviertelstunde", weg: "mal 3, geteilt durch 4", tempo: "mal 4, geteilt durch 3" },
-  60: { wort: "genau eine Stunde", weg: "mal 1", tempo: "mal 1" },
-  90: { wort: "anderthalb Stunden", weg: "mal 1,5", tempo: "geteilt durch 1,5" },
-  120: { wort: "zwei Stunden", weg: "mal 2", tempo: "geteilt durch 2" },
-  150: { wort: "zweieinhalb Stunden", weg: "mal 2,5", tempo: "geteilt durch 2,5" },
-  180: { wort: "drei Stunden", weg: "mal 3", tempo: "geteilt durch 3" },
-  240: { wort: "vier Stunden", weg: "mal 4", tempo: "geteilt durch 4" },
-  300: { wort: "fünf Stunden", weg: "mal 5", tempo: "geteilt durch 5" },
-};
 
 export const TIPPS5 = {
   zeit: "Knoten geteilt durch 60 sind NM je Minute: 120 kt = 2, 90 kt = 1,5. Zeit = Weg geteilt durch NM je Minute. Bei krummen Knoten (80, 100, 200) teile Weg durch Knoten: Das ergibt die Stunden, etwa 20 NM bei 80 kt = eine Viertelstunde. Der Dreisatz geht immer: erst eine Minute oder eine NM ausrechnen, dann auf den gesuchten Wert hoch.",
   weg: "Erst die Geschwindigkeit in NM je Minute umdenken (kt geteilt durch 60), dann mal die Minuten. Bei griffigen Zeiten hilft der Stundenbruch: 15 min = Viertelstunde, 45 min = Dreiviertelstunde. Das ist der Dreisatz: herunter auf eine Minute, hoch auf die Minutenzahl der Aufgabe.",
   geschwindigkeit: "Weg geteilt durch Minuten ergibt NM je Minute, mal 60 sind es Knoten. Bei griffigen Zeiten direkt über den Stundenbruch: 30 min = halbe Stunde, also Weg mal 2. Der Dreisatz ist derselbe Gedanke in zwei Schritten: herunter auf eine Minute, hoch auf 60 Minuten.",
   rate: "Rate gesucht: Nullen der Höhe streichen, klein teilen, Nullen wieder dran (4800 durch 8: 48 durch 8 = 6, also 600 ft/min). Zeit gesucht: auf beiden Seiten gleich viele Nullen streichen und nichts anhängen (4800 durch 1200: 48 durch 12 = 4 Minuten). Sicher geht auch hier der Dreisatz: Was bringt eine Minute, und wie oft brauchst du sie?",
+  // Merktipp zur Zielhöhenaufgabe (Willis Auftrag vom 17.09.2026): Der
+  // Fallstrick ist die vergessene Ausgangshöhe.
+  // Eigener Tipp für die Dreisatz-Übung (Prüferbefund vom 17.09.2026): Die
+  // Tipps der Prinzipien raten unter anderem zum Stundenbruch, und genau
+  // der kommt in dieser Übung nie vor, weil ihr Bestand aus den Zeiten
+  // besteht, die keine Stundenbrüche sind. Ein Tipp, der auf einen dort
+  // unmöglichen Weg zeigt, verwirrt gerade den, der sich schwertut.
+  dreisatz: "Immer derselbe Zweischritt: erst herunter auf eine Einheit, dann hoch auf die gesuchte Menge. Knoten geteilt durch 60 sind die NM je Minute, das ist Schritt 1. Ob du danach malnimmst oder teilst, sagt dir die Frage: Suchst du eine Strecke, nimmst du mal die Minuten; suchst du eine Zeit, teilst du die Strecke durch die NM je Minute.",
+  zielhoehe: "Im Text steht die Zielhöhe, deine jetzige Höhe hängt am Höhenmesser. Erst die Differenz bilden (die größere Höhe minus die kleinere), dann diese Differenz durch die Minuten teilen. Wer die Zielhöhe direkt teilt, rechnet mit Höhe, die du längst hast. Der Dreisatz danach: Was bringt eine Minute, und wie oft brauchst du sie?",
 };
 
 // Bausteine des Dreisatzes. Jeder gibt die zwei Schritte in Worten zurück,
@@ -333,6 +526,43 @@ function dreisatzRate(aufgabe) {
   ];
 }
 
+// Die zwei Schritte des Dreisatzes als eigene Fragen (Willis Auftrag vom
+// 17.09.2026): Die Dreisatz-Übung fragt sie einzeln ab, nicht nur das
+// Endergebnis. Erst der Wert für eine Minute, dann der gesuchte Wert. Der
+// zweite Schritt nennt den richtigen Zwischenwert im Fragetext, damit sich
+// ein Fehler aus Schritt 1 nicht in Schritt 2 weiterschleppt.
+// Gibt null zurück, wo der Zwischenwert krumm wäre oder es gar keinen zweiten
+// Schritt gibt (Raten).
+export function dreisatzSchritte(aufgabe) {
+  if (aufgabe.prinzip === "rate" || !aufgabe.werte) return null;
+  const { v, t, s } = aufgabe.werte;
+  const je = aufgabe.prinzip === "geschwindigkeit" ? s / t : v / 60;
+  if (!istGlatt(je)) return null;
+  const schritt1 = {
+    frage: aufgabe.prinzip === "geschwindigkeit"
+      ? `Du legst ${s} NM in ${t} Minuten zurück. Wie weit kommst du in einer Minute?`
+      : `Du fliegst ${v} kt, das sind ${v} NM in 60 Minuten. Wie weit kommst du in einer Minute?`,
+    antwort: je,
+    einheit: "NM je Minute",
+  };
+  const vorspann = `Eine Minute bringt ${zk(je)} NM.`;
+  if (aufgabe.prinzip === "zeit") return {
+    zwischenwert: je,
+    schritt1,
+    schritt2: { frage: `${vorspann} Wie lange brauchst du für ${s} NM?`, antwort: t, einheit: "min" },
+  };
+  if (aufgabe.prinzip === "weg") return {
+    zwischenwert: je,
+    schritt1,
+    schritt2: { frage: `${vorspann} Wie weit kommst du in ${t} Minuten?`, antwort: s, einheit: "NM" },
+  };
+  return {
+    zwischenwert: je,
+    schritt1,
+    schritt2: { frage: `${vorspann} Wie weit kommst du in 60 Minuten, also wie viele Knoten sind das?`, antwort: v, einheit: "kt" },
+  };
+}
+
 // Als gezeigter Weg beginnt der Dreisatz die Liste, als sicherer Weg steht er
 // unter dem Kniff und sagt das in der ersten Zeile.
 const alsWeg = (schritte) => [`Dreisatz, Schritt 1: ${schritte[0]}`, `Dreisatz, Schritt 2: ${schritte[1]}`];
@@ -348,14 +578,26 @@ export function loesungsweg(aufgabe) {
     const { r, t, h } = w;
     // Der Nullen-Trick bleibt der schnellste Weg, der Dreisatz steht darunter.
     const dreisatz = alsHinweis(dreisatzRate(aufgabe));
+    // Zielhöhenaufgabe: Die Ausgangshöhe steht nicht im Text, sie hängt am
+    // Höhenmesser. Ohne die Differenz rechnet man mit einer Höhe, die längst
+    // geflogen ist, darum führt der Weg sie als ersten Schritt mit.
+    const z = aufgabe.zielhoehe;
+    const differenz = z ? [z.steigen
+      ? `Erst die Differenz: Zielhöhe ${z.ziel} ft minus abgelesene ${z.start} ft = ${h} ft zu steigen.`
+      : `Erst die Differenz: abgelesene ${z.start} ft minus Zielhöhe ${z.ziel} ft = ${h} ft abzubauen.`] : [];
+    // zk auch auf den gestrichenen Raten: Seit den halben Raten der höheren
+    // Stufen (450 ft/min werden zu 4,5) fällt hier sonst ein Punkt statt
+    // eines Kommas ins Bild.
     if (aufgabe.antwort === t) return [
-      `Nullen weg: aus ${h} ft und ${r} ft/min werden ${h / 100} und ${r / 100}.`,
-      `${h / 100} geteilt durch ${r / 100} = ${t} Minuten.`,
+      ...differenz,
+      `Nullen weg: aus ${h} ft und ${r} ft/min werden ${zk(h / 100)} und ${zk(r / 100)}.`,
+      `${zk(h / 100)} geteilt durch ${zk(r / 100)} = ${t} Minuten.`,
       ...dreisatz,
     ];
     return [
-      `Nullen weg: aus ${h} ft werden ${h / 100}.`,
-      `${h / 100} geteilt durch ${t} Minuten = ${r / 100}, Nullen dran: ${r} ft/min.`,
+      ...differenz,
+      `Nullen weg: aus ${h} ft werden ${zk(h / 100)}.`,
+      `${zk(h / 100)} geteilt durch ${t} Minuten = ${zk(r / 100)}, Nullen dran: ${r} ft/min.`,
       ...dreisatz,
     ];
   }
@@ -442,6 +684,12 @@ export function punkteFuerAntwort(richtig, restzeitMs, limitMs) {
 
 // Kennzahl des Laufs: Punkteschnitt je gestellter Aufgabe, auf 0 bis 100
 // gebracht. So bleiben Läufe verschiedener Testdauern vergleichbar.
+// Bewusst unangetastet, obwohl es seit 17.09.2026 drei Schwierigkeitsstufen
+// gibt (Willis Wahl: "Stufe ja, Wertung spaeter"). Ein leichter und ein
+// schwerer Lauf landen damit vorerst in derselben Statistik, ohne dass die
+// Stufe die Prozentzahl anhebt oder deckelt. Das ist nach ein paar Läufen zu
+// eichen: erst wenn Willi weiß, wie viel Prozent er je Stufe schafft, lässt
+// sich ein Stufenfaktor festlegen, der die Stufen vergleichbar macht.
 export function kennzahl(punkteSumme, anzahl) {
   if (anzahl === 0) return 0;
   return Math.round((punkteSumme / (anzahl * 10)) * 100);
@@ -475,7 +723,9 @@ export function panelwerte(aufgabe, rnd = Math.random) {
     return werte;
   }
 
-  // Höhe am Zeiger ablesen, der Abbau steht erst bevor: noch waagerecht.
+  // Höhe am Zeiger ablesen, der Abbau oder der Steigflug steht erst bevor:
+  // noch waagerecht. Das gilt auch für die Zielhöhenaufgabe, deren
+  // Ausgangshöhe hier wörtlich am Höhenmesser steht.
   if (instrument?.id === "hoehe") {
     werte.hoehe = instrument.wert;
     werte.vario = 0;
@@ -511,7 +761,8 @@ export function panelwerte(aufgabe, rnd = Math.random) {
 // Instrumente, die die gesuchte Antwort verrieten, zeigt der Lauf nicht mit
 // einem falschen Wert, sondern verdeckt sie (Willis Vorgabe vom
 // 25.08.2026): der Fahrtmesser bei der Geschwindigkeitsfrage, das
-// Variometer, wenn die Rate die Antwort ist.
+// Variometer, wenn die Rate die Antwort ist. Der Höhenmesser bleibt immer
+// sichtbar, die Zielhöhenaufgabe ist ohne ihn nicht lösbar.
 export function verdeckteInstrumente(aufgabe) {
   if (aufgabe.prinzip === "geschwindigkeit") return ["fahrt"];
   if (aufgabe.prinzip === "rate" && aufgabe.einheit === "ft/min") return ["vario"];

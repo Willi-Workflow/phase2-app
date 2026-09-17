@@ -111,3 +111,49 @@ Nach dem Baumuster von Mission 4:
 - Schwierigkeitsstufen für Mission 5 über die wählbare Testdauer hinaus.
 - Eine Wiederholsperre für Aufgaben über Läufe hinweg.
 - Weitere Aufgabentypen (etwa Verbrauch oder Einheitenumrechnung) und weitere Karteikartensätze; beides ist später über `uebung5.js` und `wissen5.js` ergänzbar.
+
+## Änderungen vom 17.09.2026 (Willis Aufträge)
+
+**Zwei Übungen, nach Rechenweg getrennt.** Beide bleiben reine Übungen
+und zählen nie als Lauf.
+
+- SCHNELLRECHNEN (seit 07.09.2026) zieht jetzt nur noch Aufgaben, deren
+  Zeit ein glatter Bruchteil einer Stunde ist. Dort trägt die Formel in
+  einem Schritt ("30 min ist eine halbe Stunde, also Weg mal 2").
+- DREISATZ ist neu. Sie zieht genau die Gegenstücke: Das Herunterrechnen
+  auf eine Minute geht glatt auf, die Zeit ist aber kein Stundenbruch,
+  dort ist die Formel umständlich. Die Übung fragt die zwei Schritte des
+  Dreisatzes einzeln ab statt nur das Ergebnis, denn genau dieses
+  Zerlegen soll geübt werden. Schritt 2 bleibt verborgen, bis Schritt 1
+  beantwortet ist, und nennt dann den richtigen Zwischenwert im
+  Fragetext, damit sich ein Fehler nicht weiterschleppt. Die
+  Ergebnistafel zählt beide Schritte getrennt. Raten kommen dort nicht
+  vor, dort wäre Schritt 1 schon die Antwort.
+- Im gewerteten Test bleibt der Bestand gemischt.
+
+**Schwierigkeitsstufen** (LEICHT, MITTEL, SCHWER) an drei Stellen
+einstellbar, je Profil gespeichert: im gewerteten Test und in jeder der
+beiden Übungen. Gesteuert wird nicht die Größe der Zahlen, sondern wie
+schwer der Zwischenwert ist (Willis Vorgabe: nicht zu groß oder zu krumm,
+aber so, dass die Lösung nicht ohne Umrechnung dasteht). Leicht sind
+Knoten mit ganzen NM je Minute (120 kt ergibt 2), schwer solche mit
+halben (210 kt ergibt 3,5). Aufgaben, deren Antwort ohne Rechnung
+ablesbar wäre, fallen überall heraus: 60 kt, 60 Minuten und Fälle, in
+denen Knoten und Minuten dieselbe Zahl tragen.
+
+Kennzahl und Punkteregel bleiben in dieser Runde unangetastet (Willis
+Wahl "Stufe ja, Wertung später"). Leichte und schwere Läufe mischen sich
+damit vorerst in derselben Statistik; die Stufe wandert dafür in die
+Laufdaten, damit das später trennbar bleibt. Dazu kommt, dass der
+Aufgabenbestand sich mit dieser Runde stark geändert hat, die bisherigen
+Läufe stammen aus dem alten.
+
+**Neue Aufgabenform im gewerteten Test: Zielhöhe.** Der Text nennt
+Zielhöhe und Zeit ("Du sollst in 6 Minuten auf 3400 ft steigen"), die
+Ausgangshöhe steht am Höhenmesser und ist abzulesen. Der Bewerber muss
+erst die Differenz bilden, dann die Rate rechnen. Der Höhenmesser bleibt
+dafür sichtbar, das Variometer bleibt verdeckt, sonst stünde die gesuchte
+Rate am Zeiger. Bei der Auswahlform steht der naheliegende Fehlwert
+(Zielhöhe geteilt durch die Zeit, also ohne Abzug der abgelesenen Höhe)
+immer unter den Antworten, sonst verpufft die Falle. Die Form macht rund
+8 Prozent der Aufgaben aus, also gut eine je Lauf.

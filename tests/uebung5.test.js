@@ -1,10 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  TESTDAUERN, AUFGABENZEIT, PRINZIPIEN,
+  TESTDAUERN, AUFGABENZEIT, PRINZIPIEN, DREISATZ_PRINZIPIEN,
   waehlePrinzipien, erzeugeAufgabe, erzeugeLauf, panelwerte, verdeckteInstrumente,
   ablenker, antwortenFuer, pruefeEingabe,
   punkteFuerAntwort, kennzahl, loesungsweg, TIPPS5,
+  STUFEN5, STUFENNAMEN, STUFE_STANDARD, STUFENZAHLEN, STUNDENBRUCH_ZEITEN,
+  aufgabenbestand, dreisatzSchritte, WZG_PAARE, WZG_PAARE_GLATT,
 } from "../js/uebung5.js";
 
 function saatZufall(saat) {
@@ -37,17 +39,20 @@ test("erzeugeAufgabe: ganzzahlig, in sich stimmig, Einheit und Bereich passen", 
       assert.equal(a.prinzip, prinzip);
       assert.ok(Number.isInteger(a.antwort) && a.antwort > 0);
       const zahlen = a.frage.match(/\d+/g).map(Number);
+      // Untergrenze seit 17.09.2026 bei 10 NM statt bei 20: Die
+      // Dreisatz-Bestände arbeiten mit Zeiten unter einer Viertelstunde,
+      // und 120 kt in sieben Minuten sind nun einmal 14 NM.
       if (prinzip === "zeit") {
         const [v, s] = zahlen;
         assert.equal(a.antwort, (s / v) * 60);
         assert.equal(a.einheit, "min");
-        assert.ok(s >= 20 && s <= 2400);
+        assert.ok(s >= 10 && s <= 2400);
       }
       if (prinzip === "weg") {
         const [v, t] = zahlen;
         assert.equal(a.antwort, (v * t) / 60);
         assert.equal(a.einheit, "NM");
-        assert.ok(a.antwort >= 20 && a.antwort <= 2400);
+        assert.ok(a.antwort >= 10 && a.antwort <= 2400);
       }
       if (prinzip === "geschwindigkeit") {
         const [s, t] = zahlen;
@@ -520,28 +525,34 @@ test("loesungsweg: nur die glatte Stunde kommt ohne Dreisatz aus", () => {
   })).length, 0);
 });
 
-test("erzeugeAufgabe: glatt teilbare Paare kommen regelmäßig vor", () => {
-  // Willis Änderung vom 14.09.2026: Es soll regelmäßig Aufgaben geben, bei
-  // denen das Herunterrechnen auf eine Minute glatt aufgeht (180 NM in 45
-  // Minuten sind 4 NM je Minute). Die Vielfalt darf darunter nicht leiden,
-  // darum muss weiterhin jede Geschwindigkeit und jede Zeit vorkommen.
-  const tempi = new Set();
-  const zeiten = new Set();
-  let glatt = 0;
-  let gesamt = 0;
-  for (let i = 0; i < 1500; i++) {
-    const prinzip = ["zeit", "weg", "geschwindigkeit"][i % 3];
-    const a = erzeugeAufgabe(prinzip, Math.random, i % 4 === 0);
-    tempi.add(a.werte.v);
-    zeiten.add(a.werte.t);
-    gesamt += 1;
-    if (Number.isInteger(a.werte.v / 60)) glatt += 1;
+test("erzeugeAufgabe: der gemischte Bestand schöpft aus beiden Methoden", () => {
+  // Willis Änderung vom 14.09.2026, seit dem 17.09.2026 nach Methode
+  // getrennt: Im gewerteten Test kommen beide Sorten vor, Formelaufgaben mit
+  // glattem Stundenbruch und Dreisatzaufgaben ohne. Die Vielfalt darf nicht
+  // leiden, darum muss auf jeder Stufe jede Geschwindigkeit und jede Zeit
+  // ihres Bestands vorkommen.
+  for (const stufe of STUFEN5) {
+    const b = aufgabenbestand(stufe);
+    const tempi = new Set();
+    const zeiten = new Set();
+    let dreisatz = 0;
+    let gesamt = 0;
+    for (let i = 0; i < 3000; i++) {
+      const prinzip = ["zeit", "weg", "geschwindigkeit"][i % 3];
+      const a = erzeugeAufgabe(prinzip, Math.random, i % 4 === 0, { stufe });
+      tempi.add(a.werte.v);
+      zeiten.add(a.werte.t);
+      gesamt += 1;
+      if (!STUNDENBRUCH_ZEITEN.includes(a.werte.t)) dreisatz += 1;
+    }
+    // Beide Methoden kommen vor, keine erdrückt die andere.
+    assert.ok(dreisatz / gesamt > 0.2, `Stufe ${stufe}: Dreisatzanteil ${dreisatz / gesamt}`);
+    assert.ok(dreisatz / gesamt < 0.8, `Stufe ${stufe}: Dreisatzanteil ${dreisatz / gesamt}`);
+    assert.deepEqual([...tempi].sort((x, y) => x - y),
+      [...new Set(b.gemischt.map((p) => p.v))].sort((x, y) => x - y), `Stufe ${stufe}: Tempi`);
+    assert.deepEqual([...zeiten].sort((x, y) => x - y),
+      [...new Set(b.gemischt.map((p) => p.t))].sort((x, y) => x - y), `Stufe ${stufe}: Zeiten`);
   }
-  assert.ok(glatt / gesamt > 0.65, `Anteil glatter Paare: ${glatt / gesamt}`);
-  assert.ok(glatt / gesamt < 0.95, `Anteil glatter Paare: ${glatt / gesamt}`);
-  assert.equal(tempi.size, 10);
-  assert.equal(zeiten.size, 12);
-  for (const v of [80, 100, 200]) assert.ok(tempi.has(v), `${v} kt fehlt`);
 });
 
 test("erzeugeAufgabe: die glatten Paare tragen den Dreisatz als gezeigten Weg", () => {
@@ -565,5 +576,368 @@ test("TIPPS5: je Prinzip ein Merktipp, und jeder benennt den Dreisatz", () => {
   for (const prinzip of PRINZIPIEN) {
     assert.ok(typeof TIPPS5[prinzip] === "string" && TIPPS5[prinzip].length > 20, prinzip);
     assert.ok(TIPPS5[prinzip].includes("Dreisatz"), prinzip);
+  }
+});
+
+// Schwierigkeitsstufen und die Trennung nach Methode, Willis Auftrag vom
+// 17.09.2026. Drei Stufen, an drei Stellen einstellbar: gewerteter Test,
+// Schnellrechnen (Formeln) und Dreisatz. Die folgenden Prüfungen halten fest,
+// was jede Stufe liefern muss und was auf keiner Stufe vorkommen darf.
+
+test("Stufen: drei Stufen mit Namen, Standard ist die leichteste", () => {
+  assert.deepEqual(STUFEN5, [1, 2, 3]);
+  for (const stufe of STUFEN5) {
+    assert.ok(typeof STUFENNAMEN[stufe] === "string" && STUFENNAMEN[stufe].length > 2);
+  }
+  assert.equal(STUFE_STANDARD, 1);
+  assert.ok(STUFEN5.includes(STUFE_STANDARD));
+});
+
+test("Stufen: jede Stufe liefert gefüllte Bestände in beiden Methoden", () => {
+  for (const stufe of STUFEN5) {
+    const b = aufgabenbestand(stufe);
+    for (const [name, feld] of Object.entries(b)) {
+      assert.ok(feld.length > 0, `Stufe ${stufe}: ${name} ist leer`);
+    }
+    assert.equal(b.gemischt.length, b.formel.length + b.dreisatz.length);
+  }
+  // Eine unbekannte Stufe fällt auf die Standardstufe zurück, statt mit
+  // leeren Listen loszulaufen.
+  assert.deepEqual(aufgabenbestand(9), aufgabenbestand(STUFE_STANDARD));
+  assert.deepEqual(aufgabenbestand(), aufgabenbestand(STUFE_STANDARD));
+});
+
+test("Stufen: Formel-Aufgaben haben immer einen glatten Stundenbruch, Dreisatz-Aufgaben nie", () => {
+  for (const stufe of STUFEN5) {
+    const b = aufgabenbestand(stufe);
+    for (const p of b.formel) {
+      assert.ok(STUNDENBRUCH_ZEITEN.includes(p.t), `Stufe ${stufe}: ${p.t} min ist kein Stundenbruch`);
+    }
+    for (const p of b.dreisatz) {
+      assert.ok(!STUNDENBRUCH_ZEITEN.includes(p.t), `Stufe ${stufe}: ${p.t} min ist ein Stundenbruch`);
+      // Der Dreisatz braucht die glatte Minute, sonst ist der Zwischenwert krumm.
+      assert.ok(Number.isInteger((p.v / 60) * 2), `Stufe ${stufe}: ${p.v} kt sind keine glatte Minute`);
+    }
+    for (const p of b.gemischt) assert.equal(p.s, (p.v * p.t) / 60);
+  }
+});
+
+test("Stufen: die erzeugten Aufgaben halten sich an die Methode", () => {
+  for (const stufe of STUFEN5) {
+    for (let i = 0; i < 300; i++) {
+      for (const prinzip of DREISATZ_PRINZIPIEN) {
+        const mitInstrument = i % 3 === 0;
+        const formel = erzeugeAufgabe(prinzip, Math.random, mitInstrument, { stufe, methode: "formel" });
+        assert.ok(STUNDENBRUCH_ZEITEN.includes(formel.werte.t),
+          `Stufe ${stufe}, ${prinzip}: ${formel.werte.t} min ohne Stundenbruch`);
+        const dreisatz = erzeugeAufgabe(prinzip, Math.random, mitInstrument, { stufe, methode: "dreisatz" });
+        assert.ok(!STUNDENBRUCH_ZEITEN.includes(dreisatz.werte.t),
+          `Stufe ${stufe}, ${prinzip}: ${dreisatz.werte.t} min ist ein Stundenbruch`);
+      }
+    }
+  }
+});
+
+test("Stufen: keine Aufgabe, deren Antwort ohne Rechnung dasteht", () => {
+  // 60 kt wären 1 NM je Minute, 60 Minuten wären eine ganze Stunde (dann
+  // entspricht der Weg schon den Knoten), und trügen Knoten und Minuten
+  // dieselbe Zahl, stünde die gesuchte Zahl bereits im Text. Bei den Raten
+  // wäre eine einzige Minute die Antwort selbst.
+  for (const stufe of STUFEN5) {
+    const b = aufgabenbestand(stufe);
+    for (const p of b.gemischt) {
+      assert.notEqual(p.v, 60, `Stufe ${stufe}: 60 kt`);
+      assert.notEqual(p.t, 60, `Stufe ${stufe}: 60 min`);
+      assert.notEqual(p.v, p.t, `Stufe ${stufe}: ${p.v} kt in ${p.t} min`);
+      assert.notEqual(p.v, p.s);
+      assert.notEqual(p.t, p.s);
+    }
+    for (const p of b.raten) {
+      assert.ok(p.t >= 2, `Stufe ${stufe}: ${p.t} min`);
+      assert.notEqual(p.r, p.h);
+    }
+  }
+});
+
+test("Stufen: der Zwischenwert wird von Stufe zu Stufe anspruchsvoller", () => {
+  // Willis Vorgabe: leicht darf glatt und klein sein (120 kt sind 2 NM je
+  // Minute), die höheren Stufen verlangen echte Arbeit, ohne krumm zu werden
+  // (210 kt sind 3,5 NM je Minute). Stufe 1 rechnet darum nur mit ganzen
+  // NM je Minute, ab Stufe 2 kommen halbe Werte und die krummen Knoten dazu,
+  // bei denen die Minute gar nicht trägt und der Stundenbruch ran muss.
+  const minuten = (stufe) => STUFENZAHLEN[stufe].tempi.map((v) => v / 60);
+  for (const je of minuten(1)) assert.ok(Number.isInteger(je), `Stufe 1: ${je} NM je Minute`);
+  for (const stufe of [2, 3]) {
+    assert.ok(minuten(stufe).some((je) => !Number.isInteger(je) && Number.isInteger(je * 2)),
+      `Stufe ${stufe}: kein halber Zwischenwert`);
+    assert.ok(STUFENZAHLEN[stufe].tempi.some((v) => !Number.isInteger((v / 60) * 2)),
+      `Stufe ${stufe}: kein krummer Knoten`);
+  }
+  // Stufe 3 arbeitet im oberen Bereich: der größte halbe Zwischenwert ist
+  // dort größer als der von Stufe 2, drei und ein halbes mal 26 rechnet
+  // niemand nebenbei ab.
+  const groesster = (stufe) => Math.max(...minuten(stufe).filter((je) => Number.isInteger(je * 2)));
+  assert.ok(groesster(3) > groesster(2), `${groesster(3)} gegen ${groesster(2)}`);
+});
+
+test("Stufen: alle Werte bleiben im Anzeigebereich der Instrumente", () => {
+  // Der Fahrtmesser zeigt 60 bis 320 kt in Zehnerschritten, der Höhenmesser
+  // 1000 bis 9900 ft in Hunderterschritten, das Variometer bis 2000 ft/min.
+  // Das Panel spiegelt die Aufgabenwerte, also muss der Bestand hineinpassen.
+  for (const stufe of STUFEN5) {
+    const b = aufgabenbestand(stufe);
+    for (const p of b.gemischt) {
+      assert.ok(p.v >= 60 && p.v <= 320 && p.v % 10 === 0, `Stufe ${stufe}: ${p.v} kt`);
+    }
+    for (const p of b.raten) {
+      assert.ok(p.h >= 1000 && p.h <= 8900 && p.h % 100 === 0, `Stufe ${stufe}: ${p.h} ft`);
+    }
+    for (const p of b.ratenVariometer) {
+      assert.ok(p.r <= 2000 && p.r % 100 === 0, `Stufe ${stufe}: ${p.r} ft/min`);
+    }
+  }
+});
+
+test("Stufen: im Lauf bleiben Fahrt- und Variometerwerte im Raster", () => {
+  for (const stufe of STUFEN5) {
+    for (let i = 0; i < 40; i++) {
+      for (const a of erzeugeLauf(12, Math.random, { stufe })) {
+        if (a.instrument === null) continue;
+        if (a.instrument.id === "fahrt") {
+          assert.ok(WZG_PAARE.some((p) => p.v === a.instrument.wert), `${a.instrument.wert} kt fremd`);
+          assert.ok(a.instrument.wert >= 60 && a.instrument.wert <= 320 && a.instrument.wert % 10 === 0);
+        }
+        if (a.instrument.id === "vario") {
+          assert.ok(a.instrument.wert >= -2000 && a.instrument.wert <= -200);
+          assert.equal(Math.abs(a.instrument.wert) % 100, 0);
+        }
+        if (a.instrument.id === "hoehe") {
+          assert.ok(a.instrument.wert >= 1000 && a.instrument.wert <= 9900);
+          assert.equal(a.instrument.wert % 100, 0);
+        }
+      }
+    }
+  }
+});
+
+test("WZG_PAARE_GLATT: genau die Paare mit glatter Minute", () => {
+  assert.ok(WZG_PAARE_GLATT.length > 0 && WZG_PAARE_GLATT.length < WZG_PAARE.length);
+  for (const p of WZG_PAARE_GLATT) assert.ok(Number.isInteger((p.v / 60) * 2));
+  for (const p of WZG_PAARE) {
+    if (Number.isInteger((p.v / 60) * 2)) assert.ok(WZG_PAARE_GLATT.includes(p));
+  }
+});
+
+// Die zwei Schritte des Dreisatzes als eigene Fragen: Grundlage der zweiten
+// Übung, die sie einzeln abfragt statt nur das Endergebnis.
+
+test("dreisatzSchritte: der Zwischenwert geht immer auf", () => {
+  for (const stufe of STUFEN5) {
+    for (let i = 0; i < 400; i++) {
+      for (const prinzip of DREISATZ_PRINZIPIEN) {
+        const a = erzeugeAufgabe(prinzip, Math.random, false, { stufe, methode: "dreisatz" });
+        const d = dreisatzSchritte(a);
+        assert.ok(d, `Stufe ${stufe}, ${prinzip}: keine Schritte`);
+        // Ganz oder ,5, alles andere rechnet im Kopf niemand weiter.
+        assert.ok(Number.isInteger(d.zwischenwert * 2), `Zwischenwert ${d.zwischenwert}`);
+        assert.ok(d.zwischenwert > 1, `Zwischenwert ${d.zwischenwert} ist zu billig`);
+        assert.equal(d.schritt1.antwort, d.zwischenwert);
+        assert.equal(d.schritt1.einheit, "NM je Minute");
+      }
+    }
+  }
+});
+
+test("dreisatzSchritte: Schritt 1 mal Schritt 2 ergibt die Antwort", () => {
+  for (const stufe of STUFEN5) {
+    for (let i = 0; i < 400; i++) {
+      for (const prinzip of DREISATZ_PRINZIPIEN) {
+        const a = erzeugeAufgabe(prinzip, Math.random, false, { stufe, methode: "dreisatz" });
+        const { zwischenwert: je, schritt2 } = dreisatzSchritte(a);
+        // Der zweite Schritt endet auf der Antwort der Aufgabe, und der
+        // Zwischenwert trägt ihn: mal die Minuten, mal 60, oder geteilt.
+        assert.equal(schritt2.antwort, a.antwort, `${prinzip}: ${JSON.stringify(a.werte)}`);
+        if (prinzip === "weg") assert.equal(je * a.werte.t, a.antwort);
+        if (prinzip === "zeit") assert.equal(je * a.antwort, a.werte.s);
+        if (prinzip === "geschwindigkeit") assert.equal(je * 60, a.antwort);
+        assert.equal(schritt2.einheit, a.einheit);
+      }
+    }
+  }
+});
+
+test("dreisatzSchritte: Schritt 2 nennt den richtigen Zwischenwert im Fragetext", () => {
+  // Damit sich ein Fehler aus Schritt 1 nicht weiterschleppt, steht der
+  // richtige Zwischenwert in der Frage von Schritt 2, mit Komma geschrieben.
+  for (const stufe of STUFEN5) {
+    for (const prinzip of DREISATZ_PRINZIPIEN) {
+      for (let i = 0; i < 100; i++) {
+        const a = erzeugeAufgabe(prinzip, Math.random, false, { stufe, methode: "dreisatz" });
+        const d = dreisatzSchritte(a);
+        assert.ok(d.schritt2.frage.includes(String(d.zwischenwert).replace(".", ",")),
+          `${d.zwischenwert} fehlt in: ${d.schritt2.frage}`);
+        // Komma statt Punkt: 3,5 NM, nicht 3.5 NM.
+        assert.ok(!/\d\.\d/.test(d.schritt2.frage), d.schritt2.frage);
+      }
+    }
+  }
+});
+
+test("dreisatzSchritte: Raten und fremde Aufgaben geben keine Schritte", () => {
+  // Bei einer Rate wäre der erste Schritt schon die Antwort, darum bleibt die
+  // Dreisatz-Übung bei Weg, Zeit und Geschwindigkeit.
+  assert.deepEqual(DREISATZ_PRINZIPIEN, ["zeit", "weg", "geschwindigkeit"]);
+  for (let i = 0; i < 50; i++) {
+    assert.equal(dreisatzSchritte(erzeugeAufgabe("rate", Math.random)), null);
+  }
+  assert.equal(dreisatzSchritte({ prinzip: "zeit", antwort: 1 }), null);
+  // Krumme Knoten haben keine glatte Minute, dort gibt es auch keine Schritte.
+  assert.equal(dreisatzSchritte({ prinzip: "weg", antwort: 75, werte: { v: 100, t: 45, s: 75 } }), null);
+});
+
+// Zielhöhenaufgabe im gewerteten Test (Willis Auftrag vom 17.09.2026,
+// wörtlich: "Du sollst in Zeit X auf 3400 ft steigen (Instrument ist bereits
+// bei 1000 ft und dies ist zu beachten)").
+
+const zieheZielhoehe = (stufe) => {
+  for (let i = 0; i < 2000; i++) {
+    const a = erzeugeAufgabe("rate", Math.random, true, { stufe, mitZielhoehe: true });
+    if (a.zielhoehe) return a;
+  }
+  return null;
+};
+
+test("Zielhöhenaufgabe: nennt nie die Ausgangshöhe im Text, spiegelt sie aber im Panel", () => {
+  for (const stufe of STUFEN5) {
+    for (let i = 0; i < 80; i++) {
+      const a = zieheZielhoehe(stufe);
+      assert.ok(a, `Stufe ${stufe}: keine Zielhöhenaufgabe gezogen`);
+      const { start, ziel } = a.zielhoehe;
+      // Im Text steht nur die Zielhöhe, die Ausgangshöhe hängt am Zeiger.
+      assert.ok(a.frage.includes(`${ziel} ft`), a.frage);
+      assert.ok(!new RegExp(`(?<!\\d)${start}(?!\\d)`).test(a.frage), `${start} steht im Text: ${a.frage}`);
+      assert.equal(a.instrument.id, "hoehe");
+      assert.equal(a.instrument.wert, start);
+      assert.equal(panelwerte(a, Math.random).hoehe, start);
+    }
+  }
+});
+
+test("Zielhöhenaufgabe: Höhenmesser bleibt sichtbar, das Variometer wird verdeckt", () => {
+  for (const stufe of STUFEN5) {
+    for (let i = 0; i < 60; i++) {
+      const a = zieheZielhoehe(stufe);
+      // Ohne Höhenmesser ist die Aufgabe nicht lösbar, das Variometer
+      // verriete die gesuchte Rate.
+      assert.deepEqual(verdeckteInstrumente(a), ["vario"]);
+      assert.equal(a.einheit, "ft/min");
+      const w = panelwerte(a, Math.random);
+      assert.equal(w.vario, 0);
+      assert.deepEqual(w.horizont, { roll: 0, nick: 0 });
+    }
+  }
+});
+
+test("Zielhöhenaufgabe: alle Höhen im Anzeigebereich, die Rate geht glatt auf", () => {
+  for (const stufe of STUFEN5) {
+    for (let i = 0; i < 120; i++) {
+      const a = zieheZielhoehe(stufe);
+      const { start, ziel, steigen } = a.zielhoehe;
+      for (const hoehe of [start, ziel]) {
+        assert.ok(hoehe >= 1000 && hoehe <= 8900, `Stufe ${stufe}: ${hoehe} ft`);
+        assert.equal(hoehe % 100, 0);
+      }
+      assert.equal(Math.abs(ziel - start), a.werte.h);
+      assert.equal(a.werte.h, a.antwort * a.werte.t);
+      assert.ok(Number.isInteger(a.antwort) && a.antwort > 0);
+      assert.equal(steigen, ziel > start);
+    }
+  }
+});
+
+test("Zielhöhenaufgabe: keine Zahl im Text trifft die gesuchte Rate", () => {
+  // Beim Sinken kann die Zielhöhe auf die Rate fallen ("in 6 Minuten auf 1200
+  // ft sinken", Antwort 1200 ft/min). Dann stünde die Antwort ablesbar im
+  // Text, und Willis Bedingung wäre verletzt. Die Erzeugung schließt solche
+  // Ausgangshöhen aus, diese Probe hält das fest.
+  for (const stufe of STUFEN5) {
+    for (let i = 0; i < 400; i++) {
+      const a = zieheZielhoehe(stufe);
+      const zahlen = a.frage.match(/\d+/g).map(Number);
+      assert.ok(!zahlen.includes(a.antwort), `Antwort steht im Text: ${a.frage}`);
+      assert.notEqual(a.zielhoehe.ziel, a.antwort);
+    }
+  }
+});
+
+test("Zielhöhenaufgabe: der Text sagt eindeutig, ob gestiegen oder gesunken wird", () => {
+  const gesehen = new Set();
+  for (let i = 0; i < 400; i++) {
+    const a = zieheZielhoehe(1 + (i % 3));
+    gesehen.add(a.zielhoehe.steigen);
+    if (a.zielhoehe.steigen) {
+      assert.ok(a.frage.includes("steigen") && a.frage.includes("Steigrate"), a.frage);
+      assert.ok(!a.frage.includes("sinken") && !a.frage.includes("Sinkrate"), a.frage);
+    } else {
+      assert.ok(a.frage.includes("sinken") && a.frage.includes("Sinkrate"), a.frage);
+      assert.ok(!a.frage.includes("steigen") && !a.frage.includes("Steigrate"), a.frage);
+    }
+  }
+  // Beides kommt vor.
+  assert.equal(gesehen.size, 2);
+});
+
+test("Zielhöhenaufgabe: der Lösungsweg führt die Differenz als ersten Schritt mit", () => {
+  for (let i = 0; i < 200; i++) {
+    const a = zieheZielhoehe(1 + (i % 3));
+    const zeilen = loesungsweg(a);
+    const { start, ziel } = a.zielhoehe;
+    assert.ok(zeilen[0].startsWith("Erst die Differenz:"), zeilen[0]);
+    for (const zahl of [start, ziel, a.werte.h]) {
+      assert.ok(zeilen[0].includes(String(zahl)), `${zahl} fehlt in: ${zeilen[0]}`);
+    }
+    // Danach kommt die Rate, und der Weg endet auf der Antwort.
+    assert.ok(zeilen[1].includes("Nullen weg"), zeilen[1]);
+    assert.ok(zeilen[2].includes(`${a.antwort} ft/min`), zeilen[2]);
+  }
+  assert.ok(TIPPS5.zielhoehe.includes("Höhenmesser") && TIPPS5.zielhoehe.includes("Differenz"));
+});
+
+test("Zielhöhenaufgabe: nur im gewerteten Lauf, nie in den Übungen", () => {
+  for (const stufe of STUFEN5) {
+    for (let i = 0; i < 300; i++) {
+      for (const prinzip of PRINZIPIEN) {
+        for (const methode of ["formel", "dreisatz"]) {
+          const a = erzeugeAufgabe(prinzip, Math.random, i % 2 === 0, { stufe, methode });
+          assert.ok(!a.zielhoehe, `${methode}: ${a.frage}`);
+        }
+      }
+    }
+  }
+  // Im Lauf kommt sie dagegen regelmäßig vor.
+  let gesehen = 0;
+  for (let i = 0; i < 60; i++) {
+    gesehen += erzeugeLauf(12, Math.random, { stufe: 2 }).filter((a) => a.zielhoehe).length;
+  }
+  assert.ok(gesehen > 20, `nur ${gesehen} Zielhöhenaufgaben in 720`);
+});
+
+test("Alle Stufen: jede Aufgabe trägt einen Lösungsweg mit Dreisatz", () => {
+  // Gegenprobe über den ganzen Bestand: Seit die glatte Stunde aus den
+  // Beständen gefallen ist (60 Minuten wären ohne Rechnung ablesbar), gibt es
+  // zu jeder erzeugten Aufgabe zwei Dreisatzzeilen, gezeigt oder als sicherer
+  // Weg darunter.
+  for (const stufe of STUFEN5) {
+    for (let i = 0; i < 300; i++) {
+      for (const prinzip of PRINZIPIEN) {
+        const a = erzeugeAufgabe(prinzip, Math.random, i % 3 === 0, { stufe, mitZielhoehe: i % 5 === 0 });
+        const zeilen = loesungsweg(a);
+        assert.ok(zeilen.length >= 2, `Stufe ${stufe}, ${prinzip}: Weg zu kurz`);
+        assert.equal(zeilen.filter((z) => z.includes("Dreisatz")).length, 2,
+          `Stufe ${stufe}, ${prinzip}: ${JSON.stringify(a.werte)} ${JSON.stringify(zeilen)}`);
+        // Keine Zeile zeigt einen Punkt als Dezimaltrenner.
+        for (const z of zeilen) assert.ok(!/\d\.\d/.test(z), z);
+      }
+    }
   }
 });

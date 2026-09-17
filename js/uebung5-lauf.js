@@ -10,6 +10,7 @@ import {
   TESTDAUERN, AUFGABENZEIT, erzeugeLauf, antwortenFuer, pruefeEingabe,
   punkteFuerAntwort, kennzahl, panelwerte, verdeckteInstrumente,
   waehlePrinzipien, erzeugeAufgabe, loesungsweg, TIPPS5,
+  STUFEN5, STUFENNAMEN, STUFE_STANDARD, DREISATZ_PRINZIPIEN, dreisatzSchritte,
 } from "./uebung5.js";
 import { tafelHtml } from "./instrumente.js";
 import { KARTEN5 } from "./wissen5.js";
@@ -20,13 +21,25 @@ const RUECKMELDEDAUER_RICHTIG = 700;
 const RUECKMELDEDAUER_FALSCH = 1800;
 
 export function erzeugeUebung5({ speicher }) {
-  let einstellung = { dauer: 5 };
-  let uebungsStart = false;
+  // Je Bereich eine eigene Schwierigkeitsstufe (Willis Auftrag vom
+  // 17.09.2026): stufe gilt im gewerteten Test, schnellstufe im
+  // Schnellrechnen, dreisatzstufe in der Dreisatz-Übung. Alle drei hängen wie
+  // die Testdauer am Profil.
+  let einstellung = {
+    dauer: 5,
+    stufe: STUFE_STANDARD,
+    schnellstufe: STUFE_STANDARD,
+    dreisatzstufe: STUFE_STANDARD,
+  };
+  let uebungsStart = null; // "schnell" oder "dreisatz", sonst gewerteter Lauf
   const hinweis = "Rechenaufgaben zu Weg, Zeit, Geschwindigkeit und Sink- oder Steigrate am Stück, "
     + "bis die eingestellte Testdauer um ist, je Aufgabe 20 Sekunden, im Cockpit. Manche Aufgaben "
-    + "nennen keinen Wert, sondern verweisen aufs Ablesen am Instrumentenpanel. Geantwortet wird "
-    + "per Auswahl oder Zahleneingabe. Die Wertung in Prozent belohnt richtige und schnelle Antworten, die "
-    + "Formeln stehen auf den Karteikarten darunter.";
+    + "nennen keinen Wert, sondern verweisen aufs Ablesen am Instrumentenpanel: Steht im Text nur "
+    + "eine Zielhöhe, gehört die Ausgangshöhe vom Höhenmesser abgelesen und zuerst abgezogen. "
+    + "Geantwortet wird per Auswahl oder Zahleneingabe. Die Wertung in Prozent belohnt richtige und "
+    + "schnelle Antworten, die Formeln stehen auf den Karteikarten darunter. Zum Üben gibt es zwei "
+    + "Wege: Schnellrechnen fragt Aufgaben ab, die eine Formel oder ein Stundenbruch in einem Schritt "
+    + "löst, Dreisatz fragt die beiden Schritte einzeln ab. Beide zählen nie zur Statistik.";
 
   async function ladeEinstellung() {
     const gespeichert = await speicher.ladeEinstellung("uebung5-einstellung", {});
@@ -34,15 +47,24 @@ export function erzeugeUebung5({ speicher }) {
   }
 
   function zeichneFeld(feld) {
-    // Das Schnellrechnen bekommt wie die Blitzübung von Mission 4 einen
-    // abgesetzten Block: reine Übung, kein Teil des Tests.
+    // Beide Übungen bekommen wie die Blitzübung von Mission 4 einen
+    // abgesetzten Block: reine Übung, kein Teil des Tests. Die Stufe steht
+    // dreimal, jeweils im eigenen Block, damit klar ist, worauf sie wirkt.
+    const stufenliste = (name, aktiv) => `<select class="wahlliste" data-name="${name}">${STUFEN5.map((w) =>
+      `<option value="${w}" ${w === aktiv ? "selected" : ""}>${w} ${STUFENNAMEN[w]}</option>`).join("")}</select>`;
     feld.innerHTML = `
       <div class="wahlzeile"><span class="wahltitel">TESTDAUER</span>
         <select class="wahlliste" data-name="dauer">${TESTDAUERN.map((w) =>
           `<option value="${w}" ${w === einstellung.dauer ? "selected" : ""}>${w} min</option>`).join("")}</select></div>
+      <div class="wahlzeile"><span class="wahltitel">STUFE</span>${stufenliste("stufe", einstellung.stufe)}</div>
       <div class="wahlabschnitt">SCHNELLRECHNEN</div>
+      <div class="wahlzeile"><span class="wahltitel">STUFE</span>${stufenliste("schnellstufe", einstellung.schnellstufe)}</div>
       <div class="wahlzeile"><span class="wahltitel">START</span>
-        <button type="button" class="wahlknopf" data-element="ueben">NUR ÜBEN</button></div>`;
+        <button type="button" class="wahlknopf" data-element="schnell">NUR ÜBEN</button></div>
+      <div class="wahlabschnitt">DREISATZ</div>
+      <div class="wahlzeile"><span class="wahltitel">STUFE</span>${stufenliste("dreisatzstufe", einstellung.dreisatzstufe)}</div>
+      <div class="wahlzeile"><span class="wahltitel">START</span>
+        <button type="button" class="wahlknopf" data-element="dreisatz">NUR ÜBEN</button></div>`;
     feld.onchange = (e) => {
       const liste = e.target.closest(".wahlliste");
       if (!liste) return;
@@ -51,11 +73,13 @@ export function erzeugeUebung5({ speicher }) {
     };
     feld.onclick = (e) => {
       const knopf = e.target.closest(".wahlknopf");
-      if (!knopf || knopf.dataset.element !== "ueben") return;
+      if (!knopf) return;
+      const art = knopf.dataset.element;
+      if (art !== "schnell" && art !== "dreisatz") return;
       // Übung über den normalen Startweg, damit Tür, Vollbild und Abbruch
       // wie bei jedem Lauf funktionieren (Muster aus Mission 1 und 4).
       knopf.blur();
-      uebungsStart = true;
+      uebungsStart = art;
       document.getElementById("start")?.click();
     };
   }
@@ -109,10 +133,19 @@ export function erzeugeUebung5({ speicher }) {
   // Kopf rechenbare Weg mit den Zahlen der Aufgabe im Bild, dazu der
   // Merktipp des Aufgabentyps. Nur Textaufgaben (das Ablesen am Panel ist
   // Sache des Tests), zählt nie zur Statistik (beiEnde(null)).
+  // Seit 17.09.2026 zieht sie bei Weg, Zeit und Geschwindigkeit nur aus dem
+  // Formel-Bestand: Aufgaben, deren Zeit ein glatter Stundenbruch ist, sodass
+  // eine Formel oder der Stundenbruch sie in einem Schritt löst (Willis
+  // Auftrag: "die erste Uebung soll Aufgaben abfragen, die sich mit den
+  // Formeln gut loesen lassen"). Die Ratenaufgaben kennen keinen
+  // Stundenbruch, sie stehen ohnehin schon in Minuten; sie bleiben trotzdem
+  // dabei, weil der Nullen-Trick sie ebenfalls in einem Schritt löst. Der
+  // Dreisatz Schritt für Schritt steht in der zweiten Übung.
   function starteSchnellrechnen({ tuer, beiEnde, registriereAbbruch }) {
+    const stufe = einstellung.schnellstufe;
     const schleier = document.createElement("div");
     schleier.className = "laufschleier buchstaben";
-    schleier.innerHTML = `<div class="testkopf">SCHNELLRECHNEN · ESC BEENDET</div>
+    schleier.innerHTML = `<div class="testkopf">SCHNELLRECHNEN · STUFE ${stufe} ${STUFENNAMEN[stufe]} · ESC BEENDET</div>
       <div class="schnellmitte"></div>`;
     document.body.append(schleier);
     if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
@@ -140,7 +173,7 @@ export function erzeugeUebung5({ speicher }) {
       if (beendet || ergebnisOffen) return;
       // Jedes Prinzip kommt reihum vor, wie im Test, aber nur als Text.
       if (vorrat.length === 0) vorrat = waehlePrinzipien(4);
-      const aufgabe = erzeugeAufgabe(vorrat.shift(), Math.random, false);
+      const aufgabe = erzeugeAufgabe(vorrat.shift(), Math.random, false, { stufe, methode: "formel" });
       mitte.innerHTML = `
         <div class="frage">${aufgabe.frage}</div>
         <form class="eingabezeile" id="u5s-form">
@@ -169,9 +202,13 @@ export function erzeugeUebung5({ speicher }) {
         const weg = mitte.querySelector(".loesungsweg");
         weg.innerHTML = `<div class="wegkopf">SCHNELLSTER WEG</div>`
           + loesungsweg(aufgabe).map((z) => `<div class="wegzeile">${z}</div>`).join("")
-          + `<div class="wegtipp">TIPP · ${TIPPS5[aufgabe.prinzip]}</div>`
+          + `<div class="wegtipp">TIPP · ${TIPPS5[aufgabe.tipp ?? aufgabe.prinzip]}</div>`
           + `<div class="wegweiter">WEITER MIT ENTER</div>`;
         weg.hidden = false;
+        // Auf niedrigen Fenstern rollt die Mitte (Deckel in stil.css). Dann
+        // ans Ende springen, sonst stünde der eben erschienene Weg unter dem
+        // Rand. Passt alles ins Bild, tut die Zeile nichts.
+        mitte.scrollTop = mitte.scrollHeight;
       });
     };
 
@@ -189,7 +226,7 @@ export function erzeugeUebung5({ speicher }) {
         <div class="ergebnisgross">${richtig} / ${gestellt}</div>
         <div class="ergebniszeilen"><span>Richtig: ${richtig}</span><span>Beantwortet: ${gestellt}</span></div>
         <button class="punkt" id="u5s-fertig">ZURÜCK ZUR MISSION</button>
-        <div class="ergebnisfuss"><span>Schnellrechnen · Die Übung zählt nicht zur Statistik</span></div>`;
+        <div class="ergebnisfuss"><span>Schnellrechnen · Stufe ${stufe} ${STUFENNAMEN[stufe]} · Die Übung zählt nicht zur Statistik</span></div>`;
       document.body.append(tafel);
       requestAnimationFrame(() => tafel.classList.add("da"));
       let geschlossen = false;
@@ -215,23 +252,217 @@ export function erzeugeUebung5({ speicher }) {
     })();
   }
 
+  // Dreisatz-Übung (Willis Auftrag vom 17.09.2026), gebaut nach dem Muster
+  // des Schnellrechnens: Vollbild, Hangartür, Esc beendet, Enter bestätigt,
+  // Ergebnistafel am Ende, zählt nie zur Statistik. Der Unterschied ist die
+  // Absicht: Sie fragt die zwei Schritte des Dreisatzes einzeln ab, nicht nur
+  // das Endergebnis. Erst auf eine Minute herunterrechnen, dann auf die
+  // gesuchte Menge hoch. Wer Schritt 1 falsch hat, bekommt den richtigen
+  // Zwischenwert gezeigt und liest ihn im Fragetext von Schritt 2 noch
+  // einmal, damit sich der Fehler nicht weiterschleppt.
+  function starteDreisatz({ tuer, beiEnde, registriereAbbruch }) {
+    const stufe = einstellung.dreisatzstufe;
+    const schleier = document.createElement("div");
+    schleier.className = "laufschleier buchstaben";
+    schleier.innerHTML = `<div class="testkopf">DREISATZ · STUFE ${stufe} ${STUFENNAMEN[stufe]} · ESC BEENDET</div>
+      <div class="schnellmitte"></div>`;
+    document.body.append(schleier);
+    if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+    const mitte = schleier.querySelector(".schnellmitte");
+    let beendet = false;
+    let ergebnisOffen = false;
+    let vorrat = [];
+    // Zwei Zähler, weil Esc zwischen den Schritten liegen kann: gestellt zählt
+    // die beantworteten ersten Schritte, gestelltZwei die zweiten. Ohne die
+    // Trennung behauptete die Tafel, ein zweiter Schritt sei gestellt worden,
+    // den der Abbruch gar nicht mehr gezeigt hat.
+    let gestellt = 0;
+    let gestelltZwei = 0;
+    let richtigEins = 0;
+    let richtigZwei = 0;
+
+    const raeumeAuf = () => {
+      beendet = true;
+      document.removeEventListener("fullscreenchange", beiVollbildwechsel);
+      document.removeEventListener("visibilitychange", beiSichtwechsel);
+      schleier.remove();
+    };
+    const beiVollbildwechsel = () => { if (!document.fullscreenElement) verlasse?.(); };
+    const beiSichtwechsel = () => { if (document.hidden) verlasse?.(); };
+    let verlasse = () => zeigeErgebnis();
+    document.addEventListener("fullscreenchange", beiVollbildwechsel);
+    document.addEventListener("visibilitychange", beiSichtwechsel);
+    registriereAbbruch(() => verlasse?.());
+
+    // Nur Weg, Zeit und Geschwindigkeit: Bei den Raten wäre der erste Schritt
+    // schon die Antwort, da gäbe es nichts in zwei Schritten zu fragen.
+    const ziehe = () => {
+      if (vorrat.length === 0) vorrat = waehlePrinzipien(3, Math.random, DREISATZ_PRINZIPIEN);
+      const aufgabe = erzeugeAufgabe(vorrat.shift(), Math.random, false, { stufe, methode: "dreisatz" });
+      return { aufgabe, schritte: dreisatzSchritte(aufgabe) };
+    };
+
+    const stelle = () => {
+      if (beendet || ergebnisOffen) return;
+      // Der Dreisatz-Bestand liefert immer einen glatten Zwischenwert. Sollte
+      // doch einmal keiner dabei sein, wird neu gezogen statt eine unlösbare
+      // Aufgabe zu stellen.
+      let gezogen = ziehe();
+      for (let versuch = 0; !gezogen.schritte && versuch < 10; versuch++) gezogen = ziehe();
+      const { aufgabe, schritte } = gezogen;
+      if (!schritte) return;
+      const zahl = (n) => String(n).replace(".", ",");
+      mitte.innerHTML = `
+        <div class="frage">${aufgabe.frage}</div>
+        <div class="schrittblock">
+          <div class="schrittkopf">SCHRITT 1 · HERUNTER AUF EINE MINUTE</div>
+          <div class="schrittfrage">${schritte.schritt1.frage}</div>
+          <form class="eingabezeile" id="u5d-form1">
+            <input class="zahlenfeld" id="u5d-eingabe1" inputmode="decimal" autocomplete="off" placeholder="Antwort">
+            <span class="einheit">${schritte.schritt1.einheit}</span>
+          </form>
+          <div class="rueckmeldung"></div>
+        </div>
+        <div class="schrittblock" id="u5d-block2" hidden>
+          <div class="schrittkopf">SCHRITT 2 · HOCH AUF DIE GESUCHTE MENGE</div>
+          <div class="schrittfrage">${schritte.schritt2.frage}</div>
+          <form class="eingabezeile" id="u5d-form2">
+            <input class="zahlenfeld" id="u5d-eingabe2" inputmode="decimal" autocomplete="off" placeholder="Antwort">
+            <span class="einheit">${schritte.schritt2.einheit}</span>
+          </form>
+          <div class="rueckmeldung"></div>
+        </div>
+        <div class="loesungsweg" hidden></div>`;
+      const eingabeEins = mitte.querySelector("#u5d-eingabe1");
+      const eingabeZwei = mitte.querySelector("#u5d-eingabe2");
+      const block2 = mitte.querySelector("#u5d-block2");
+      const [rueckEins, rueckZwei] = mitte.querySelectorAll(".schrittblock .rueckmeldung");
+      eingabeEins.focus();
+      let eins = false;
+      let zwei = false;
+
+      mitte.querySelector("#u5d-form1").addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (beendet || ergebnisOffen) return;
+        // Wer nach der Antwort ins erste Feld zurückspringt, wird von Enter
+        // wieder nach vorn gebracht: erst zu Schritt 2, danach zur nächsten
+        // Aufgabe.
+        if (eins) {
+          if (zwei) stelle();
+          else eingabeZwei.focus();
+          return;
+        }
+        eins = true;
+        gestellt += 1;
+        const getroffen = pruefeEingabe(eingabeEins.value, schritte.schritt1.antwort);
+        if (getroffen) richtigEins += 1;
+        // readonly statt disabled: der Fokus bleibt, Enter führt weiter.
+        eingabeEins.readOnly = true;
+        eingabeEins.classList.add(getroffen ? "richtig" : "falsch");
+        rueckEins.textContent = getroffen
+          ? "RICHTIG"
+          : `FALSCH · richtig: ${zahl(schritte.schritt1.antwort)} ${schritte.schritt1.einheit}`;
+        rueckEins.classList.add(getroffen ? "gut" : "schlecht");
+        block2.hidden = false;
+        eingabeZwei.focus();
+      });
+
+      mitte.querySelector("#u5d-form2").addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (beendet || ergebnisOffen) return;
+        if (zwei) { stelle(); return; } // zweites Enter geht weiter
+        zwei = true;
+        gestelltZwei += 1;
+        const getroffen = pruefeEingabe(eingabeZwei.value, schritte.schritt2.antwort);
+        if (getroffen) richtigZwei += 1;
+        eingabeZwei.readOnly = true;
+        eingabeZwei.classList.add(getroffen ? "richtig" : "falsch");
+        rueckZwei.textContent = getroffen
+          ? "RICHTIG"
+          : `FALSCH · richtig: ${zahl(schritte.schritt2.antwort)} ${schritte.schritt2.einheit}`;
+        rueckZwei.classList.add(getroffen ? "gut" : "schlecht");
+        // Danach der vollständige Weg wie beim Schnellrechnen, aber mit dem
+        // eigenen Dreisatz-Tipp: Der Tipp des Prinzips rät zum Stundenbruch,
+        // den es in dieser Übung nie gibt (Prüferbefund vom 17.09.2026).
+        const weg = mitte.querySelector(".loesungsweg");
+        weg.innerHTML = `<div class="wegkopf">SCHNELLSTER WEG</div>`
+          + loesungsweg(aufgabe).map((z) => `<div class="wegzeile">${z}</div>`).join("")
+          + `<div class="wegtipp">TIPP · ${TIPPS5.dreisatz}</div>`
+          + `<div class="wegweiter">WEITER MIT ENTER</div>`;
+        weg.hidden = false;
+        // Wie beim Schnellrechnen: rollt die Mitte, ans Ende springen.
+        mitte.scrollTop = mitte.scrollHeight;
+      });
+    };
+
+    const zeigeErgebnis = async () => {
+      if (beendet || ergebnisOffen) return;
+      ergebnisOffen = true;
+      document.removeEventListener("fullscreenchange", beiVollbildwechsel);
+      document.removeEventListener("visibilitychange", beiSichtwechsel);
+      await tuer.schliesse();
+      tuer.verwische(true);
+      const tafel = document.createElement("div");
+      tafel.className = "ergebnisschicht";
+      // Die Tafel nennt beide Schritte getrennt: Wer den Zwischenwert
+      // sicher hat und trotzdem am Endwert scheitert, sieht das hier sofort.
+      tafel.innerHTML = `
+        <div class="frage">ÜBUNG BEENDET</div>
+        <div class="ergebnisgross">${richtigZwei} / ${gestelltZwei}</div>
+        <div class="ergebniszeilen">
+          <span>Schritt 1, eine Minute: ${richtigEins} von ${gestellt}</span>
+          <span>Schritt 2, gesuchte Menge: ${richtigZwei} von ${gestelltZwei}</span>
+        </div>
+        <button class="punkt" id="u5d-fertig">ZURÜCK ZUR MISSION</button>
+        <div class="ergebnisfuss"><span>Dreisatz · Stufe ${stufe} ${STUFENNAMEN[stufe]} · Die Übung zählt nicht zur Statistik</span></div>`;
+      document.body.append(tafel);
+      requestAnimationFrame(() => tafel.classList.add("da"));
+      let geschlossen = false;
+      const schliesse = async () => {
+        if (geschlossen) return;
+        geschlossen = true;
+        tafel.classList.remove("da");
+        setTimeout(() => tafel.remove(), 260);
+        tuer.verwische(false);
+        raeumeAuf();
+        if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
+        await beiEnde(null); // die Übung zählt nie
+        await tuer.oeffne();
+      };
+      verlasse = schliesse;
+      tafel.querySelector("#u5d-fertig").addEventListener("click", schliesse);
+    };
+
+    (async () => {
+      await tuer.oeffne();
+      if (beendet || ergebnisOffen) return;
+      stelle();
+    })();
+  }
+
   function starte({ tuer, beiEnde, registriereAbbruch }) {
     // Den Übungsmerker immer verbrauchen: bleibt er versehentlich scharf,
     // darf er keinen späteren Testlauf umleiten (Muster aus Mission 3).
     const nurUebung = uebungsStart;
-    uebungsStart = false;
-    if (nurUebung) {
+    uebungsStart = null;
+    if (nurUebung === "schnell") {
       starteSchnellrechnen({ tuer, beiEnde, registriereAbbruch });
       return;
     }
-    const { dauer } = einstellung;
+    if (nurUebung === "dreisatz") {
+      starteDreisatz({ tuer, beiEnde, registriereAbbruch });
+      return;
+    }
+    const { dauer, stufe } = einstellung;
     let vorrat = [];
     const naechsteAufgabe = () => {
       // Nachschub in Sechserblöcken: jedes Prinzip kommt mindestens einmal
       // vor, und die Drittel-Regel geht auf (zwei von sechs Aufgaben lesen
       // vom Instrument ab, zufällig über den Block verteilt). Viererblöcke
       // ergäben starr jede vierte Aufgabe, ein Viertel statt ein Drittel.
-      if (vorrat.length === 0) vorrat = erzeugeLauf(6);
+      // Der Bestand bleibt hier gemischt: Formel- und Dreisatzaufgaben
+      // kommen beide vor, dazu die Zielhöhenaufgabe.
+      if (vorrat.length === 0) vorrat = erzeugeLauf(6, Math.random, { stufe });
       return vorrat.shift();
     };
     const limitMs = AUFGABENZEIT * 1000;
@@ -404,7 +635,7 @@ export function erzeugeUebung5({ speicher }) {
         </div>
         <button class="punkt" id="u5-fertig">ZURÜCK ZUR MISSION</button>
         <div class="ergebnisfuss">
-          <span>${dauer} min Testdauer · ${AUFGABENZEIT} s je Aufgabe · ${gestellt} ${gestellt === 1 ? "Aufgabe" : "Aufgaben"}</span>
+          <span>Stufe ${stufe} ${STUFENNAMEN[stufe]} · ${dauer} min Testdauer · ${AUFGABENZEIT} s je Aufgabe · ${gestellt} ${gestellt === 1 ? "Aufgabe" : "Aufgaben"}</span>
           ${abbruchzeile}
         </div>`;
       document.body.append(tafel);
@@ -419,9 +650,14 @@ export function erzeugeUebung5({ speicher }) {
         tuer.verwische(false);
         raeumeAuf();
         if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
+        // Die Stufe wandert mit in die Daten, die Kennzahl bleibt unberührt
+        // (Willis Wahl vom 17.09.2026: "Stufe ja, Wertung spaeter"). Ohne
+        // diesen Vermerk ließe sich später nicht mehr nachsehen, welche
+        // Prozentzahl auf welcher Stufe zustande kam, und damit auch nichts
+        // eichen.
         await beiEnde(gewertet ? {
           kennzahl: wert,
-          daten: { art: "flugphysik", dauerMin: dauer, gestellt, richtig, quote, punkte: wert },
+          daten: { art: "flugphysik", dauerMin: dauer, stufe, gestellt, richtig, quote, punkte: wert },
         } : null);
         await tuer.oeffne();
       };

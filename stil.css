@@ -899,9 +899,21 @@ main { position: relative; z-index: 1; }
   align-items: center;
   gap: 18px;
   text-align: center;
+  /* Deckel seit 17.09.2026: Die Dreisatz-Übung stapelt Aufgabentext, zwei
+     Schrittblöcke und den Lösungsweg, zusammen rund 720 px. Auf niedrigen
+     Fenstern (unter etwa 880 px Innenhöhe) stieß der Aufgabentext oben in die
+     Kopfzeile und wurde abgeschnitten. Mit dem Deckel bleibt der Block unter
+     der Kopfzeile und rollt zur Not, statt Text zu verlieren. Wo Platz ist,
+     ändert sich nichts. */
+  max-height: 78vh;
+  overflow-y: auto;
 }
 .schnellmitte .frage { font-size: clamp(17px, 2vw, 22px); line-height: 1.5; color: var(--hell); letter-spacing: 0.04em; }
 .loesungsweg { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 6px; }
+/* Ein display in einer Klassenregel schlägt die eingebaute Regel des
+   Browsers für hidden. Ohne diese Zeile stünde der Lösungsweg schon vor der
+   Antwort im Bild. */
+.loesungsweg[hidden] { display: none; }
 .loesungsweg .wegkopf { color: #35e0d0; letter-spacing: 0.22em; font-size: 13px; }
 /* Breite und Zeilenhöhe seit 14.09.2026: Mit dem Dreisatz stehen bis zu
    vier Zeilen im Block, die längste hat rund 130 Zeichen. Ohne Deckel
@@ -909,6 +921,26 @@ main { position: relative; z-index: 1; }
 .loesungsweg .wegzeile { color: var(--hell); font-size: 16px; letter-spacing: 0.05em; max-width: 68ch; line-height: 1.45; text-align: center; }
 .loesungsweg .wegtipp { color: var(--gedeckt); font-size: 13px; letter-spacing: 0.06em; max-width: 60ch; margin-top: 6px; line-height: 1.5; }
 .loesungsweg .wegweiter { color: var(--gedeckt); font-size: 12px; letter-spacing: 0.2em; margin-top: 8px; }
+
+/* Dreisatz-Übung Mission 5 (17.09.2026): dieselbe Mitte wie beim
+   Schnellrechnen, darin aber zwei abgesetzte Schrittblöcke untereinander.
+   Der zweite bleibt verborgen, bis der erste beantwortet ist, damit der
+   Blick nicht vorauseilt. Die Linie links macht sichtbar, dass beide
+   Schritte zur selben Aufgabe gehören. */
+.schrittblock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 0 12px 16px;
+  border-left: 2px solid #2c3520;
+}
+/* Ohne diese Zeile bliebe der zweite Block trotz hidden im Bild und
+   verriete den Zwischenwert, bevor Schritt 1 beantwortet ist. */
+.schrittblock[hidden] { display: none; }
+.schrittblock .schrittkopf { color: #35e0d0; letter-spacing: 0.2em; font-size: 12px; }
+.schrittblock .schrittfrage { color: var(--hell); font-size: 16px; letter-spacing: 0.05em; max-width: 60ch; line-height: 1.45; text-align: center; }
 
 /* Stufe 4: fünf Antwortknöpfe, über die Pedale angewählt (gewaehlt), die
    Schusstaste bestätigt (richtig/falsch aus den bestehenden
