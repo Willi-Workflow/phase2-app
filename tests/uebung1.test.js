@@ -201,21 +201,22 @@ test("sichtmasse: Kreis am Flieger verankert, alter Anblick bei 16:9", () => {
   // Auf breiten Schirmen ist dieselbe Rumpfbreite ein kleinerer Breitenanteil.
   assert.ok(sichtmasse(21 / 9).trefferR < m.trefferR);
   assert.ok(Math.abs(m.verhaeltnis - 9 / 16) < 1e-12);
-  // Die Trefferzone bleibt in der Silhouette: am Modell vermessen ist die
-  // rund 0,30 Spannweiten hoch, das Fahrwerk steht bei 0,15
-  // (entwurf/rumpf-messung.html). Senkrecht ist damit der Rand erreicht,
-  // waagerecht liegt die Zone ab 0,08 schon auf den Tragflächen. Die
-  // Schranke hält diesen Stand fest: größer nur mit neuer Messung.
-  assert.ok(TREFFER_JE_SPANNWEITE > 0 && TREFFER_JE_SPANNWEITE <= 0.15);
+  // Die Trefferzone bleibt am Flugzeugmittelstück: Die Silhouette ist eine
+  // Spannweite breit, ab 0,5 läge die Zone jenseits der Flügelspitzen. Sie
+  // ist auf Willis Zuruf gewachsen (0,10 am 14.09., 0,15 am 15.09., 0,20 am
+  // 17.09.2026); die Schranke hält fest, dass noch die Mitte des Flugzeugs
+  // gemeint ist und nicht die Fläche.
+  assert.ok(TREFFER_JE_SPANNWEITE > 0 && TREFFER_JE_SPANNWEITE <= 0.25);
   // Die Maße folgen der Sichtgeometrie aus den exportierten Konstanten.
   const halbeHoehe = Math.tan((BLICKWINKEL * Math.PI) / 360) * FLUGDISTANZ;
   assert.ok(Math.abs(m.trefferR - (TREFFER_JE_SPANNWEITE * SPANNWEITE) / (2 * halbeHoehe * (16 / 9))) < 1e-12);
 });
 
-test("inDeckung mit Sichtmaßen: Trefferzone ist rumpfgroß statt kreisgroß", () => {
+test("inDeckung mit Sichtmaßen: Trefferzone ist viel kleiner als der Kreis", () => {
   const m = sichtmasse(16 / 9);
-  // Rumpfgroß heißt deutlich kleiner als der alte Deckungsradius.
-  assert.ok(m.trefferR < KREIS_R / 3);
+  // Die Zone bleibt deutlich kleiner als der alte Deckungsradius und als
+  // der gezeichnete Kreis: Der Kreis ist Zielhilfe, nicht Trefferfläche.
+  assert.ok(m.trefferR < KREIS_R / 2);
   const z = erzeugeLaufzustand(halb);
   z.kreis = { x: 0.5, y: 0.5 };
   z.ziel = { x: 0.5 + m.trefferR + 0.001, y: 0.5 };

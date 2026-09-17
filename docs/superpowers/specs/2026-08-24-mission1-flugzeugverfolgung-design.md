@@ -110,11 +110,12 @@ Willis Festlegung, ersetzt die Deckungsregel oben:
   grob gewahrt, das ist bei der nächsten Sichtung zu bestätigen. Der
   gezeichnete Kreis (Radius rund 0,53 Spannweiten) bleibt als Zielhilfe
   deutlich größer als die Zone, die gut ein Viertel davon misst.
-- Folge für die Wertung: Die Zone ist bei 16:9 dreieinhalbmal strenger
-  als der Deckungsradius vor dem 14.09.2026 (0,0072 statt 0,025 der
-  Bildbreite), der Flächeninhalt rund ein Zwölftel; auf breiteren
-  Schirmen noch strenger. Zwischen dem 14. und 15.09.2026 lag sie bei
-  0,10 Spannweiten und war damit fünfmal strenger. TREFFER_BESTWERT 12
+- Folge für die Wertung: Die Zone ist bei 16:9 zweieinhalbmal strenger
+  als der Deckungsradius vor dem 14.09.2026 (0,0096 statt 0,025 der
+  Bildbreite, rund 15 statt 40 Bildpunkte auf 1600 Breite), der
+  Flächeninhalt rund ein Sechstel; auf breiteren Schirmen noch strenger.
+  Zwischenstände: 0,10 vom 14. bis 15.09.2026 (fünfmal strenger), 0,15
+  vom 15. bis 17.09.2026 (dreieinhalbmal). TREFFER_BESTWERT 12
   stammt aus der alten Zone und ist nach Willis ersten Läufen neu zu
   eichen. Weil sich die Schwierigkeit
   selbst geändert hat, sind die alten Läufe nicht umrechenbar (anders als

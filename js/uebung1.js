@@ -33,20 +33,22 @@ export const KREIS_JE_SPANNWEITE = 1.15;
 // Silhouette von hinten, wie sie im Lauf steht): Ein Kreis von 0,06
 // Spannweiten liegt noch ganz auf dem Rumpf, ab 0,08 ragt sein Rand heraus,
 // dort beginnen auch die Tragflächen, das Fahrwerk steht bei 0,15.
-// Am 15.09.2026 auf Willis Auftrag von 0,10 auf 0,15 vergrößert: Die Zone
-// umschließt damit den Rumpf samt Fahrwerk (senkrecht reicht sie bis an den
-// Rand der Silhouette, die rund 0,30 Spannweiten hoch ist), statt nur den
-// Rumpfkern zu treffen. Der Flächeninhalt ist gut das Doppelte (mal 2,25),
-// gegenüber dem Stand vor dem 14.09. bleibt der Radius trotzdem
-// dreieinhalbmal so streng (0,0072 statt 0,0250 der Bildbreite bei 16:9).
-// Waagerecht greift die Zone dafür rund 0,07 Spannweiten auf die
-// Tragflächen über statt 0,02 wie bei 0,10, also knapp ein Drittel des Wegs
-// zur Flügelspitze: Willis Regel von oben ist nur noch grob gewahrt, und
-// weil das Modell ein Doppeldecker ist, liegt rund die Hälfte der
-// Kreisfläche zwischen den Flächen über freiem Himmel. Zum Vergleich: der
-// gezeichnete Kreis hat rund 0,53 Spannweiten Radius, die Zone ist gut ein
-// Viertel davon.
-export const TREFFER_JE_SPANNWEITE = 0.15;
+// Auf Willis Aufträge schrittweise vergrößert: am 15.09.2026 von 0,10 auf
+// 0,15, am 17.09.2026 auf 0,20. Die Zone umschließt damit das ganze
+// Flugzeugmittelstück und reicht senkrecht über die Silhouette hinaus, die
+// nur rund 0,32 Spannweiten hoch ist (halbe Höhe 0,16). Waagerecht greift
+// sie rund 0,12 Spannweiten auf die Tragflächen über, also gut ein Drittel
+// des Wegs zur Flügelspitze. Willis ursprüngliche Regel vom 14.09.2026
+// ("nur auf dem Flugzeugkörper") ist damit nicht mehr gewahrt: Ein Kreis
+// liegt schlecht über einer Silhouette, die dreimal so breit wie hoch ist,
+// und weil das Modell ein Doppeldecker ist, liegt ein wachsender Teil der
+// Fläche über freiem Himmel zwischen den Flächen. Bewusst so entschieden,
+// weil der Fang sonst zu hart wurde. Maße bei 16:9: 0,0096 der Bildbreite,
+// rund 15 Bildpunkte auf einem 1600 Punkte breiten Fenster. Gegenüber dem
+// Stand vor dem 14.09.2026 (0,0250 der Bildbreite, 40 Punkte) bleibt der
+// Radius damit zweieinhalbmal so streng. Der gezeichnete Kreis hat rund
+// 0,53 Spannweiten Radius, die Zone ist gut ein Drittel davon.
+export const TREFFER_JE_SPANNWEITE = 0.20;
 
 // Sichtmaße bei echtem Seitenverhältnis (Breite durch Höhe): scheinbare
 // Spannweite als Höhenanteil (für den gezeichneten Kreis), Trefferradius in
