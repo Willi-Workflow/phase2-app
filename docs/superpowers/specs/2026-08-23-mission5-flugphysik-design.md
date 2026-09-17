@@ -157,3 +157,12 @@ Rate am Zeiger. Bei der Auswahlform steht der naheliegende Fehlwert
 (Zielhöhe geteilt durch die Zeit, also ohne Abzug der abgelesenen Höhe)
 immer unter den Antworten, sonst verpufft die Falle. Die Form macht rund
 8 Prozent der Aufgaben aus, also gut eine je Lauf.
+
+**Deckel der Sink- und Steigraten** (Willis Vorgabe vom 17.09.2026): Als
+Antwort kommt nie mehr als 2000 ft je Minute vor, weder im gewerteten
+Test noch in den Übungen. Der Bestand vor dem Umbau desselben Tages ließ
+bis 4000 zu ("Du musst 6200 ft in 2 Minuten steigen" ergab 3100), der
+neue bleibt von sich aus bei 1300. RATE_MAX hält den Deckel fest, falls
+die Stufen später wachsen; ein Test prüft ihn über alle Stufen und beide
+Übungen. Nicht zu verwechseln mit VARIO_MAX: Das sagt, was das
+Instrument anzeigen kann, RATE_MAX, was gefragt werden darf.

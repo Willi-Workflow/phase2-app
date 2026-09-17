@@ -110,6 +110,11 @@ export const STUFENZAHLEN = {
 const HOEHE_UNTEN = 1000;
 const HOEHE_OBEN = 8900;
 const VARIO_MAX = 2000;
+// Höchste Rate, die als ANTWORT vorkommen darf, in Aufgaben wie in Übungen
+// (Willis Vorgabe vom 17.09.2026). Deckt sich mit dem Skalenende des
+// Variometers, ist aber die andere Frage: VARIO_MAX sagt, was das
+// Instrument zeigen kann, RATE_MAX, was gefragt werden darf.
+const RATE_MAX = 2000;
 // Kürzeste und längste Strecke: unter 10 NM wird die Aufgabe albern, über
 // 1200 NM zu groß für einen Kopfrechenweg.
 const WEG_MIN = 10;
@@ -135,6 +140,14 @@ function wzgPaare(tempi, zeiten) {
 function ratenPaare(raten, zeiten) {
   const paare = [];
   for (const r of raten) for (const t of zeiten) {
+    // Deckel der gesuchten Rate (Willis Vorgabe vom 17.09.2026): Höher als
+    // 2000 ft je Minute steigt oder sinkt in dieser Prüfung nichts, und eine
+    // Antwort, die das Variometer gar nicht anzeigen könnte, ist unsinnig.
+    // Der Bestand vor dem Umbau desselben Tages ließ bis 4000 ft/min zu
+    // (etwa "6200 ft in 2 Minuten steigen" mit der Antwort 3100); der neue
+    // Bestand bleibt von sich aus bei 1300, der Deckel hält das fest, wenn
+    // die Stufen später wachsen.
+    if (r > RATE_MAX) continue;
     const h = r * t;
     if (h < HOEHE_UNTEN || h > HOEHE_OBEN || h % 100 !== 0) continue;
     paare.push({ r, t, h });

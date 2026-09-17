@@ -941,3 +941,32 @@ test("Alle Stufen: jede Aufgabe trägt einen Lösungsweg mit Dreisatz", () => {
     }
   }
 });
+
+test("Keine Sink- oder Steigrate über 2000 ft/min, in keiner Stufe und keiner Übung", () => {
+  // Willis Vorgabe vom 17.09.2026. Der Bestand vor dem Umbau desselben Tages
+  // ließ bis 4000 ft/min zu ("6200 ft in 2 Minuten steigen" ergab 3100). Der
+  // neue Bestand bleibt von sich aus deutlich darunter; dieser Test hält den
+  // Deckel fest, wenn die Stufen später wachsen.
+  let groesste = 0;
+  for (const stufe of STUFEN5) {
+    // Gewerteter Test, alle Formen, einschließlich der Zielhöhenaufgabe.
+    for (let i = 0; i < 300; i++) {
+      for (const a of erzeugeLauf(8, Math.random, { stufe })) {
+        if (a.einheit !== "ft/min") continue;
+        assert.ok(a.antwort <= 2000, `Stufe ${stufe}: ${a.antwort} ft/min in "${a.frage}"`);
+        groesste = Math.max(groesste, a.antwort);
+      }
+    }
+    // Beide Übungen.
+    for (const methode of ["formel", "dreisatz"]) {
+      for (let i = 0; i < 600; i++) {
+        const a = erzeugeAufgabe("rate", Math.random, false, { stufe, methode });
+        if (a.einheit !== "ft/min") continue;
+        assert.ok(a.antwort <= 2000, `Übung ${methode}, Stufe ${stufe}: ${a.antwort} ft/min`);
+        groesste = Math.max(groesste, a.antwort);
+      }
+    }
+  }
+  // Gegenprobe, dass der Test überhaupt Raten gesehen hat.
+  assert.ok(groesste > 0);
+});
