@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {
   TESTDAUERN, AUFGABENZEIT, PRINZIPIEN, DREISATZ_PRINZIPIEN,
   waehlePrinzipien, erzeugeAufgabe, erzeugeLauf, panelwerte, verdeckteInstrumente,
-  ablenker, antwortenFuer, pruefeEingabe,
+  pruefeEingabe,
   punkteFuerAntwort, kennzahl, loesungsweg, TIPPS5,
   STUFEN5, STUFENNAMEN, STUFE_STANDARD, STUFENZAHLEN, STUNDENBRUCH_ZEITEN,
   aufgabenbestand, dreisatzSchritte, WZG_PAARE, WZG_PAARE_GLATT,
@@ -72,19 +72,20 @@ test("erzeugeAufgabe: ganzzahlig, in sich stimmig, Einheit und Bereich passen", 
   }
 });
 
-test("erzeugeLauf: volle Länge, alle Prinzipien, beide Formen kommen vor", () => {
+test("erzeugeLauf: volle Länge, alle Prinzipien, überall Zahleneingabe", () => {
+  // Seit dem 17.09.2026 gibt es nur noch eine Antwortform (Willis Auftrag,
+  // Auswahlfrage ausgebaut). Das alte form-Feld darf nicht zurückkehren,
+  // sonst zeigt der Lauf wieder Knöpfe zum Aussuchen.
   const rnd = saatZufall(29);
-  const formen = new Set();
   for (let i = 0; i < 20; i++) {
     const lauf = erzeugeLauf(10, rnd);
     assert.equal(lauf.length, 10);
     for (const p of PRINZIPIEN) assert.ok(lauf.some((a) => a.prinzip === p));
     for (const a of lauf) {
-      assert.ok(["auswahl", "eingabe"].includes(a.form));
-      formen.add(a.form);
+      assert.equal(a.form, undefined, "das form-Feld ist ausgebaut");
+      assert.ok(typeof a.antwort === "number", "jede Aufgabe hat eine Zahl als Antwort");
     }
   }
-  assert.equal(formen.size, 2);
 });
 
 test("erzeugeLauf: ein Viererblock enthält jedes Prinzip genau einmal", () => {
@@ -145,42 +146,10 @@ test("erzeugeLauf: gleicher Zufall ergibt gleichen Lauf, auch bei den Instrument
   assert.deepEqual(erzeugeLauf(12, saatZufall(83)), erzeugeLauf(12, saatZufall(83)));
 });
 
-test("ablenker: drei eindeutige, positive, ganzzahlige Werte ungleich der Antwort", () => {
-  const rnd = saatZufall(17);
-  for (let i = 0; i < 100; i++) {
-    for (const prinzip of PRINZIPIEN) {
-      const aufgabe = erzeugeAufgabe(prinzip, rnd);
-      const falsche = ablenker(aufgabe, rnd);
-      assert.equal(falsche.length, 3);
-      assert.equal(new Set(falsche).size, 3);
-      for (const w of falsche) {
-        assert.ok(Number.isInteger(w) && w > 0);
-        assert.notEqual(w, aufgabe.antwort);
-      }
-    }
-  }
-});
-
-test("ablenker: der 60er-Fehler ist beim Weg dabei", () => {
-  const aufgabe = { prinzip: "weg", antwort: 180 };
-  assert.ok(ablenker(aufgabe, saatZufall(3)).includes(180 * 60));
-});
-
-test("ablenker: der 60er-Fehler ist bei der Zeit dabei, wenn er ganzzahlig ist", () => {
-  const aufgabe = { prinzip: "zeit", antwort: 300 };
-  assert.ok(ablenker(aufgabe, saatZufall(3)).includes(5));
-});
-
-test("antwortenFuer: vier eindeutige Werte, die Antwort ist dabei", () => {
-  const rnd = saatZufall(23);
-  for (let i = 0; i < 50; i++) {
-    const aufgabe = erzeugeAufgabe(PRINZIPIEN[i % 4], rnd);
-    const auswahl = antwortenFuer(aufgabe, rnd);
-    assert.equal(auswahl.length, 4);
-    assert.equal(new Set(auswahl).size, 4);
-    assert.ok(auswahl.includes(aufgabe.antwort));
-  }
-});
+// Die vier Prüfungen zu ablenker und antwortenFuer sind am 17.09.2026 mit
+// der Auswahlfrage entfallen: Ohne Antwortknöpfe gibt es keine falschen
+// Werte mehr zu bauen. Sie stehen im Commit davor, falls die Auswahlfrage
+// je zurückkommt.
 
 test("pruefeEingabe: Komma, Punkt und Leerzeichen gelten", () => {
   assert.ok(pruefeEingabe("300", 300));

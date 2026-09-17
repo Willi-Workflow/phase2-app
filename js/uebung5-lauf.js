@@ -1,13 +1,13 @@
 // Ablauf Mission 5 (Test Flugphysik) im Vollbild: Aufgaben am Stück in
 // Sechserblöcken, bis die eingestellte Testdauer um ist, mit Ablaufbalken,
-// je Aufgabe als Auswahlfrage oder Zahleneingabe, sofortige Auflösung,
+// je Aufgabe als Zahleneingabe, sofortige Auflösung,
 // danach die Ergebnistafel. Der Wissensbereich steht als Karteikartenstapel
 // fest auf der Missionsseite, nicht im Lauf. Die Bühne ist dieselbe
 // Cockpitbühne wie Mission 4: Fragetext, Ablaufbalken und Antworten liegen
 // im Scheibenfeld über dem Panel, das je Aufgabe frische Instrumentenwerte
 // zeigt, denn ein Teil der Aufgaben verlangt das Ablesen am Instrument.
 import {
-  TESTDAUERN, AUFGABENZEIT, erzeugeLauf, antwortenFuer, pruefeEingabe,
+  TESTDAUERN, AUFGABENZEIT, erzeugeLauf, pruefeEingabe,
   punkteFuerAntwort, kennzahl, panelwerte, verdeckteInstrumente,
   waehlePrinzipien, erzeugeAufgabe, loesungsweg, TIPPS5,
   STUFEN5, STUFENNAMEN, STUFE_STANDARD, DREISATZ_PRINZIPIEN, dreisatzSchritte,
@@ -33,10 +33,10 @@ export function erzeugeUebung5({ speicher }) {
   };
   let uebungsStart = null; // "schnell" oder "dreisatz", sonst gewerteter Lauf
   const hinweis = "Rechenaufgaben zu Weg, Zeit, Geschwindigkeit und Sink- oder Steigrate am Stück, "
-    + "bis die eingestellte Testdauer um ist, je Aufgabe 20 Sekunden, im Cockpit. Manche Aufgaben "
+    + `bis die eingestellte Testdauer um ist, je Aufgabe ${AUFGABENZEIT} Sekunden, im Cockpit. Manche Aufgaben `
     + "nennen keinen Wert, sondern verweisen aufs Ablesen am Instrumentenpanel: Steht im Text nur "
     + "eine Zielhöhe, gehört die Ausgangshöhe vom Höhenmesser abgelesen und zuerst abgezogen. "
-    + "Geantwortet wird per Auswahl oder Zahleneingabe. Die Wertung in Prozent belohnt richtige und "
+    + "Geantwortet wird getippt, Enter bestätigt. Die Wertung in Prozent belohnt richtige und "
     + "schnelle Antworten, die Formeln stehen auf den Karteikarten darunter. Zum Üben gibt es zwei "
     + "Wege: Schnellrechnen fragt Aufgaben ab, die eine Formel oder ein Stundenbruch in einem Schritt "
     + "löst, Dreisatz fragt die beiden Schritte einzeln ab. Beide zählen nie zur Statistik.";
@@ -537,10 +537,13 @@ export function erzeugeUebung5({ speicher }) {
       for (const id of verdeckteInstrumente(aufgabe)) {
         panel.querySelector(`.instrument[data-id="${id}"]`)?.classList.add("verdeckt");
       }
-      const antwortfeld = aufgabe.form === "auswahl"
-        ? `<div class="antworten">${antwortenFuer(aufgabe).map((w, i) =>
-            `<button class="antwortknopf" data-nr="${i}" data-wert="${w}">${w} ${aufgabe.einheit}</button>`).join("")}</div>`
-        : `<form class="eingabezeile" id="u5-form">
+      // Nur Zahleneingabe (Willis Auftrag vom 17.09.2026). Die Auswahlfrage
+      // mit vier Knöpfen ist ersatzlos ausgebaut: Wer aussuchen darf, schätzt
+      // und schließt aus, statt zu rechnen. Damit ist auch der Ablenker-Bau
+      // entfallen, samt der Falle der Zielhöhenaufgabe (der Fehlwert ohne
+      // Abzug stand dort bewusst zur Wahl). Die Falle wirkt weiter, der
+      // falsche Wert wird nur nicht mehr angeboten.
+      const antwortfeld = `<form class="eingabezeile" id="u5-form">
             <input class="zahlenfeld" id="u5-eingabe" inputmode="decimal" autocomplete="off" placeholder="Antwort">
             <span class="einheit">${aufgabe.einheit}</span>
           </form>`;
@@ -554,18 +557,13 @@ export function erzeugeUebung5({ speicher }) {
       let entschieden = false;
       spaeter(() => entscheide({ abgelaufen: true }), limitMs);
 
-      const entscheide = ({ getroffen = false, abgelaufen = false, gewaehlt = null }) => {
+      const entscheide = ({ getroffen = false, abgelaufen = false }) => {
         if (entschieden || beendet || ergebnisOffen) return;
         entschieden = true;
         gestellt += 1;
         const rest = abgelaufen ? 0 : Math.max(0, limitMs - (performance.now() - start));
         const punkte = punkteFuerAntwort(getroffen, rest, limitMs);
         if (getroffen) { richtig += 1; punkteSumme += punkte; }
-        mitte.querySelectorAll(".antwortknopf").forEach((knopf) => {
-          knopf.disabled = true;
-          if (Number(knopf.dataset.wert) === aufgabe.antwort) knopf.classList.add("richtig");
-          else if (knopf.dataset.nr === gewaehlt) knopf.classList.add("falsch");
-        });
         const eingabe = mitte.querySelector("#u5-eingabe");
         if (eingabe) { eingabe.disabled = true; eingabe.classList.add(getroffen ? "richtig" : "falsch"); }
         mitte.querySelector(".zeitbalken span").style.animationPlayState = "paused";
@@ -587,23 +585,14 @@ export function erzeugeUebung5({ speicher }) {
         schleier.addEventListener("click", weiter);
       };
 
-      if (aufgabe.form === "auswahl") {
-        mitte.querySelector(".antworten").addEventListener("click", (e) => {
-          const knopf = e.target.closest(".antwortknopf");
-          if (!knopf) return;
-          e.stopPropagation();
-          entscheide({ getroffen: Number(knopf.dataset.wert) === aufgabe.antwort, gewaehlt: knopf.dataset.nr });
-        });
-      } else {
-        const form = mitte.querySelector("#u5-form");
-        const eingabe = mitte.querySelector("#u5-eingabe");
-        eingabe.focus();
-        form.addEventListener("click", (e) => e.stopPropagation());
-        form.addEventListener("submit", (e) => {
-          e.preventDefault();
-          entscheide({ getroffen: pruefeEingabe(eingabe.value, aufgabe.antwort) });
-        });
-      }
+      const form = mitte.querySelector("#u5-form");
+      const eingabe = mitte.querySelector("#u5-eingabe");
+      eingabe.focus();
+      form.addEventListener("click", (e) => e.stopPropagation());
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        entscheide({ getroffen: pruefeEingabe(eingabe.value, aufgabe.antwort) });
+      });
     };
 
     // Ergebnistafel für beide Wege: vollendeter Lauf (gewertet) und Abbruch

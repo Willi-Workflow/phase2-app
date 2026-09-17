@@ -426,55 +426,22 @@ export function erzeugeLauf(anzahl, rnd = Math.random, optionen = {}) {
   }, []);
   const anzahlInstrument = Math.min(Math.round(anzahl / 3), geeignete.length);
   const instrumentPositionen = new Set(mische(geeignete, rnd).slice(0, anzahlInstrument));
-  return prinzipien.map((prinzip, i) => ({
-    ...erzeugeAufgabe(prinzip, rnd, instrumentPositionen.has(i), einstellung),
-    form: rnd() < 0.5 ? "auswahl" : "eingabe",
-  }));
+  // Seit dem 17.09.2026 hat jede Aufgabe dieselbe Form: getippte Zahl
+  // (Willis Auftrag). Vorher würfelte hier ein form-Feld zwischen
+  // Auswahlfrage und Eingabe. Wer aus vier Knöpfen aussuchen darf, schätzt
+  // und schließt aus, statt den Weg zu rechnen, und genau das Rechnen ist
+  // der Zweck dieser Mission.
+  return prinzipien.map((prinzip, i) =>
+    erzeugeAufgabe(prinzip, rnd, instrumentPositionen.has(i), einstellung));
 }
 
-// Der klassische 60er-Fehler je Prinzip: Faktor 60 vergessen oder doppelt
-// gerechnet. Bei der Rate gibt es keinen.
-function sechzigerFehler(aufgabe) {
-  const a = aufgabe.antwort;
-  if (aufgabe.prinzip === "zeit" || aufgabe.prinzip === "geschwindigkeit") {
-    return Number.isInteger(a / 60) ? a / 60 : null;
-  }
-  if (aufgabe.prinzip === "weg") return a * 60;
-  return null;
-}
-
-// Drei Ablenker: bevorzugt der 60er-Fehler, dazu Nachbarwerte in plausibler
-// Nähe. Die Schlussschleife garantiert drei Werte auch bei Rundungskollisionen.
-export function ablenker(aufgabe, rnd = Math.random) {
-  const a = aufgabe.antwort;
-  const kandidaten = [];
-  // Der klassische Fehler der Zielhöhenaufgabe (Prüferbefund vom
-  // 17.09.2026): Wer die abgelesene Ausgangshöhe vergisst, teilt die
-  // Zielhöhe durch die Zeit. Genau darum geht es bei dieser Aufgabenform,
-  // also muss dieser Wert bei der Auswahlfrage zur Wahl stehen; sonst
-  // verpufft die Falle, weil der eigene Fehlwert gar nicht angeboten wird
-  // und der Bewerber stutzt, ohne zu verstehen warum.
-  if (aufgabe.zielhoehe) {
-    const ohneAbzug = Math.round(aufgabe.zielhoehe.ziel / aufgabe.werte.t);
-    if (ohneAbzug !== a) kandidaten.push(ohneAbzug);
-  }
-  const fehler = sechzigerFehler(aufgabe);
-  if (fehler && fehler !== a) kandidaten.push(fehler);
-  kandidaten.push(...mische([0.5, 0.75, 0.9, 1.1, 1.25, 1.5, 2].map((f) => Math.round(a * f)), rnd));
-  const eindeutig = [];
-  for (const k of kandidaten) {
-    if (k > 0 && k !== a && !eindeutig.includes(k)) eindeutig.push(k);
-    if (eindeutig.length === 3) return eindeutig;
-  }
-  for (let k = 1; eindeutig.length < 3; k++) {
-    if (!eindeutig.includes(a + k)) eindeutig.push(a + k);
-  }
-  return eindeutig;
-}
-
-export function antwortenFuer(aufgabe, rnd = Math.random) {
-  return mische([aufgabe.antwort, ...ablenker(aufgabe, rnd)], rnd);
-}
+// Der Ablenker-Bau (sechzigerFehler, ablenker, antwortenFuer) ist am
+// 17.09.2026 mit der Auswahlfrage entfallen, weil ihn danach niemand mehr
+// gerufen hat. Er baute drei falsche Antworten je Aufgabe, bevorzugt aus dem
+// klassischen 60er-Fehler und, bei der Zielhöhenaufgabe, aus dem Fehlwert
+// ohne Abzug der abgelesenen Ausgangshöhe. Beide Fallen bestehen weiter, der
+// falsche Wert wird nur nicht mehr zur Wahl gestellt. Wer die Auswahlfrage
+// zurückholt, findet den Baustein im Commit vor diesem.
 
 // Eingaben gelten mit Komma oder Punkt, Leerzeichen werden ignoriert.
 // Richtig ist nur der exakte Wert, die Erzeugung liefert glatte Zahlen.
