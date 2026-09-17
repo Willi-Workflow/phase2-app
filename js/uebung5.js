@@ -5,7 +5,15 @@
 import { mische } from "./zufall.js";
 import { zufallswerte } from "./instrumente.js";
 
-export const AUFGABENZEIT = 20; // Sekunden je Aufgabe
+// Antwortzeit je Aufgabe im gewerteten Test. Am 17.09.2026 auf Willis Auftrag
+// von 20 auf 40 Sekunden verdoppelt. Die beiden NUR-ÜBEN-Blöcke laufen
+// weiterhin ohne Zeitdruck, die Zahl wirkt nur im Test.
+// ACHTUNG für die Wertung: VOLLE_PUNKTE_MS ist eine absolute Schranke (volle
+// Punkte, wer binnen acht Sekunden antwortet) und wandert nicht mit. Bei
+// längerem Fenster bringt dieselbe Antwortgeschwindigkeit darum mehr Punkte:
+// Wer 20 Sekunden braucht, bekam vorher die Grundpunkte 7, jetzt rund 8,9.
+// Alte M5-Läufe sind damit nicht mehr direkt vergleichbar.
+export const AUFGABENZEIT = 40; // Sekunden je Aufgabe
 export const TESTDAUERN = [5, 10, 30]; // Minuten
 export const PRINZIPIEN = ["zeit", "weg", "geschwindigkeit", "rate"];
 // Nur diese drei tragen zwei echte Dreisatzschritte: erst der Wert für eine

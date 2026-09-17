@@ -18,8 +18,8 @@ function saatZufall(saat) {
   };
 }
 
-test("Rahmenwerte: zwanzig Sekunden je Aufgabe, drei Testdauern", () => {
-  assert.equal(AUFGABENZEIT, 20);
+test("Rahmenwerte: vierzig Sekunden je Aufgabe, drei Testdauern", () => {
+  assert.equal(AUFGABENZEIT, 40);
   assert.deepEqual(TESTDAUERN, [5, 10, 30]);
 });
 
