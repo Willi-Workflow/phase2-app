@@ -24,6 +24,24 @@ const istGlatt = (n) => Number.isInteger(n * 2);
 // 210 kt sind 3,5. Das ist genau jeder Wert, der durch 30 teilbar ist.
 const minutenGlatt = (v) => istGlatt(v / 60);
 
+// Rundungsregel des Dreisatz-Bestands (Willis Rückmeldung vom 17.09.2026:
+// "die werte in den dreisatz übungen sind mir jetzt zu krumm"). Beim Dreisatz
+// rechnet man mit der Minutenzahl und liest den Weg ab, diese beiden Zahlen
+// müssen also im Kopf tragen; der Zwischenwert ist durch minutenGlatt ohnehin
+// ganz oder halb. Rund heißt hier: Die Minute ist gerade oder endet auf 5, der
+// Weg ist gerade und bleibt unter DREISATZ_WEG_MAX.
+//
+// Bewusst NICHT "der Weg endet auf 0 oder 5": Bei 1,5 / 3,5 und 4,5 NM je
+// Minute ginge das nur mit Minutenzahlen, die durch 10 teilbar sind. Über alle
+// Geschwindigkeiten nachgerechnet blieben davon 4, 3 und 2 Paare übrig, die
+// halben Zwischenwerte wären praktisch weg und Stufe 2 und 3 führen fast immer
+// 150 kt. Willis Entscheid vom 17.09.2026 nach Vorlage beider Fassungen:
+// lieber gerade Wege als eine Hausgeschwindigkeit.
+export const DREISATZ_WEG_MAX = 150;
+const rundeMinute = (t) => t % 2 === 0 || t % 5 === 0;
+const runderWeg = (s) => s % 2 === 0 && s <= DREISATZ_WEG_MAX;
+export const istRunderDreisatz = (p) => rundeMinute(p.t) && runderWeg(p.s);
+
 // Je Minutenzahl der Stundenbruch in Worten und die Rechenoperation in
 // beide Richtungen: weg rechnet s aus v (mal Stundenanteil), tempo rechnet
 // v aus s (die Umkehrung). Bei 45 Minuten ist der Doppelschritt über
@@ -86,13 +104,22 @@ export const STUFE_STANDARD = 1;
 // NM je Minute unten, halbe oben), bei den Formel-Zeiten die Sperrigkeit des
 // Stundenbruchs. Neue Werte muss der Bestandsfilter tragen: Der Weg muss
 // ganzzahlig bleiben, darum passen zu halben NM je Minute nur gerade Zeiten.
+//
+// Noch am selben Tag zurückgenommen, soweit es zu weit ging ("die werte in
+// den dreisatz übungen sind mir jetzt zu krumm"): Die dreisatzZeiten stehen
+// jetzt im runden Raster, und istRunderDreisatz wirft aus, was trotzdem
+// krumm herauskommt. Damit sind Minuten wie 7, 11, 13, 17, 27 und 58 sowie
+// Wege wie 91, 119, 203, 234 und 261 aus dem Bestand verschwunden. Die
+// Listen dürfen großzügig bleiben, die Regel wählt aus; das ist absichtlich
+// so gebaut, damit ein neuer Wert nichts Krummes einschleppen kann.
 export const STUFENZAHLEN = {
   1: {
     tempi: [120, 180, 240, 300],          // 2, 3, 4, 5 NM je Minute
     formelZeiten: [12, 15, 20, 30, 45],   // Fünftel bis Dreiviertelstunde
     // Kein Stundenbruch, kleiner zweiter Schritt. Bei ganzen NM je Minute
-    // geht jede Zeit auf, darum ist hier viel Platz.
-    dreisatzZeiten: [7, 8, 9, 11, 13, 14, 16, 17, 18, 21, 22, 24, 26, 27, 28],
+    // geht jede Zeit auf, darum ist hier viel Platz. Die Minuten stehen im
+    // runden Raster (gerade oder auf 5), der Rest fällt über istRunderDreisatz.
+    dreisatzZeiten: [5, 8, 10, 14, 16, 18, 22, 24, 25, 26, 28, 32, 34, 35, 36, 38],
     raten: [200, 300, 400, 500, 600, 700, 800, 900, 1000],
     ratenZeiten: [3, 4, 5, 6, 7],
   },
@@ -102,7 +129,10 @@ export const STUFENZAHLEN = {
     tempi: [90, 150, 210, 80, 100, 110, 140, 160, 200, 220],
     formelZeiten: [12, 15, 20, 30, 40, 45, 90, 120],
     // Gerade Zeiten, sonst wird der Weg bei halben NM je Minute krumm.
-    dreisatzZeiten: [8, 14, 16, 18, 22, 24, 26, 28, 32, 34, 38, 44, 46],
+    // Übrig bleiben davon die Vielfachen von vier: Bei 1,5 / 2,5 / 3,5 NM je
+    // Minute ist der Weg nur dann gerade, und gerade muss er seit Willis
+    // Rückmeldung vom 17.09.2026 sein.
+    dreisatzZeiten: [8, 10, 14, 16, 18, 22, 24, 26, 28, 32, 34, 36, 38, 44, 46, 48, 50, 52, 56],
     raten: [250, 450, 550, 600, 700, 900, 1050, 1200],
     ratenZeiten: [4, 5, 6, 7, 8],
   },
@@ -111,7 +141,7 @@ export const STUFENZAHLEN = {
     // Feld krummer Knoten für die Formel.
     tempi: [90, 150, 210, 270, 100, 110, 130, 140, 160, 170, 190, 200, 220, 230, 260, 280, 310, 320],
     formelZeiten: [20, 40, 45, 90, 120, 150, 180],
-    dreisatzZeiten: [14, 16, 18, 22, 24, 26, 28, 32, 34, 38, 44, 46, 52, 56, 58],
+    dreisatzZeiten: [8, 10, 14, 16, 18, 22, 24, 26, 28, 32, 34, 36, 38, 44, 46, 48, 50, 52, 54, 56, 58],
     raten: [350, 450, 550, 650, 700, 750, 850, 900, 950, 1050, 1100, 1200, 1250, 1300, 1400, 1600, 1800],
     ratenZeiten: [3, 4, 5, 6, 7, 8, 9],
   },
@@ -178,7 +208,10 @@ function ratenPaare(raten, zeiten) {
 function baueBestand(stufe) {
   const z = STUFENZAHLEN[stufe];
   const formel = wzgPaare(z.tempi, z.formelZeiten);
-  const dreisatz = wzgPaare(z.tempi.filter(minutenGlatt), z.dreisatzZeiten);
+  // Nur der Dreisatz-Bestand hält die Rundungsregel ein: Dort rechnet man
+  // Schritt für Schritt mit Minute und Weg. Der Formel-Bestand lebt vom
+  // Stundenbruch und darf krummer sein, dort trägt der Kniff.
+  const dreisatz = wzgPaare(z.tempi.filter(minutenGlatt), z.dreisatzZeiten).filter(istRunderDreisatz);
   const raten = ratenPaare(z.raten, z.ratenZeiten);
   return {
     formel,

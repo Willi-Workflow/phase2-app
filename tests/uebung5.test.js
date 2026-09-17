@@ -7,6 +7,7 @@ import {
   punkteFuerAntwort, kennzahl, loesungsweg, TIPPS5,
   STUFEN5, STUFENNAMEN, STUFE_STANDARD, STUFENZAHLEN, STUNDENBRUCH_ZEITEN,
   aufgabenbestand, dreisatzSchritte, WZG_PAARE, WZG_PAARE_GLATT,
+  DREISATZ_WEG_MAX, istRunderDreisatz,
 } from "../js/uebung5.js";
 
 function saatZufall(saat) {
@@ -995,4 +996,85 @@ test("Keine Sink- oder Steigrate über 2000 ft/min, in keiner Stufe und keiner �
   }
   // Gegenprobe, dass der Test überhaupt Raten gesehen hat.
   assert.ok(groesste > 0);
+});
+
+// Rundungsregel des Dreisatz-Bestands, Willis Rückmeldung vom 17.09.2026
+// ("die werte in den dreisatz übungen sind mir jetzt zu krumm"). Die
+// Verbreiterung vom selben Tag hatte Minuten wie 58 und Wege wie 261 NM in
+// den Bestand gespült. Die folgenden Prüfungen halten fest, was rund heißt,
+// und bewachen zugleich den Preis dafür: Der Bestand darf nicht so schmal
+// werden, dass die Wiederholungen zurückkommen, und keine Geschwindigkeit
+// darf zur Hausgeschwindigkeit werden.
+
+test("Dreisatz: runde Minuten, gerade Wege, nichts über dem Deckel", () => {
+  for (const stufe of STUFEN5) {
+    for (const p of aufgabenbestand(stufe).dreisatz) {
+      assert.ok(p.t % 2 === 0 || p.t % 5 === 0,
+        `Stufe ${stufe}: ${p.t} min ist weder gerade noch ein Fünfer`);
+      assert.equal(p.s % 2, 0, `Stufe ${stufe}: ${p.s} NM ist ungerade`);
+      assert.ok(p.s <= DREISATZ_WEG_MAX, `Stufe ${stufe}: ${p.s} NM über dem Deckel`);
+      assert.ok(istRunderDreisatz(p), `Stufe ${stufe}: ${p.v} kt in ${p.t} min`);
+    }
+  }
+});
+
+test("Dreisatz: die krummen Werte von heute Mittag sind weg", () => {
+  // Stichprobe aus dem, was Willi vorlag: Primzahl-Minuten, die Überlängen
+  // und die Wege jenseits des Deckels.
+  const krummeMinuten = [7, 9, 11, 13, 17, 21, 27, 58];
+  const krummeWege = [33, 39, 51, 91, 95, 119, 133, 161, 203, 234, 261];
+  for (const stufe of STUFEN5) {
+    for (const p of aufgabenbestand(stufe).dreisatz) {
+      assert.ok(!krummeMinuten.includes(p.t), `Stufe ${stufe}: ${p.t} min ist zurück`);
+      assert.ok(!krummeWege.includes(p.s), `Stufe ${stufe}: ${p.s} NM ist zurück`);
+    }
+  }
+});
+
+test("Dreisatz: jede Stufe bleibt breit genug gegen Wiederholungen", () => {
+  // Der alte Bestand vor der Verbreiterung hatte 20/10/15 Paare und
+  // wiederholte sich nach Willis Urteil zu oft. Darunter darf keine Stufe
+  // mehr fallen, sonst ist der Gewinn von heute Mittag wieder verspielt.
+  for (const stufe of STUFEN5) {
+    const anzahl = aufgabenbestand(stufe).dreisatz.length;
+    assert.ok(anzahl >= 25, `Stufe ${stufe}: nur ${anzahl} Dreisatz-Paare`);
+  }
+});
+
+test("Dreisatz: halbe Zwischenwerte bleiben, keine Hausgeschwindigkeit", () => {
+  // Der Preis der strengen Fassung wäre gewesen, dass nur 2,5 NM je Minute
+  // übrig bleibt und Stufe 2 und 3 fast immer 150 kt zeigen. Genau das
+  // bewacht diese Prüfung: Ab Stufe 2 müssen mindestens zwei verschiedene
+  // halbe Zwischenwerte vorkommen, und kein Tempo darf den Bestand tragen.
+  for (const stufe of [2, 3]) {
+    const paare = aufgabenbestand(stufe).dreisatz;
+    const halbe = new Set(paare.map((p) => p.v / 60).filter((je) => !Number.isInteger(je)));
+    assert.ok(halbe.size >= 2, `Stufe ${stufe}: nur ${halbe.size} halbe Zwischenwerte`);
+    const jeTempo = {};
+    for (const p of paare) jeTempo[p.v] = (jeTempo[p.v] || 0) + 1;
+    const groesster = Math.max(...Object.values(jeTempo));
+    assert.ok(groesster / paare.length < 0.6,
+      `Stufe ${stufe}: ein Tempo stellt ${groesster} von ${paare.length} Paaren`);
+  }
+});
+
+test("Dreisatz-Übung: auch die gestellten Aufgaben tragen nur runde Werte", () => {
+  // Gegenprobe am Erzeuger statt am Bestand, über alle Stufen und die drei
+  // Prinzipien der Dreisatz-Übung.
+  for (const stufe of STUFEN5) {
+    for (let i = 0; i < 200; i++) {
+      for (const prinzip of DREISATZ_PRINZIPIEN) {
+        const a = erzeugeAufgabe(prinzip, Math.random, i % 3 === 0, { stufe, methode: "dreisatz" });
+        const { t, s } = a.werte;
+        assert.ok(t % 2 === 0 || t % 5 === 0, `Stufe ${stufe}, ${prinzip}: ${t} min`);
+        assert.equal(s % 2, 0, `Stufe ${stufe}, ${prinzip}: ${s} NM`);
+        assert.ok(s <= DREISATZ_WEG_MAX, `Stufe ${stufe}, ${prinzip}: ${s} NM`);
+        // Der Zwischenwert der beiden Schritte muss weiter tragen.
+        const schritte = dreisatzSchritte(a);
+        assert.ok(schritte !== null, `Stufe ${stufe}, ${prinzip}: keine Schritte`);
+        assert.ok(Number.isInteger(schritte.zwischenwert * 2),
+          `Stufe ${stufe}, ${prinzip}: Zwischenwert ${schritte.zwischenwert}`);
+      }
+    }
+  }
 });
