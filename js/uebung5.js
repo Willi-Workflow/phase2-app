@@ -78,27 +78,42 @@ export const STUFEN5 = [1, 2, 3];
 export const STUFENNAMEN = { 1: "LEICHT", 2: "MITTEL", 3: "SCHWER" };
 export const STUFE_STANDARD = 1;
 
+// Am 17.09.2026 auf Willis Rückmeldung deutlich verbreitert ("die Aufgaben
+// und Werte wiederholen sich zu oft in den Übungen, baue mehr besonders für
+// schwer"). Vorher hatte die schwerste Stufe 10 Formel- und 15
+// Dreisatz-Paare, nach ein paar Aufgaben kannte man sie. Der Charakter der
+// Stufen bleibt: Bei den Dreisatz-Zeiten entscheidet der Zwischenwert (ganze
+// NM je Minute unten, halbe oben), bei den Formel-Zeiten die Sperrigkeit des
+// Stundenbruchs. Neue Werte muss der Bestandsfilter tragen: Der Weg muss
+// ganzzahlig bleiben, darum passen zu halben NM je Minute nur gerade Zeiten.
 export const STUFENZAHLEN = {
   1: {
     tempi: [120, 180, 240, 300],          // 2, 3, 4, 5 NM je Minute
-    formelZeiten: [15, 20, 30],           // Viertel-, Drittel-, halbe Stunde
-    dreisatzZeiten: [7, 8, 11, 13, 14],   // kein Stundenbruch, kleiner zweiter Schritt
-    raten: [200, 300, 400, 500, 600, 800, 1000],
-    ratenZeiten: [3, 4, 5, 6],
+    formelZeiten: [12, 15, 20, 30, 45],   // Fünftel bis Dreiviertelstunde
+    // Kein Stundenbruch, kleiner zweiter Schritt. Bei ganzen NM je Minute
+    // geht jede Zeit auf, darum ist hier viel Platz.
+    dreisatzZeiten: [7, 8, 9, 11, 13, 14, 16, 17, 18, 21, 22, 24, 26, 27, 28],
+    raten: [200, 300, 400, 500, 600, 700, 800, 900, 1000],
+    ratenZeiten: [3, 4, 5, 6, 7],
   },
   2: {
-    tempi: [90, 150, 80, 100, 200],       // 1,5 und 2,5 NM je Minute, dazu die krummen Knoten
-    formelZeiten: [12, 30, 45, 90],
-    dreisatzZeiten: [8, 14, 16, 22, 26],  // gerade Zeiten, sonst wird der Weg krumm
-    raten: [250, 450, 600, 700, 900, 1200],
-    ratenZeiten: [4, 6, 7, 8],
+    // 1,5 / 2,5 / 3,5 NM je Minute, dazu die krummen Knoten, bei denen die
+    // Minute nicht aufgeht und nur der Stundenbruch trägt.
+    tempi: [90, 150, 210, 80, 100, 110, 140, 160, 200, 220],
+    formelZeiten: [12, 15, 20, 30, 40, 45, 90, 120],
+    // Gerade Zeiten, sonst wird der Weg bei halben NM je Minute krumm.
+    dreisatzZeiten: [8, 14, 16, 18, 22, 24, 26, 28, 32, 34, 38, 44, 46],
+    raten: [250, 450, 550, 600, 700, 900, 1050, 1200],
+    ratenZeiten: [4, 5, 6, 7, 8],
   },
   3: {
-    tempi: [150, 210, 270, 100, 200],     // 2,5 / 3,5 / 4,5 NM je Minute, dazu die krummen Knoten
-    formelZeiten: [40, 45, 90],           // Zweidrittel-, Dreiviertel-, anderthalb Stunden
-    dreisatzZeiten: [14, 16, 22, 26, 28],
-    raten: [350, 550, 650, 750, 1100, 1300],
-    ratenZeiten: [4, 6, 7, 8],
+    // 1,5 / 2,5 / 3,5 / 4,5 NM je Minute für den Dreisatz, dazu ein breites
+    // Feld krummer Knoten für die Formel.
+    tempi: [90, 150, 210, 270, 100, 110, 130, 140, 160, 170, 190, 200, 220, 230, 260, 280, 310, 320],
+    formelZeiten: [20, 40, 45, 90, 120, 150, 180],
+    dreisatzZeiten: [14, 16, 18, 22, 24, 26, 28, 32, 34, 38, 44, 46, 52, 56, 58],
+    raten: [350, 450, 550, 650, 700, 750, 850, 900, 950, 1050, 1100, 1200, 1250, 1300, 1400, 1600, 1800],
+    ratenZeiten: [3, 4, 5, 6, 7, 8, 9],
   },
 };
 

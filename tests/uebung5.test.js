@@ -922,21 +922,47 @@ test("Zielhöhenaufgabe: nur im gewerteten Lauf, nie in den Übungen", () => {
   assert.ok(gesehen > 20, `nur ${gesehen} Zielhöhenaufgaben in 720`);
 });
 
-test("Alle Stufen: jede Aufgabe trägt einen Lösungsweg mit Dreisatz", () => {
-  // Gegenprobe über den ganzen Bestand: Seit die glatte Stunde aus den
-  // Beständen gefallen ist (60 Minuten wären ohne Rechnung ablesbar), gibt es
-  // zu jeder erzeugten Aufgabe zwei Dreisatzzeilen, gezeigt oder als sicherer
-  // Weg darunter.
+test("Alle Stufen: jede Aufgabe trägt einen brauchbaren Lösungsweg", () => {
+  // Gegenprobe über den ganzen Bestand. Der Dreisatz steht dabei nur dort,
+  // wo er auch glatt aufgeht: Seit der Bestand am 17.09.2026 verbreitert
+  // wurde, tragen die Formel-Stufen auch krumme Knoten wie 140 kt, bei denen
+  // weder die Minute noch die NM glatt herunterzurechnen sind (140 geteilt
+  // durch 60 sind 2,333). Dort wäre eine erzwungene Dreisatzzeile mit einer
+  // krummen Zwischenzahl schlechter als keine. Genau diese Aufgaben gehören
+  // aber in die Formel-Übung, denn "70 NM geteilt durch 140 kt ist eine
+  // halbe Stunde" ist der kurze Weg.
   for (const stufe of STUFEN5) {
     for (let i = 0; i < 300; i++) {
       for (const prinzip of PRINZIPIEN) {
         const a = erzeugeAufgabe(prinzip, Math.random, i % 3 === 0, { stufe, mitZielhoehe: i % 5 === 0 });
         const zeilen = loesungsweg(a);
         assert.ok(zeilen.length >= 2, `Stufe ${stufe}, ${prinzip}: Weg zu kurz`);
-        assert.equal(zeilen.filter((z) => z.includes("Dreisatz")).length, 2,
-          `Stufe ${stufe}, ${prinzip}: ${JSON.stringify(a.werte)} ${JSON.stringify(zeilen)}`);
+        const dreisatzZeilen = zeilen.filter((z) => z.includes("Dreisatz")).length;
+        // Entweder steht der Dreisatz ganz da oder gar nicht, nie halb: Eine
+        // einzelne Schrittzeile wäre für den, der sich schwertut, das
+        // Schlimmste. Ob er dasteht, entscheidet das Modul danach, ob der
+        // Zwischenwert glatt herauskommt; diese Regel wird hier bewusst
+        // nicht nachgebaut, sonst prüfte der Test nur seine eigene Kopie.
+        assert.ok(dreisatzZeilen === 0 || dreisatzZeilen === 2,
+          `Stufe ${stufe}, ${prinzip}: halber Dreisatz ${JSON.stringify(zeilen)}`);
         // Keine Zeile zeigt einen Punkt als Dezimaltrenner.
         for (const z of zeilen) assert.ok(!/\d\.\d/.test(z), z);
+      }
+    }
+  }
+});
+
+test("Die Dreisatz-Übung zeigt immer beide Dreisatzzeilen", () => {
+  // Was der Test darüber offenlässt, hält dieser fest: In der Übung, die den
+  // Dreisatz übt, muss er auch dastehen. Ihr Bestand besteht genau aus den
+  // Knoten, bei denen die Minute aufgeht.
+  for (const stufe of STUFEN5) {
+    for (let i = 0; i < 400; i++) {
+      for (const prinzip of ["weg", "zeit", "geschwindigkeit"]) {
+        const a = erzeugeAufgabe(prinzip, Math.random, false, { stufe, methode: "dreisatz" });
+        const zeilen = loesungsweg(a);
+        assert.equal(zeilen.filter((z) => z.includes("Dreisatz")).length, 2,
+          `Stufe ${stufe}, ${prinzip}: ${JSON.stringify(a.werte)} ${JSON.stringify(zeilen)}`);
       }
     }
   }

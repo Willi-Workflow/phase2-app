@@ -166,3 +166,24 @@ neue bleibt von sich aus bei 1300. RATE_MAX hält den Deckel fest, falls
 die Stufen später wachsen; ein Test prüft ihn über alle Stufen und beide
 Übungen. Nicht zu verwechseln mit VARIO_MAX: Das sagt, was das
 Instrument anzeigen kann, RATE_MAX, was gefragt werden darf.
+
+**Größere Aufgabenbestände** (Willis Rückmeldung vom 17.09.2026, "die
+Aufgaben und Werte wiederholen sich zu oft in den Übungen, baue mehr
+besonders für schwer"): Die Zahlenlisten je Stufe sind deutlich
+verbreitert, am stärksten auf der schwersten. Formel-Paare je Stufe 20,
+57 und 86 (vorher 12, 17 und 10), Dreisatz-Paare 60, 39 und 60 (vorher
+20, 10 und 15), Ratenpaare 42, 31 und 64 (vorher 25, 21 und 18). Die
+Zahl der verschiedenen Zwischenwerte im Dreisatz stieg auf Stufe 2 von
+zwei auf drei und auf Stufe 3 von drei auf vier. Gemessen in einer
+Übungssitzung von 30 Aufgaben sank die Zahl der Wiederholungen von 6 bis
+11 auf 1,5 bis 3,2.
+
+Der Charakter der Stufen bleibt: Beim Dreisatz entscheidet der
+Zwischenwert (ganze NM je Minute unten, halbe oben), bei der Formel die
+Sperrigkeit des Stundenbruchs. Neu ist, dass die breiteren Formel-Stufen
+auch Knoten tragen, bei denen gar kein glatter Dreisatz existiert (140
+kt sind 2,333 NM je Minute). Dort zeigt der Lösungsweg keine
+Dreisatzzeilen, und das ist richtig so: Eine erzwungene Zeile mit krummer
+Zwischenzahl wäre schlechter als keine. Der Test prüft darum nur noch,
+dass der Dreisatz nie halb dasteht, und getrennt davon, dass er in der
+Dreisatz-Übung immer vollständig erscheint.
