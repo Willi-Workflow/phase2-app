@@ -201,27 +201,33 @@ test("sichtmasse: Kreis am Flieger verankert, alter Anblick bei 16:9", () => {
   // Auf breiten Schirmen ist dieselbe Rumpfbreite ein kleinerer Breitenanteil.
   assert.ok(sichtmasse(21 / 9).trefferR < m.trefferR);
   assert.ok(Math.abs(m.verhaeltnis - 9 / 16) < 1e-12);
-  // Die Trefferzone bleibt am Flugzeugmittelstück: Die Silhouette ist eine
-  // Spannweite breit, ab 0,5 läge die Zone jenseits der Flügelspitzen. Sie
-  // ist auf Willis Zuruf gewachsen (0,10 am 14.09., 0,15 am 15.09., 0,20 am
-  // 17.09.2026); die Schranke hält fest, dass noch die Mitte des Flugzeugs
-  // gemeint ist und nicht die Fläche.
-  assert.ok(TREFFER_JE_SPANNWEITE > 0 && TREFFER_JE_SPANNWEITE <= 0.25);
+  // Die Trefferzone bleibt innerhalb des Flugzeugs: Die Silhouette ist eine
+  // Spannweite breit, ab 0,5 läge die Zone jenseits der Flügelspitzen und
+  // ein Treffer wäre auch dort möglich, wo nachweislich nichts mehr ist.
+  // Sie ist auf Willis Zuruf gewachsen (0,10 am 14.09., 0,15 am 15.09.,
+  // 0,20 und 0,30 am 17.09.2026); die Schranke hält die Flügelspitze als
+  // harte Grenze fest.
+  assert.ok(TREFFER_JE_SPANNWEITE > 0 && TREFFER_JE_SPANNWEITE < 0.5);
   // Die Maße folgen der Sichtgeometrie aus den exportierten Konstanten.
   const halbeHoehe = Math.tan((BLICKWINKEL * Math.PI) / 360) * FLUGDISTANZ;
   assert.ok(Math.abs(m.trefferR - (TREFFER_JE_SPANNWEITE * SPANNWEITE) / (2 * halbeHoehe * (16 / 9))) < 1e-12);
 });
 
-test("inDeckung mit Sichtmaßen: Trefferzone ist viel kleiner als der Kreis", () => {
+test("inDeckung mit Sichtmaßen: Trefferzone bleibt im gezeichneten Kreis", () => {
   const m = sichtmasse(16 / 9);
-  // Die Zone bleibt deutlich kleiner als der alte Deckungsradius und als
-  // der gezeichnete Kreis: Der Kreis ist Zielhilfe, nicht Trefferfläche.
-  assert.ok(m.trefferR < KREIS_R / 2);
+  // Die maßgebliche Schranke, unabhängig davon, wie oft die Zone noch
+  // wächst: Ein Treffer darf nie zählen, wenn das Flugzeug außerhalb des
+  // sichtbaren Kreises steht. Der Kreis ist Zielhilfe, aber er muss die
+  // Trefferfläche umschließen, sonst widerspricht das Bild der Wertung.
+  // Gezeichneter Radius = Kastenbreite mal 46/100 aus der SVG-Vorlage.
+  const kreisRadiusJeSpannweite = (KREIS_JE_SPANNWEITE * 46) / 100;
+  assert.ok(TREFFER_JE_SPANNWEITE < kreisRadiusJeSpannweite,
+    `Zone ${TREFFER_JE_SPANNWEITE} ragt aus dem Kreis ${kreisRadiusJeSpannweite.toFixed(3)}`);
   const z = erzeugeLaufzustand(halb);
   z.kreis = { x: 0.5, y: 0.5 };
   z.ziel = { x: 0.5 + m.trefferR + 0.001, y: 0.5 };
-  assert.equal(inDeckung(z), true);    // alte Vorgabe: noch weit im Kreis
-  assert.equal(inDeckung(z, m), false); // Sichtmaße: knapp neben dem Rumpf
+  assert.equal(inDeckung(z), true);    // alte Vorgabe KREIS_R: noch drin
+  assert.equal(inDeckung(z, m), false); // Sichtmaße: knapp außerhalb der Zone
   z.ziel = { x: 0.5 + m.trefferR - 0.001, y: 0.5 };
   assert.equal(inDeckung(z, m), true);
 });
@@ -230,7 +236,9 @@ test("takt mit Sichtmaßen: Haltezeit wächst nur auf dem Rumpf", () => {
   const m = sichtmasse(16 / 9);
   const z = erzeugeLaufzustand(halb);
   z.kreis = { x: 0.5, y: 0.5 };
-  z.ziel = { x: 0.512, y: 0.5 }; // im alten Kreis, aber neben dem Rumpf
+  // Knapp außerhalb der Zone, aus den Sichtmaßen abgeleitet statt fest
+  // eingetragen: So überlebt der Test jede weitere Vergrößerung.
+  z.ziel = { x: 0.5 + m.trefferR + 0.002, y: 0.5 };
   takt(z, still, 100, halb, m);
   assert.equal(z.halteMs, 0);
   z.ziel = { x: 0.5, y: 0.5 };

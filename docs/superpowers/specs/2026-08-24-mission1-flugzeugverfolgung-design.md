@@ -99,23 +99,24 @@ Willis Festlegung, ersetzt die Deckungsregel oben:
   Kreisrand noch auf dem Flugzeug liegt.
   Ergebnis: bis rund 0,06 trägt der Rumpf den ganzen Kreis, ab 0,08 ragt
   der Rand heraus, dort beginnen die Tragflächen, das Fahrwerk steht bei
-  0,15. Am 15.09.2026 auf Willis Auftrag von 0,10 auf 0,15 vergrößert:
-  Die Zone umschließt jetzt Rumpf samt Fahrwerk und reicht senkrecht bis
-  an den Rand der Silhouette (die rund 0,30 Spannweiten hoch ist).
-  Waagerecht greift sie dabei rund 0,07 Spannweiten auf die Tragflächen
-  über statt 0,02 wie bei 0,10, also knapp ein Drittel des Wegs zur
-  Flügelspitze; weil das Modell ein Doppeldecker ist, liegt rund die
-  Hälfte der Kreisfläche zwischen den Flächen über freiem Himmel. Willis
-  Regel vom 14.09. ("nicht draußen auf den Flächen") ist damit nur noch
-  grob gewahrt, das ist bei der nächsten Sichtung zu bestätigen. Der
-  gezeichnete Kreis (Radius rund 0,53 Spannweiten) bleibt als Zielhilfe
-  deutlich größer als die Zone, die gut ein Viertel davon misst.
-- Folge für die Wertung: Die Zone ist bei 16:9 zweieinhalbmal strenger
-  als der Deckungsradius vor dem 14.09.2026 (0,0096 statt 0,025 der
-  Bildbreite, rund 15 statt 40 Bildpunkte auf 1600 Breite), der
-  Flächeninhalt rund ein Sechstel; auf breiteren Schirmen noch strenger.
-  Zwischenstände: 0,10 vom 14. bis 15.09.2026 (fünfmal strenger), 0,15
-  vom 15. bis 17.09.2026 (dreieinhalbmal). TREFFER_BESTWERT 12
+  0,15. Auf Willis Zuruf schrittweise vergrößert: 0,15 am 15.09.2026,
+  dann 0,20 und 0,30 am 17.09.2026 (er gab 0,25 oder 0,30 frei, genommen
+  wurde die obere Stufe, weil ihm jeder Schritt davor zu klein war).
+  Die Regel "nur auf dem Flugzeugkörper" ist damit bewusst aufgegeben:
+  Bei 0,30 reicht die Zone waagerecht über die halbe Strecke zur
+  Flügelspitze und senkrecht fast doppelt so weit, wie die Silhouette
+  hoch ist. Ein Kreis liegt schlecht über einem Umriss, der dreimal so
+  breit wie hoch ist; soll die Zone weiter wachsen, wäre eine Ellipse
+  nach dem Flugzeugumriss der ehrlichere Weg. Harte Grenze bleibt der
+  gezeichnete Kreis (Radius rund 0,53 Spannweiten): Ein Treffer darf nie
+  zählen, wenn das Flugzeug außerhalb des sichtbaren Kreises steht,
+  sonst widerspricht das Bild der Wertung. Ein Test hält das fest.
+- Folge für die Wertung: Die Zone ist bei 16:9 rund 1,7-mal strenger als
+  der Deckungsradius vor dem 14.09.2026 (0,0144 statt 0,025 der
+  Bildbreite, rund 23 statt 40 Bildpunkte auf 1600 Breite); auf
+  breiteren Schirmen noch strenger. Zwischenstände: 0,10 vom 14. bis
+  15.09.2026 (fünfmal strenger), 0,15 bis zum 17.09. (dreieinhalbmal),
+  0,20 am 17.09. (zweieinhalbmal). TREFFER_BESTWERT 12
   stammt aus der alten Zone und ist nach Willis ersten Läufen neu zu
   eichen. Weil sich die Schwierigkeit
   selbst geändert hat, sind die alten Läufe nicht umrechenbar (anders als
