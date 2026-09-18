@@ -138,35 +138,44 @@ export const STUFE_STANDARD = 1;
 export const STUFENZAHLEN = {
   1: {
     tempi: [120, 180, 240, 300],          // 2, 3, 4, 5 NM je Minute
-    formelZeiten: [12, 15, 20, 30, 45],   // Fünftel bis Dreiviertelstunde
+    // Am 18.09.2026 um die sperrigeren Brüche erweitert (Willis Auftrag
+    // "mache diese anspruchsvoll"): 40 Minuten sind zwei Drittel einer
+    // Stunde, 90 Minuten anderthalb. Beide brauchen einen Doppelschritt.
+    formelZeiten: [12, 15, 20, 30, 40, 45, 90],
     // Kein Stundenbruch, kleiner zweiter Schritt. Bei ganzen NM je Minute
     // geht jede Zeit auf, darum ist hier viel Platz. Die Minuten stehen im
     // runden Raster (gerade oder auf 5), der Rest fällt über istRunderDreisatz.
     dreisatzZeiten: [5, 8, 10, 14, 16, 18, 22, 24, 25, 26, 28, 32, 34, 35, 36, 38, ...LANGE_ZEITEN],
-    raten: [200, 300, 400, 500, 600, 700, 800, 900, 1000],
-    ratenZeiten: [3, 4, 5, 6, 7],
+    // Krumme Raten (250, 350) zwingen zum Rechnen statt zum Ablesen der Null.
+    raten: [200, 250, 300, 350, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200],
+    ratenZeiten: [3, 4, 5, 6, 7, 8],
   },
   2: {
     // 1,5 / 2,5 / 3,5 NM je Minute, dazu die krummen Knoten, bei denen die
     // Minute nicht aufgeht und nur der Stundenbruch trägt.
-    tempi: [90, 150, 210, 80, 100, 110, 140, 160, 200, 220],
-    formelZeiten: [12, 15, 20, 30, 40, 45, 90, 120],
+    // Neue Knoten müssen krumm sein (nicht durch 30 teilbar): Jedes Tempo
+    // mit glatter Minute landet sonst über minutenGlatt im Dreisatz-Bestand
+    // und macht die Stufe leichter statt schwerer.
+    tempi: [90, 150, 210, 80, 100, 110, 130, 140, 160, 170, 200, 220],
+    formelZeiten: [12, 15, 20, 30, 40, 45, 90, 120, 150],
     // Gerade Zeiten, sonst wird der Weg bei halben NM je Minute krumm.
     // Übrig bleiben davon die Vielfachen von vier: Bei 1,5 / 2,5 / 3,5 NM je
     // Minute ist der Weg nur dann gerade, und gerade muss er seit Willis
     // Rückmeldung vom 17.09.2026 sein.
     dreisatzZeiten: [8, 10, 14, 16, 18, 22, 24, 26, 28, 32, 34, 36, 38, 44, 46, 48, 50, 52, 56, ...LANGE_ZEITEN],
-    raten: [250, 450, 550, 600, 700, 900, 1050, 1200],
-    ratenZeiten: [4, 5, 6, 7, 8],
+    raten: [250, 350, 450, 550, 600, 700, 750, 800, 900, 1050, 1150, 1200],
+    ratenZeiten: [3, 4, 5, 6, 7, 8, 9],
   },
   3: {
     // 1,5 / 2,5 / 3,5 / 4,5 NM je Minute für den Dreisatz, dazu ein breites
     // Feld krummer Knoten für die Formel.
-    tempi: [90, 150, 210, 270, 100, 110, 130, 140, 160, 170, 190, 200, 220, 230, 260, 280, 310, 320],
-    formelZeiten: [20, 40, 45, 90, 120, 150, 180],
+    tempi: [90, 150, 210, 270, 100, 110, 130, 140, 160, 170, 190, 200, 220, 230, 250, 260, 280, 290, 310, 320],
+    formelZeiten: [20, 40, 45, 90, 120, 150, 180, 240],
     dreisatzZeiten: [8, 10, 14, 16, 18, 22, 24, 26, 28, 32, 34, 36, 38, 44, 46, 48, 50, 52, 54, 56, 58, ...LANGE_ZEITEN],
-    raten: [350, 450, 550, 650, 700, 750, 850, 900, 950, 1050, 1100, 1200, 1250, 1300, 1400, 1600, 1800],
-    ratenZeiten: [3, 4, 5, 6, 7, 8, 9],
+    // Bis an RATE_MAX heran; 2000 ft/min gehen nur mit kurzen Zeiten, sonst
+    // verlässt die Höhe das Raster des Höhenmessers.
+    raten: [350, 450, 550, 650, 700, 750, 850, 900, 950, 1050, 1100, 1200, 1250, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000],
+    ratenZeiten: [3, 4, 5, 6, 7, 8, 9, 10],
   },
 };
 
@@ -270,7 +279,12 @@ const zufallAus = (feld, rnd) => feld[Math.floor(rnd() * feld.length)];
 // Anteil der Aufgaben, die im gewerteten Test aus dem Dreisatz-Bestand
 // kommen; der Rest kommt aus dem Formel-Bestand. So bleibt der Test gemischt,
 // während jede Übung bei ihrer Methode bleibt.
-export const DREISATZ_ANTEIL = 0.5;
+// Am 18.09.2026 von 0,5 auf 0,75 angehoben (Willis Auftrag: "baue besonders
+// viele Dreisatz Fragen ein bei der Abfrage"). Drei von vier Weg-Zeit-Tempo-
+// Aufgaben kommen jetzt aus dem Dreisatz-Bestand. Auf den ganzen Lauf gerechnet
+// sind es weniger, denn die Raten ziehen aus ihrem eigenen Bestand und machen
+// rund ein Viertel der Aufgaben aus.
+export const DREISATZ_ANTEIL = 0.75;
 function ziehePaar(bestand, methode, rnd) {
   if (methode === "formel") return zufallAus(bestand.formel, rnd);
   if (methode === "dreisatz") return zufallAus(bestand.dreisatz, rnd);

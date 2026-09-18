@@ -518,9 +518,13 @@ test("erzeugeAufgabe: der gemischte Bestand schöpft aus beiden Methoden", () =>
       gesamt += 1;
       if (!STUNDENBRUCH_ZEITEN.includes(a.werte.t)) dreisatz += 1;
     }
-    // Beide Methoden kommen vor, keine erdrückt die andere.
-    assert.ok(dreisatz / gesamt > 0.2, `Stufe ${stufe}: Dreisatzanteil ${dreisatz / gesamt}`);
-    assert.ok(dreisatz / gesamt < 0.8, `Stufe ${stufe}: Dreisatzanteil ${dreisatz / gesamt}`);
+    // Beide Methoden kommen vor, aber der Dreisatz führt deutlich (Willis
+    // Auftrag vom 18.09.2026, DREISATZ_ANTEIL 0,75). Die untere Schranke hält
+    // das Übergewicht fest, die obere sorgt dafür, dass die Formelaufgaben
+    // nicht ganz verschwinden. Bei 3000 Ziehungen liegen beide Schranken
+    // mehr als sechs Standardabweichungen entfernt, der Zufall kippt das nicht.
+    assert.ok(dreisatz / gesamt > 0.6, `Stufe ${stufe}: Dreisatzanteil ${dreisatz / gesamt}`);
+    assert.ok(dreisatz / gesamt < 0.9, `Stufe ${stufe}: Dreisatzanteil ${dreisatz / gesamt}`);
     assert.deepEqual([...tempi].sort((x, y) => x - y),
       [...new Set(b.gemischt.map((p) => p.v))].sort((x, y) => x - y), `Stufe ${stufe}: Tempi`);
     assert.deepEqual([...zeiten].sort((x, y) => x - y),
