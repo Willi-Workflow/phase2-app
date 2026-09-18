@@ -45,7 +45,10 @@ test("erzeugeAufgabe: ganzzahlig, in sich stimmig, Einheit und Bereich passen", 
       // und 120 kt in sieben Minuten sind nun einmal 14 NM.
       if (prinzip === "zeit") {
         const [v, s] = zahlen;
-        assert.equal(a.antwort, (s / v) * 60);
+        // Erst malnehmen, dann teilen: (s / v) * 60 driftet bei Paaren wie
+        // 124 NM zu 120 kt auf 62.00000000000001. Die App rechnet v * t / 60
+        // und bleibt exakt, nur diese Gegenrechnung war anfaellig.
+        assert.equal(a.antwort, (s * 60) / v);
         assert.equal(a.einheit, "min");
         assert.ok(s >= 10 && s <= 2400);
       }
@@ -57,7 +60,7 @@ test("erzeugeAufgabe: ganzzahlig, in sich stimmig, Einheit und Bereich passen", 
       }
       if (prinzip === "geschwindigkeit") {
         const [s, t] = zahlen;
-        assert.equal(a.antwort, (s / t) * 60);
+        assert.equal(a.antwort, (s * 60) / t);
         assert.equal(a.einheit, "kt");
         assert.ok(a.antwort >= 60 && a.antwort <= 480);
       }
@@ -991,7 +994,10 @@ test("Dreisatz: die krummen Werte von heute Mittag sind weg", () => {
   // Stichprobe aus dem, was Willi vorlag: Primzahl-Minuten, die Überlängen
   // und die Wege jenseits des Deckels.
   const krummeMinuten = [7, 9, 11, 13, 17, 21, 27, 58];
-  const krummeWege = [33, 39, 51, 91, 95, 119, 133, 161, 203, 234, 261];
+  // Alle ungerade: Sie koennen unter keinem Deckel zurueckkehren. 234 NM
+  // stand hier bis zum 18.09.2026 mit dabei und ist seit der Anhebung auf
+  // 300 NM regelkonform (180 kt in 78 Minuten), darum raus aus der Liste.
+  const krummeWege = [33, 39, 51, 91, 95, 119, 133, 161, 203, 261];
   for (const stufe of STUFEN5) {
     for (const p of aufgabenbestand(stufe).dreisatz) {
       assert.ok(!krummeMinuten.includes(p.t), `Stufe ${stufe}: ${p.t} min ist zurück`);

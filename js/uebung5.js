@@ -45,7 +45,12 @@ const minutenGlatt = (v) => istGlatt(v / 60);
 // halben Zwischenwerte wären praktisch weg und Stufe 2 und 3 führen fast immer
 // 150 kt. Willis Entscheid vom 17.09.2026 nach Vorlage beider Fassungen:
 // lieber gerade Wege als eine Hausgeschwindigkeit.
-export const DREISATZ_WEG_MAX = 150;
+// Am 18.09.2026 von 150 auf 300 NM angehoben (Willis Auftrag: "es dürfen auch
+// Minuten wie 75 oder so vorkommen"). Lange Strecken und der Deckel hängen
+// zusammen: 75 Minuten mal 4 NM je Minute sind 300 NM, bei 150 wäre diese
+// Aufgabe nie entstanden. Der Deckel hält weiterhin fest, dass keine Strecke
+// entsteht, die im Kopf nicht mehr zu greifen ist.
+export const DREISATZ_WEG_MAX = 300;
 const rundeMinute = (t) => t % 2 === 0 || t % 5 === 0;
 const runderWeg = (s) => s % 2 === 0 && s <= DREISATZ_WEG_MAX;
 export const istRunderDreisatz = (p) => rundeMinute(p.t) && runderWeg(p.s);
@@ -100,6 +105,16 @@ export const STUNDENBRUCH_ZEITEN = Object.keys(STUNDENBRUECHE).map(Number);
 // Knoten und Minuten dieselbe Zahl, stünde die gesuchte Zahl bereits im Text.
 // Die Zeiten der Dreisatz-Bestände sind bewusst keine griffigen
 // Stundenbrüche, sonst wäre der Umweg über die eine Minute überflüssig.
+// Lange Strecken, Willis Auftrag vom 18.09.2026 ("es dürfen auch Minuten wie
+// 75 oder so vorkommen"). Flüge über eine Stunde gehören zur Navigation dazu,
+// vorher endete der Bestand bei 58 Minuten. Die Liste steht allen Stufen
+// gemeinsam zur Verfügung, ausgewählt wird wie immer über istRunderDreisatz:
+// Bei halben NM je Minute bleiben nur die Vielfachen von vier übrig, sonst
+// wird der Weg ungerade, und bei ganzen NM je Minute fällt alles heraus, was
+// über den Wegdeckel läuft. 90 und 120 Minuten fehlen mit Absicht, das sind
+// glatte Stundenbrüche und gehören der Formel-Übung.
+const LANGE_ZEITEN = [62, 64, 65, 66, 68, 70, 72, 74, 75, 76, 78, 80, 84, 85, 88, 92, 95, 96, 100];
+
 export const STUFEN5 = [1, 2, 3];
 export const STUFENNAMEN = { 1: "LEICHT", 2: "MITTEL", 3: "SCHWER" };
 export const STUFE_STANDARD = 1;
@@ -127,7 +142,7 @@ export const STUFENZAHLEN = {
     // Kein Stundenbruch, kleiner zweiter Schritt. Bei ganzen NM je Minute
     // geht jede Zeit auf, darum ist hier viel Platz. Die Minuten stehen im
     // runden Raster (gerade oder auf 5), der Rest fällt über istRunderDreisatz.
-    dreisatzZeiten: [5, 8, 10, 14, 16, 18, 22, 24, 25, 26, 28, 32, 34, 35, 36, 38],
+    dreisatzZeiten: [5, 8, 10, 14, 16, 18, 22, 24, 25, 26, 28, 32, 34, 35, 36, 38, ...LANGE_ZEITEN],
     raten: [200, 300, 400, 500, 600, 700, 800, 900, 1000],
     ratenZeiten: [3, 4, 5, 6, 7],
   },
@@ -140,7 +155,7 @@ export const STUFENZAHLEN = {
     // Übrig bleiben davon die Vielfachen von vier: Bei 1,5 / 2,5 / 3,5 NM je
     // Minute ist der Weg nur dann gerade, und gerade muss er seit Willis
     // Rückmeldung vom 17.09.2026 sein.
-    dreisatzZeiten: [8, 10, 14, 16, 18, 22, 24, 26, 28, 32, 34, 36, 38, 44, 46, 48, 50, 52, 56],
+    dreisatzZeiten: [8, 10, 14, 16, 18, 22, 24, 26, 28, 32, 34, 36, 38, 44, 46, 48, 50, 52, 56, ...LANGE_ZEITEN],
     raten: [250, 450, 550, 600, 700, 900, 1050, 1200],
     ratenZeiten: [4, 5, 6, 7, 8],
   },
@@ -149,7 +164,7 @@ export const STUFENZAHLEN = {
     // Feld krummer Knoten für die Formel.
     tempi: [90, 150, 210, 270, 100, 110, 130, 140, 160, 170, 190, 200, 220, 230, 260, 280, 310, 320],
     formelZeiten: [20, 40, 45, 90, 120, 150, 180],
-    dreisatzZeiten: [8, 10, 14, 16, 18, 22, 24, 26, 28, 32, 34, 36, 38, 44, 46, 48, 50, 52, 54, 56, 58],
+    dreisatzZeiten: [8, 10, 14, 16, 18, 22, 24, 26, 28, 32, 34, 36, 38, 44, 46, 48, 50, 52, 54, 56, 58, ...LANGE_ZEITEN],
     raten: [350, 450, 550, 650, 700, 750, 850, 900, 950, 1050, 1100, 1200, 1250, 1300, 1400, 1600, 1800],
     ratenZeiten: [3, 4, 5, 6, 7, 8, 9],
   },
