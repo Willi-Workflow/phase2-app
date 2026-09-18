@@ -1,11 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  TESTDAUERN, STUFEN, FLUGZEIT_S, EINRICHTZEIT_S,
+  TESTDAUERN, INSTRUMENTE, pruefeAuswahl3, FLUGZEIT_S, EINRICHTZEIT_S,
   RECHNEN_START_S, ANTWORT_FENSTER_S, FOLGE_PAUSE_S, ANSAGE_PAUSE_MS, RECHNEN_MINDESTREST_S,
   erzeugeVorgaben, erzeugeFlugzustand, takt, sollwert, winkelabstand, kursSollWeg,
   momentanfehler, saeulenfehler, durchgangspunkte, kennzahl3,
   erzeugeRechenaufgabe, antworten5, pedalwahl, RECHENSTUFEN_MAX, erfuellung3,
+  schwierigkeitsfaktor3,
   passeRechenstufeAn, rechenstandStart, ANSTIEG_SERIE, schiebeZone,
   rechenarten, ablenkerStreuung,
 } from "../js/uebung3.js";
@@ -18,7 +19,7 @@ const zaehler = () => { let n = 0; return () => (Math.sin(n++) + 1) / 2; };
 
 test("Konstanten des Instrumentenflugs", () => {
   assert.deepEqual(TESTDAUERN, [3, 5, 10]);
-  assert.deepEqual(STUFEN, [1, 2, 3, 4]);
+  assert.deepEqual(INSTRUMENTE, ["kurs", "hoehe", "fahrt"]);
   assert.equal(FLUGZEIT_S, 60);
   assert.equal(EINRICHTZEIT_S, 5);
   // Durchgehender Rechenfluss seit 03.09.2026 (Willis Auftrag): Startpunkt,
@@ -35,11 +36,11 @@ test("erzeugeVorgaben: Kurs, Höhe und Fahrt würfeln je Durchgang", () => {
   // Höhenbeträge 500, 1000, 1500 Fuß (beide mit Richtung), die Fahrt im
   // Zwanzigerraster mit Spanne 40 bis 160 kt.
   // Je Größe zwei Züge: erst der Betrag oder Startwert, dann Richtung oder Ziel.
-  const v = erzeugeVorgaben(3, folge([0.1, 0.7, 0.5, 0.5, 0.5, 0.5]));
+  const v = erzeugeVorgaben(INSTRUMENTE, folge([0.1, 0.7, 0.5, 0.5, 0.5, 0.5]));
   assert.deepEqual(v.kurs, { start: 0, aenderung: 180, ziel: 180 });
   assert.deepEqual(v.hoehe, { start: 5000, aenderung: 1000, ziel: 6000 });
   assert.deepEqual(v.fahrt, { start: 200, ziel: 160 });
-  const w = erzeugeVorgaben(3, folge([0.8, 0.3, 0.9, 0.2, 0.0, 0.99]));
+  const w = erzeugeVorgaben(INSTRUMENTE, folge([0.8, 0.3, 0.9, 0.2, 0.0, 0.99]));
   assert.deepEqual(w.kurs, { start: 0, aenderung: -720, ziel: 0 });
   assert.deepEqual(w.hoehe, { start: 5000, aenderung: -1500, ziel: 3500 });
   // Von 60 kt aus deckelt die Höchstspanne das Ziel bei 220 statt 320.
@@ -49,8 +50,8 @@ test("erzeugeVorgaben: Kurs, Höhe und Fahrt würfeln je Durchgang", () => {
 test("erzeugeVorgaben: Raster und Erreichbarkeit über viele Zufallszüge", () => {
   const gesehen = new Set();
   for (let probe = 0; probe < 500; probe++) {
-    for (const stufe of STUFEN) {
-      const v = erzeugeVorgaben(stufe, Math.random);
+    for (const auswahl of [["kurs"], ["kurs", "hoehe"], INSTRUMENTE]) {
+      const v = erzeugeVorgaben(auswahl, Math.random);
 
       assert.equal(v.kurs.start, 0); // Start bleibt Norden
       assert.ok([180, 360, 720].includes(Math.abs(v.kurs.aenderung)));
@@ -80,29 +81,63 @@ test("erzeugeVorgaben: Raster und Erreichbarkeit über viele Zufallszüge", () =
   assert.equal(gesehen.size, 12);
 });
 
-test("erzeugeVorgaben: aktive je Stufe, feste Reihenfolge im Ergebnis", () => {
-  // Ab Stufe 3 sind immer alle drei Instrumente aktiv, in fester Reihenfolge.
-  assert.deepEqual(erzeugeVorgaben(3, Math.random).aktive, ["kurs", "hoehe", "fahrt"]);
-  assert.deepEqual(erzeugeVorgaben(4, Math.random).aktive, ["kurs", "hoehe", "fahrt"]);
+test("erzeugeVorgaben: aktiv ist genau die Auswahl, in fester Reihenfolge", () => {
+  // Seit 19.09.2026 (Willis Auftrag) waehlt der Bewerber die Instrumente
+  // selbst, vorher gaben Stufen 1 bis 4 die Anzahl vor und wuerfelten je
+  // Durchgang neu, welche es sind. Die Ausgabe steht immer in der festen
+  // Reihenfolge kurs, hoehe, fahrt, egal wie die Auswahl sortiert ankommt.
+  assert.deepEqual(erzeugeVorgaben(["kurs", "hoehe", "fahrt"], Math.random).aktive,
+    ["kurs", "hoehe", "fahrt"]);
+  assert.deepEqual(erzeugeVorgaben(["fahrt", "kurs"], Math.random).aktive, ["kurs", "fahrt"]);
+  assert.deepEqual(erzeugeVorgaben(["hoehe"], Math.random).aktive, ["hoehe"]);
 
+  // Kein Zufall mehr: dieselbe Auswahl ergibt ueber viele Durchgaenge
+  // immer dieselben aktiven Instrumente.
   for (let probe = 0; probe < 200; probe++) {
-    const v = erzeugeVorgaben(1, Math.random);
-    assert.equal(v.aktive.length, 1);
-    assert.deepEqual(v.aktive, ["kurs", "hoehe", "fahrt"].filter((id) => v.aktive.includes(id)));
-    const w = erzeugeVorgaben(2, Math.random);
-    assert.equal(w.aktive.length, 2);
-    assert.deepEqual(w.aktive, ["kurs", "hoehe", "fahrt"].filter((id) => w.aktive.includes(id)));
+    assert.deepEqual(erzeugeVorgaben(["kurs", "fahrt"], Math.random).aktive, ["kurs", "fahrt"]);
   }
 });
 
+test("pruefeAuswahl3: mindestens ein Instrument, nur bekannte Kennungen", () => {
+  assert.ok(pruefeAuswahl3(["kurs"]));
+  assert.ok(pruefeAuswahl3(["kurs", "hoehe", "fahrt"]));
+  assert.ok(!pruefeAuswahl3([]));
+  assert.ok(!pruefeAuswahl3(["quatsch"]));
+  assert.ok(!pruefeAuswahl3(["kurs", "quatsch"]));
+  assert.ok(!pruefeAuswahl3(undefined));
+});
+
+test("schwierigkeitsfaktor3: bildet die alte Stufentabelle exakt nach", () => {
+  // Die gespeicherten M3-Laeufe muessen vergleichbar bleiben, darum treffen
+  // die neuen Kombinationen die alten Stufenwerte auf den Punkt.
+  assert.equal(schwierigkeitsfaktor3(1, false), 0.65);  // alte Stufe 1
+  assert.equal(schwierigkeitsfaktor3(2, false), 0.8);   // alte Stufe 2
+  assert.equal(schwierigkeitsfaktor3(3, false), 0.9);   // alte Stufe 3
+  assert.ok(Math.abs(schwierigkeitsfaktor3(3, true) - 1.0) < 1e-9); // alte Stufe 4
+  // Nur die volle Einstellung erreicht 1,0, nichts geht darueber.
+  for (const anzahl of [1, 2, 3]) {
+    for (const rechnen of [false, true]) {
+      const f = schwierigkeitsfaktor3(anzahl, rechnen);
+      assert.ok(f > 0 && f <= 1.0 + 1e-9, `${anzahl}/${rechnen}: ${f}`);
+    }
+  }
+  // Kopfrechnen macht jede Einstellung schwerer, nie leichter.
+  for (const anzahl of [1, 2, 3]) {
+    assert.ok(schwierigkeitsfaktor3(anzahl, true) > schwierigkeitsfaktor3(anzahl, false));
+  }
+  // Mehr Instrumente wiegen schwerer als weniger.
+  assert.ok(schwierigkeitsfaktor3(3, false) > schwierigkeitsfaktor3(2, false));
+  assert.ok(schwierigkeitsfaktor3(2, false) > schwierigkeitsfaktor3(1, false));
+});
+
 test("erzeugeVorgaben ist mit gleichem Zufall gleich", () => {
-  const a = erzeugeVorgaben(4, zaehler());
-  const b = erzeugeVorgaben(4, zaehler());
+  const a = erzeugeVorgaben(INSTRUMENTE, zaehler());
+  const b = erzeugeVorgaben(INSTRUMENTE, zaehler());
   assert.deepEqual(a, b);
 });
 
 test("erzeugeFlugzustand: Kurs und Höhe auf Start, Fahrt auf 60", () => {
-  const v = erzeugeVorgaben(3, Math.random);
+  const v = erzeugeVorgaben(INSTRUMENTE, Math.random);
   const z = erzeugeFlugzustand(v);
   assert.deepEqual(z, { kurs: 0, kursWeg: 0, hoehe: 5000, fahrt: 60 });
 });

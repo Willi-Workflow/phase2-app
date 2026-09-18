@@ -224,5 +224,6 @@ export function erzeugeUebung2({ speicher, controls }) {
     })();
   }
 
-  return { hinweis, ladeEinstellung, zeichneFeld, starte };
+  const startGesperrt = () => !pruefeAuswahl(auswahlAusEinstellung());
+  return { hinweis, ladeEinstellung, zeichneFeld, starte, startGesperrt };
 }

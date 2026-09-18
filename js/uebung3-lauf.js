@@ -8,7 +8,7 @@
 // panelflaeche-Instrumente: im Panelbereich liegt stattdessen die eigene
 // ICT-Tafel.
 import {
-  TESTDAUERN, STUFEN, FLUGZEIT_S, EINRICHTZEIT_S,
+  TESTDAUERN, INSTRUMENTE, pruefeAuswahl3, FLUGZEIT_S, EINRICHTZEIT_S,
   RECHNEN_START_S, ANTWORT_FENSTER_S, FOLGE_PAUSE_S, ANSAGE_PAUSE_MS, RECHNEN_MINDESTREST_S,
   erzeugeVorgaben, erzeugeFlugzustand, takt, sollwert, kursSollWeg,
   momentanfehler, saeulenfehler, durchgangspunkte, kennzahl3, schwierigkeitsfaktor3, erfuellung3,
@@ -105,25 +105,51 @@ function erzeugeAufgabenSprecher() {
 }
 
 export function erzeugeUebung3({ speicher, controls }) {
-  let einstellung = { stufe: 1, testdauer: 5, fehlersaeule: true, empfindlichkeit: 1 };
+  // Vorgabe fuer ein frisches Profil: der volle ICT mit allen drei
+  // Instrumenten, Kopfrechnen aus. Bestehende Profile ziehen ihre alte
+  // Stufe mit (siehe ladeEinstellung).
+  let einstellung = {
+    kurs: true, hoehe: true, fahrt: true, rechnen: false,
+    testdauer: 5, fehlersaeule: true, empfindlichkeit: 1,
+  };
   let uebungsStart = false; // der Übungsknopf startet den nächsten Lauf als reine Rechenübung
   const hinweis = "Nachbau des Instrumententests der Eignungsfeststellung (ICT): Führe Kurs, Höhe "
     + "und Fahrt in 60 Sekunden gleichmäßig vom Start- zum Zielwert, wie es das Schild über jedem "
     + "Instrument vorgibt. Stick quer steuert den Kurs, Stick längs die Höhe (Ziehen steigt), der "
-    + "Schub die Fahrt. Durchgänge folgen am Stück, bis die Testdauer um ist. Ab Stufe 4 kommen "
-    + "angesagte Rechenaufgaben dazu: mit den Pedalen den passenden der fünf Knöpfe wählen, die "
-    + "Schusstaste bestätigt.";
+    + "Schub die Fahrt. Welche der drei zu führen sind, wählst du oben selbst. Durchgänge folgen "
+    + "am Stück, bis die Testdauer um ist. Mit KOPFRECHNEN kommen angesagte Rechenaufgaben dazu: "
+    + "mit den Pedalen den passenden der fünf Knöpfe wählen, die Schusstaste bestätigt.";
 
   async function ladeEinstellung() {
     const gespeichert = await speicher.ladeEinstellung("uebung3-einstellung", {});
     einstellung = { ...einstellung, ...gespeichert };
+    // Umzug der alten Stufenwahl (bis 19.09.2026) auf die freie Auswahl:
+    // Stufe 1 fuehrte ein Instrument, Stufe 2 zwei, ab Stufe 3 alle drei,
+    // Stufe 4 rechnete dazu. Ohne das landet ein bestehendes Profil auf der
+    // Vorgabe und merkt nicht, dass sich seine Einstellung geaendert hat.
+    if (gespeichert.stufe !== undefined && gespeichert.kurs === undefined) {
+      const alteStufe = Number(gespeichert.stufe) || 1;
+      einstellung.kurs = true;
+      einstellung.hoehe = alteStufe >= 2;
+      einstellung.fahrt = alteStufe >= 3;
+      einstellung.rechnen = alteStufe >= 4;
+    }
+    delete einstellung.stufe;
   }
 
+  const NAMEN3 = { kurs: "KURS", hoehe: "HÖHE", fahrt: "FAHRT" };
+  const auswahlAusEinstellung = () => INSTRUMENTE.filter((id) => einstellung[id]);
+
   function zeichneFeld(feld) {
+    const knoepfe = INSTRUMENTE.map((id) => `
+      <button type="button" class="wahlknopf ${einstellung[id] ? "an" : ""}" data-element="${id}"
+        aria-pressed="${einstellung[id]}">${NAMEN3[id]}</button>`).join("");
     feld.innerHTML = `
-      <div class="wahlzeile"><span class="wahltitel">STUFE</span>
-        <select class="wahlliste" data-name="stufe">${STUFEN.map((w) =>
-          `<option value="${w}" ${w === einstellung.stufe ? "selected" : ""}>${w}</option>`).join("")}</select></div>
+      <div class="wahlzeile"><span class="wahltitel">CONTROLS</span>
+        <span class="wahlknoepfe">${knoepfe}</span></div>
+      <div class="wahlzeile"><span class="wahltitel">KOPFRECHNEN</span>
+        <button type="button" class="wahlknopf ${einstellung.rechnen ? "an" : ""}" data-element="rechnen"
+          aria-pressed="${einstellung.rechnen}">${einstellung.rechnen ? "EIN" : "AUS"}</button></div>
       <div class="wahlzeile"><span class="wahltitel">TESTDAUER</span>
         <select class="wahlliste" data-name="testdauer">${TESTDAUERN.map((w) =>
           `<option value="${w}" ${w === einstellung.testdauer ? "selected" : ""}>${w} min</option>`).join("")}</select></div>
@@ -133,8 +159,18 @@ export function erzeugeUebung3({ speicher, controls }) {
       <div class="wahlzeile"><span class="wahltitel">FEHLERSÄULE</span>
         <button type="button" class="wahlknopf ${einstellung.fehlersaeule ? "an" : ""}" data-element="fehlersaeule"
           aria-pressed="${einstellung.fehlersaeule}">${einstellung.fehlersaeule ? "EIN" : "AUS"}</button></div>
-      <div class="wahlzeile"><span class="wahltitel">KOPFRECHNEN</span>
-        <button type="button" class="wahlknopf" data-element="ueben">NUR ÜBEN</button></div>`;
+      <div class="wahlzeile"><span class="wahltitel">NUR ÜBEN</span>
+        <button type="button" class="wahlknopf" data-element="ueben">KOPFRECHNEN</button></div>
+      <p class="wahlhinweis" id="u3-wahlhinweis" hidden>Mindestens ein Control wählen.</p>`;
+
+    // START sperrt, solange kein Instrument gewaehlt ist (Muster Mission 2).
+    const zeigeSperre = () => {
+      const gueltig = pruefeAuswahl3(auswahlAusEinstellung());
+      const start = document.getElementById("start");
+      if (start) start.disabled = !gueltig;
+      feld.querySelector("#u3-wahlhinweis").hidden = gueltig;
+    };
+    zeigeSperre();
     feld.onclick = (e) => {
       const knopf = e.target.closest(".wahlknopf");
       if (!knopf) return;
@@ -147,11 +183,20 @@ export function erzeugeUebung3({ speicher, controls }) {
         document.getElementById("start")?.click();
         return;
       }
-      if (knopf.dataset.element !== "fehlersaeule") return;
-      einstellung.fehlersaeule = !einstellung.fehlersaeule;
-      knopf.classList.toggle("an", einstellung.fehlersaeule);
-      knopf.setAttribute("aria-pressed", String(einstellung.fehlersaeule));
-      knopf.textContent = einstellung.fehlersaeule ? "EIN" : "AUS";
+      const element = knopf.dataset.element;
+      if (INSTRUMENTE.includes(element)) {
+        einstellung[element] = !einstellung[element];
+        knopf.classList.toggle("an", einstellung[element]);
+        knopf.setAttribute("aria-pressed", String(einstellung[element]));
+        speicher.setzeEinstellung("uebung3-einstellung", einstellung);
+        zeigeSperre();
+        return;
+      }
+      if (element !== "fehlersaeule" && element !== "rechnen") return;
+      einstellung[element] = !einstellung[element];
+      knopf.classList.toggle("an", einstellung[element]);
+      knopf.setAttribute("aria-pressed", String(einstellung[element]));
+      knopf.textContent = einstellung[element] ? "EIN" : "AUS";
       speicher.setzeEinstellung("uebung3-einstellung", einstellung);
     };
     feld.onchange = (e) => {
@@ -345,8 +390,10 @@ export function erzeugeUebung3({ speicher, controls }) {
       starteRechenUebung({ tuer, beiEnde, registriereAbbruch });
       return;
     }
-    const { stufe, testdauer, fehlersaeule } = einstellung;
-    const stufe4 = stufe >= 4;
+    const { testdauer, fehlersaeule } = einstellung;
+    const auswahl = auswahlAusEinstellung();
+    // Kopfrechnen haengt seit 19.09.2026 am eigenen Schalter statt an Stufe 4.
+    const rechnenAn = einstellung.rechnen;
     // Der Aufrufer hat die Hangartür bereits geschlossen: der Testbildschirm
     // baut sich verdeckt auf, die Tür öffnet in die laufende Mission.
     const schleier = document.createElement("div");
@@ -355,7 +402,7 @@ export function erzeugeUebung3({ speicher, controls }) {
       <div class="cockpitbuehne">
         <div class="ict-tafel"></div>
       </div>
-      ${stufe4 ? '<div class="ict-antworten"></div>' : ""}
+      ${rechnenAn ? '<div class="ict-antworten"></div>' : ""}
       <div class="ict-zwischenanzeige"></div>
       <div class="testkopf"></div>`;
     document.body.append(schleier);
@@ -365,7 +412,7 @@ export function erzeugeUebung3({ speicher, controls }) {
     const antwortenfeld = schleier.querySelector(".ict-antworten");
     const zwischenfeld = schleier.querySelector(".ict-zwischenanzeige");
     const kopf = schleier.querySelector(".testkopf");
-    const sprecher = stufe4 ? erzeugeAufgabenSprecher() : null;
+    const sprecher = rechnenAn ? erzeugeAufgabenSprecher() : null;
 
     let testende = Infinity;
     let restuhr = null;
@@ -562,7 +609,7 @@ export function erzeugeUebung3({ speicher, controls }) {
       mfSumme += mf;
       mfZaehler += 1;
       haeufeAbweichungen(tS);
-      if (stufe4) taktRechnen(tS);
+      if (rechnenAn) taktRechnen(tS);
       // Die Säule zeigt das schlechteste Instrument (Willis Auftrag vom
       // 10.09.2026), gewertet wird weiter das Mittel mf.
       zeichneInstrumente(tS, saeulenfehler(zustand, vorgaben, tS) * 100);
@@ -575,7 +622,7 @@ export function erzeugeUebung3({ speicher, controls }) {
       durchgangsNummer += 1;
       // Die Vorgaben hat der Aufgabenbildschirm schon gewürfelt und gezeigt;
       // der Rückfall deckt nur einen Direktstart ohne Bildschirm ab.
-      vorgaben = naechsteVorgaben ?? erzeugeVorgaben(stufe, Math.random);
+      vorgaben = naechsteVorgaben ?? erzeugeVorgaben(auswahl, Math.random);
       naechsteVorgaben = null;
       zustand = erzeugeFlugzustand(vorgaben);
       knoten = baueTafel(vorgaben);
@@ -602,7 +649,7 @@ export function erzeugeUebung3({ speicher, controls }) {
       // kein voller Durchgang mehr starten (Prüfer-Befund vom 07.09.2026;
       // die Prüfung am Ende der Zwischenanzeige deckt das Fenster nicht ab).
       if (performance.now() >= testende) { zeigeErgebnis(true); return; }
-      naechsteVorgaben = erzeugeVorgaben(stufe, Math.random);
+      naechsteVorgaben = erzeugeVorgaben(auswahl, Math.random);
       const aktiv = (id) => naechsteVorgaben.aktive.includes(id);
       const zeilen = [
         `<span>FLUGZEIT · ${FLUGZEIT_S} Sekunden</span>`,
@@ -666,17 +713,18 @@ export function erzeugeUebung3({ speicher, controls }) {
       tuer.verwische(true);
 
       const genauigkeit = kennzahl3(punkteListe);
-      const faktor = schwierigkeitsfaktor3(stufe);
-      // Erfüllungsanteil (Willis Festlegung vom 31.08.2026): In Stufe 4
-      // fließt das Kopfrechnen mit 20 Prozent ein, verpasste zählen als falsch.
-      const rechnen = stufe4
+      const faktor = schwierigkeitsfaktor3(auswahl.length, rechnenAn);
+      // Erfüllungsanteil (Willis Festlegung vom 31.08.2026): Bei
+      // eingeschaltetem Kopfrechnen fließt es mit 20 Prozent ein, verpasste
+      // zählen als falsch.
+      const rechnen = rechnenAn
         ? { richtig: rechnenRichtig, gestellt: rechnenRichtig + rechnenFalsch + rechnenVerpasst }
         : null;
       const wert = Math.round(erfuellung3(genauigkeit, rechnen) * faktor);
       const mittel = (id, einheit) => abwZaehler[id]
         ? `${(abwSumme[id] / abwZaehler[id]).toFixed(1)} ${einheit}`
         : "–";
-      const rechenzeile = stufe4
+      const rechenzeile = rechnenAn
         ? `<span>Rechenaufgaben: ${rechnenRichtig} richtig · ${rechnenFalsch} falsch · ${rechnenVerpasst} verpasst</span>`
         : "";
       const abbruchzeile = gewertet ? "" : `<span class="abgebrochen">ABGEBROCHEN · DER LAUF ZÄHLT NICHT ZUR STATISTIK</span>`;
@@ -723,7 +771,7 @@ export function erzeugeUebung3({ speicher, controls }) {
             abweichungKurs: abwZaehler.kurs ? Number((abwSumme.kurs / abwZaehler.kurs).toFixed(2)) : null,
             abweichungHoehe: abwZaehler.hoehe ? Number((abwSumme.hoehe / abwZaehler.hoehe).toFixed(2)) : null,
             abweichungFahrt: abwZaehler.fahrt ? Number((abwSumme.fahrt / abwZaehler.fahrt).toFixed(2)) : null,
-            ...(stufe4 ? { rechnenRichtig, rechnenFalsch, rechnenVerpasst } : {}),
+            ...(rechnenAn ? { rechnenRichtig, rechnenFalsch, rechnenVerpasst } : {}),
           },
         } : null);
         await tuer.oeffne();
@@ -743,5 +791,6 @@ export function erzeugeUebung3({ speicher, controls }) {
     })();
   }
 
-  return { hinweis, ladeEinstellung, zeichneFeld, starte };
+  const startGesperrt = () => !pruefeAuswahl3(auswahlAusEinstellung());
+  return { hinweis, ladeEinstellung, zeichneFeld, starte, startGesperrt };
 }

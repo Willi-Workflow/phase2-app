@@ -239,7 +239,11 @@ function initialisiereSeite() {
     if (uebung.ladeEinstellung) startknopf.disabled = true;
     Promise.resolve(uebung.ladeEinstellung?.()).then(() => {
       uebung.zeichneFeld?.(document.getElementById("uebungsfeld"));
-      startknopf.disabled = false;
+      // Die Übung darf START gesperrt lassen, etwa wenn kein Steuerelement
+      // gewählt ist (Missionen 2 und 3). Vorher hat diese Zeile die Sperre
+      // aus zeichneFeld bedingungslos wieder aufgehoben, ein Lauf mit leerer
+      // Auswahl war also startbar und lieferte 0 Prozent.
+      startknopf.disabled = uebung.startGesperrt?.() === true;
     });
     uebung.zeichneUnten?.(document.getElementById("uebungsunten"));
   }

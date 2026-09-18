@@ -7,7 +7,6 @@
 import { mische } from "./zufall.js";
 
 export const TESTDAUERN = [3, 5, 10]; // Minuten
-export const STUFEN = [1, 2, 3, 4];
 export const FLUGZEIT_S = 60;         // Dauer eines Durchgangs
 export const EINRICHTZEIT_S = 5;      // Fahrt zählt erst danach zur Wertung
 // Rechenfluss seit 03.09.2026 (Willis Auftrag): Die Aufgaben laufen
@@ -25,7 +24,11 @@ export const ANSAGE_PAUSE_MS = 350;   // Sprechpause zwischen den Ansagegliedern
 // eine unbeantwortbare Aufgabe am Ende als verpasst.
 export const RECHNEN_MINDESTREST_S = 8;
 
-const INSTRUMENTE = ["kurs", "hoehe", "fahrt"]; // feste Reihenfolge im Ergebnis
+// Frei anklickbar seit 19.09.2026 (Willis Auftrag, Muster Mission 2): Der
+// Bewerber waehlt selbst, welche Instrumente im Durchgang zu fuehren sind.
+// Vorher gab es Stufen 1 bis 4, die die Zahl der Instrumente vorgaben und
+// je Durchgang neu wuerfelten, welche es sind. Die Reihenfolge bleibt fest.
+export const INSTRUMENTE = ["kurs", "hoehe", "fahrt"];
 
 // Gewürfelte Vorgaben seit 01.09.2026 (Willis Auftrag): Kurs und Höhe aus
 // festen Rastern, die Fahrt frei über dem Fahrtmesserband. Nur der Startpunkt
@@ -96,22 +99,21 @@ function wuerfleFahrt(rnd = Math.random) {
   return { start, ziel: ziele[wuerfelIndex(ziele.length, rnd)] };
 }
 
-// Stufe 1 nimmt eines der drei Instrumente, Stufe 2 zwei, ab Stufe 3 alle
-// drei. Die Auswahl selbst ist zufällig, das Ergebnis steht immer in der
-// festen Reihenfolge kurs, hoehe, fahrt.
-function waehleAktive(stufe, rnd) {
-  if (stufe >= 3) return [...INSTRUMENTE];
-  const gemischt = mische(INSTRUMENTE, rnd).slice(0, stufe);
-  return INSTRUMENTE.filter((id) => gemischt.includes(id));
+// Mindestens ein Instrument, und nur bekannte Kennungen.
+export function pruefeAuswahl3(auswahl) {
+  return Array.isArray(auswahl) && auswahl.length > 0
+    && auswahl.every((id) => INSTRUMENTE.includes(id));
 }
 
 // Zielvorgaben eines Durchgangs. Kurs, Höhe und Fahrt werden immer für alle
-// drei Instrumente erzeugt, unabhängig davon, welche laut Stufe aktiv sind.
-export function erzeugeVorgaben(stufe, rnd = Math.random) {
+// drei Instrumente erzeugt, unabhängig davon, welche aktiv sind; das Panel
+// zeigt auch die stillen Instrumente. Aktiv ist seit dem 19.09.2026 genau
+// die Auswahl des Bewerbers, in der festen Reihenfolge kurs, hoehe, fahrt.
+export function erzeugeVorgaben(auswahl, rnd = Math.random) {
   const kurs = wuerfleKurs(rnd);
   const hoehe = wuerfleHoehe(rnd);
   const fahrt = wuerfleFahrt(rnd);
-  return { aktive: waehleAktive(stufe, rnd), kurs, hoehe, fahrt };
+  return { aktive: INSTRUMENTE.filter((id) => auswahl.includes(id)), kurs, hoehe, fahrt };
 }
 
 // Anfangszustand: Kurs und Höhe stehen systemseitig auf dem Startwert, die
@@ -224,12 +226,21 @@ export function durchgangspunkte(fehlerSumme, messungen) {
 }
 
 // Kennzahl des Laufs: gerundetes Mittel der Durchgangspunkte.
-// Schwierigkeitsfaktor: Stufe 1 fliegt nur ein Instrument, Stufe 3 alle,
-// Stufe 4 rechnet nebenbei; nur Stufe 4 erreicht den Faktor 1,0. So kommt
-// eine leichte Einstellung nie auf 100 Prozent.
-const STUFENFAKTOR = { 1: 0.65, 2: 0.8, 3: 0.9, 4: 1.0 };
-export function schwierigkeitsfaktor3(stufe) {
-  return STUFENFAKTOR[stufe] ?? 0.65;
+// Schwierigkeitsfaktor: Ein Instrument zu führen ist leichter als drei, und
+// wer nebenbei rechnet, leistet mehr. Nur die volle Einstellung erreicht 1,0,
+// eine leichte kommt also nie auf 100 Prozent.
+//
+// Die Werte bilden die alte Stufentabelle {1: 0,65, 2: 0,8, 3: 0,9, 4: 1,0}
+// exakt nach: ein, zwei, drei Instrumente ergeben die Stufen 1 bis 3, und
+// drei Instrumente mit Kopfrechnen ergeben 1,0 wie die alte Stufe 4. Das ist
+// Absicht, damit die gespeicherten M3-Läufe vergleichbar bleiben. Neu
+// hinzugekommen sind nur die Mischungen, die es als Stufe nicht gab, etwa
+// ein Instrument mit Kopfrechnen (0,75).
+const INSTRUMENTFAKTOR = { 1: 0.65, 2: 0.8, 3: 0.9 };
+const RECHNEN_ZUSCHLAG = 0.1;
+export function schwierigkeitsfaktor3(anzahlInstrumente, mitRechnen = false) {
+  const basis = INSTRUMENTFAKTOR[anzahlInstrumente] ?? 0.65;
+  return mitRechnen ? basis + RECHNEN_ZUSCHLAG : basis;
 }
 
 export function kennzahl3(punkteListe) {
