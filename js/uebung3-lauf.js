@@ -22,7 +22,14 @@ const ZWISCHENANZEIGE_MS = 2500;
 const AUFGABENECHO_MS = 600;
 // Aufgabenbildschirm vor jedem Durchgang (Willis Auftrag vom 07.09.2026):
 // solange stehen die Zielwerte im Bild, erst danach starten Uhr und Aufgabe.
-const AUFGABENANZEIGE_MS = 5000;
+// Am 19.09.2026 auf Willis Auftrag von 5 auf 15 Sekunden verlängert. Es sind
+// drei Zielwerte zu merken (Kurs, Höhe, Fahrt), fünf Sekunden waren dafür
+// knapp. Die Wertung bleibt davon unberührt: kennzahl3 mittelt über die
+// Durchgänge, ein längerer Vorlauf verzerrt die Prozentzahl also nicht.
+// Er kostet aber Durchgänge, weil der Takt auf 77,9 Sekunden wächst: bei
+// 5 Minuten Testdauer sind es 4 statt 5, bei 10 Minuten 8 statt 9. Bei
+// 3 Minuten bleibt es bei 3.
+const AUFGABENANZEIGE_MS = 15000;
 const AUFGABENBLENDE_MS = 400; // Luft zwischen Zwischenanzeige und Aufgabenbildschirm
 
 // Ansage der Rechenaufgaben (Stufe 4): ElevenLabs-Aufnahmen aus der
