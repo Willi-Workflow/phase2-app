@@ -243,6 +243,10 @@ export function erzeugeUebung4({ speicher }) {
         tuer.verwische(false);
         raeumeAuf();
         if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
+        // Tuer zuerst auf, dann sichern (Willis haengende Bildschirme,
+        // 19.09.2026): beiEnde geht ueber das Netz, und solange es nicht
+        // antwortet, stand sonst das geschlossene Tor ueber dem Schirm.
+        await tuer.oeffne();
         await beiEnde(gewertet && !uebung ? {
           kennzahl: wert,
           daten: {
@@ -256,7 +260,6 @@ export function erzeugeUebung4({ speicher }) {
             faktor: Number(faktor.toFixed(3)),
           },
         } : null);
-        await tuer.oeffne();
       };
       verlasse = schliesse;
       tafel.querySelector("#u4-fertig").addEventListener("click", schliesse);

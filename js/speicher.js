@@ -29,15 +29,34 @@ export function erzeugeSpeicher({ konfig, fetchFn = fetch, lager = localStorage 
   };
   const tabelle = (name) => `${konfig.supabaseUrl}/rest/v1/${name}`;
 
+  // Laenger als das wartet keine Supabase-Anfrage, siehe rufe().
+  const FRIST_MS = 12000;
+
   async function rufe(adresse, optionen = {}) {
     if (!zugang) { zustand = "ohne-zugang"; throw new Error("ohne-zugang"); }
     let antwort;
+    // Zeitgrenze je Anfrage (Willis Meldung vom 19.09.2026 zu haengenden
+    // Bildschirmen). Ohne sie wartet ein fetch unbegrenzt, sobald die
+    // Verbindung zwar steht, die Gegenstelle aber nicht antwortet: fremdes
+    // WLAN mit Anmeldeseite, abgerissenes VPN, Rechner aus dem Ruhezustand.
+    // Die haeufigen Stoerungen (offline, DNS) lehnen sofort ab, genau dieser
+    // stille Fall aber nicht, und an ihm blieb am Laufende die Hangartuer
+    // haengen. Ein Abbruch gilt als voruebergehend, der Lauf wandert also in
+    // die Warteschlange und geht nicht verloren.
+    const abbruch = new AbortController();
+    const frist = setTimeout(() => abbruch.abort(), FRIST_MS);
     try {
-      antwort = await fetchFn(adresse, { ...optionen, headers: { ...kopf, ...(optionen.headers ?? {}) } });
+      antwort = await fetchFn(adresse, {
+        ...optionen,
+        signal: abbruch.signal,
+        headers: { ...kopf, ...(optionen.headers ?? {}) },
+      });
     } catch (netzfehler) {
       zustand = "getrennt";
       netzfehler.dauerhaft = false;
       throw netzfehler;
+    } finally {
+      clearTimeout(frist);
     }
     if (!antwort.ok) {
       // 400 bis 499 außer 408 (Timeout) und 429 (zu viele Anfragen) sind dauerhafte

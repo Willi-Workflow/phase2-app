@@ -368,11 +368,14 @@ export function erzeugeUebung6({ speicher }) {
         tuer.verwische(false);
         raeumeAuf();
         if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
+        // Tuer zuerst auf, dann sichern (Willis haengende Bildschirme,
+        // 19.09.2026): beiEnde geht ueber das Netz, und solange es nicht
+        // antwortet, stand sonst das geschlossene Tor ueber dem Schirm.
+        await tuer.oeffne();
         await beiEnde(gewertet ? {
           kennzahl: quote,
           daten: { art: "wissenstest", bereich, gestellt, richtig, quote },
         } : null);
-        await tuer.oeffne();
       };
       verlasse = schliesse;
       tafel.querySelector("#u6-fertig").addEventListener("click", schliesse);

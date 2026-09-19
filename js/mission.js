@@ -132,9 +132,17 @@ function starteLauf() {
             alert("Der Lauf konnte nicht gesichert werden und geht verloren. Bitte Verbindung und Einrichtung prüfen.");
           }
         }
-        await zeichneAuswertung();
-        laufAktiv = false;
-        laufendeTuer = null;
+        // zeichneAuswertung geht ueber das Netz. Wirft oder haengt es, muss
+        // der Lauf trotzdem freigegeben werden, sonst bleibt START fuer den
+        // Rest der Sitzung tot (Willis haengende Bildschirme, 19.09.2026).
+        try {
+          await zeichneAuswertung();
+        } catch (fehler) {
+          console.error("Auswertung konnte nicht neu gezeichnet werden:", fehler);
+        } finally {
+          laufAktiv = false;
+          laufendeTuer = null;
+        }
       },
     }));
     return;

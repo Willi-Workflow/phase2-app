@@ -364,8 +364,11 @@ export function erzeugeUebung3({ speicher, controls }) {
         tuer.verwische(false);
         raeumeAuf();
         if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
-        await beiEnde(null); // die Übung zählt nie
+        // Tuer zuerst auf, dann sichern (Willis haengende Bildschirme,
+        // 19.09.2026): beiEnde geht ueber das Netz, und solange es nicht
+        // antwortet, stand sonst das geschlossene Tor ueber dem Schirm.
         await tuer.oeffne();
+        await beiEnde(null); // die Übung zählt nie
       };
       verlasse = schliesse;
       tafel.querySelector("#u3-uebung-fertig").addEventListener("click", schliesse);
@@ -757,6 +760,10 @@ export function erzeugeUebung3({ speicher, controls }) {
         tuer.verwische(false);
         raeumeAuf();
         if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
+        // Tuer zuerst auf, dann sichern (Willis haengende Bildschirme,
+        // 19.09.2026): beiEnde geht ueber das Netz, und solange es nicht
+        // antwortet, stand sonst das geschlossene Tor ueber dem Schirm.
+        await tuer.oeffne();
         await beiEnde(gewertet ? {
           kennzahl: wert,
           daten: {
@@ -777,7 +784,6 @@ export function erzeugeUebung3({ speicher, controls }) {
             ...(rechnenAn ? { rechnenRichtig, rechnenFalsch, rechnenVerpasst } : {}),
           },
         } : null);
-        await tuer.oeffne();
       };
       verlasse = schliesse;
       tafelErgebnis.querySelector("#u3-fertig").addEventListener("click", schliesse);

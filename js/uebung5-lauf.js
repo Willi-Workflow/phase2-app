@@ -238,8 +238,11 @@ export function erzeugeUebung5({ speicher }) {
         tuer.verwische(false);
         raeumeAuf();
         if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
-        await beiEnde(null); // die Übung zählt nie
+        // Tuer zuerst auf, dann sichern (Willis haengende Bildschirme,
+        // 19.09.2026): beiEnde geht ueber das Netz, und solange es nicht
+        // antwortet, stand sonst das geschlossene Tor ueber dem Schirm.
         await tuer.oeffne();
+        await beiEnde(null); // die Übung zählt nie
       };
       verlasse = schliesse;
       tafel.querySelector("#u5s-fertig").addEventListener("click", schliesse);
@@ -426,8 +429,11 @@ export function erzeugeUebung5({ speicher }) {
         tuer.verwische(false);
         raeumeAuf();
         if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
-        await beiEnde(null); // die Übung zählt nie
+        // Tuer zuerst auf, dann sichern (Willis haengende Bildschirme,
+        // 19.09.2026): beiEnde geht ueber das Netz, und solange es nicht
+        // antwortet, stand sonst das geschlossene Tor ueber dem Schirm.
         await tuer.oeffne();
+        await beiEnde(null); // die Übung zählt nie
       };
       verlasse = schliesse;
       tafel.querySelector("#u5d-fertig").addEventListener("click", schliesse);
@@ -644,11 +650,14 @@ export function erzeugeUebung5({ speicher }) {
         // diesen Vermerk ließe sich später nicht mehr nachsehen, welche
         // Prozentzahl auf welcher Stufe zustande kam, und damit auch nichts
         // eichen.
+        // Tuer zuerst auf, dann sichern (Willis haengende Bildschirme,
+        // 19.09.2026): beiEnde geht ueber das Netz, und solange es nicht
+        // antwortet, stand sonst das geschlossene Tor ueber dem Schirm.
+        await tuer.oeffne();
         await beiEnde(gewertet ? {
           kennzahl: wert,
           daten: { art: "flugphysik", dauerMin: dauer, stufe, gestellt, richtig, quote, punkte: wert },
         } : null);
-        await tuer.oeffne();
       };
       verlasse = schliesse;
       tafel.querySelector("#u5-fertig").addEventListener("click", schliesse);
