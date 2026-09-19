@@ -359,8 +359,21 @@ export function erzeugeRechenaufgabe(rnd = Math.random, stufe = 0) {
 // beginnt wieder bei der leichtesten Stufe.
 export const ANSTIEG_SERIE = 3;
 
+// Startsprosse der Treppe (Willis Auftrag vom 19.09.2026: "mache die
+// matheaufgaben von anfang an schwieriger"). Vorher begann jeder Lauf und
+// jede Uebung auf Sprosse 0: einstellige Zahlen, nur Plus und Minus. Geteilt
+// gibt es erst ab Sprosse 2, zweistellige Operanden ab Sprosse 3. Der Start
+// liegt darum jetzt auf 3, damit alle vier Rechenarten und zweistellige
+// Zahlen ab der ersten Aufgabe vorkommen.
+//
+// Ein zu hoher Start kostet wenig: Die Treppe senkt sich bei jeder falschen
+// oder verpassten Aufgabe sofort um eine Sprosse, sie findet also binnen
+// weniger Aufgaben von selbst das passende Niveau. Willis Festlegung vom
+// 03.09.2026 bleibt: Es wird nichts je Profil gespeichert, jeder Lauf faengt
+// auf derselben Sprosse an.
+export const RECHENSTUFE_START = 3;
 export function rechenstandStart() {
-  return { stufe: 0, serie: 0 };
+  return { stufe: RECHENSTUFE_START, serie: 0 };
 }
 
 export function passeRechenstufeAn(stand, richtig) {

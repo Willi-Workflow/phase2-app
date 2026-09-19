@@ -7,7 +7,7 @@ import {
   momentanfehler, saeulenfehler, durchgangspunkte, kennzahl3,
   erzeugeRechenaufgabe, antworten5, pedalwahl, RECHENSTUFEN_MAX, erfuellung3,
   schwierigkeitsfaktor3,
-  passeRechenstufeAn, rechenstandStart, ANSTIEG_SERIE, schiebeZone,
+  passeRechenstufeAn, rechenstandStart, RECHENSTUFE_START, ANSTIEG_SERIE, schiebeZone,
   rechenarten, ablenkerStreuung,
 } from "../js/uebung3.js";
 import { svgUhr, svgSaeule, uhrwinkel, saeulenanteil } from "../js/uebung3-bild.js";
@@ -470,8 +470,10 @@ test("erzeugeRechenaufgabe: negative Ergebnisse kommen oben wirklich vor", () =>
 test("passeRechenstufeAn: drei Richtige heben, jeder Fehler senkt", () => {
   // Willis Treppenregel vom 03.09.2026: langsamer Anstieg über die Serie,
   // sofortiger Abstieg bei falsch oder verpasst, Grenzen 0 und Maximum.
-  let stand = rechenstandStart();
-  assert.deepEqual(stand, { stufe: 0, serie: 0 });
+  // Bewusst von Sprosse 0 aus geprueft, nicht ab rechenstandStart: Die Regel
+  // gilt unabhaengig davon, wo die Treppe beginnt. Die Startsprosse selbst
+  // haelt der Test darunter fest.
+  let stand = { stufe: 0, serie: 0 };
   stand = passeRechenstufeAn(stand, true);
   stand = passeRechenstufeAn(stand, true);
   assert.equal(stand.stufe, 0); // zwei Richtige reichen nicht
@@ -482,6 +484,33 @@ test("passeRechenstufeAn: drei Richtige heben, jeder Fehler senkt", () => {
   assert.deepEqual(stand, { stufe: 0, serie: 0 });
   stand = passeRechenstufeAn(stand, false); // unter 0 geht es nicht
   assert.deepEqual(stand, { stufe: 0, serie: 0 });
+});
+
+test("rechenstandStart: die Treppe beginnt schon mit allen vier Rechenarten", () => {
+  // Willis Auftrag vom 19.09.2026: "mache die matheaufgaben von anfang an
+  // schwieriger". Vorher begann jeder Lauf auf Sprosse 0 mit einstelligen
+  // Zahlen und nur Plus und Minus. Der Start muss mindestens so hoch liegen,
+  // dass Geteilt ueberhaupt vorkommt, sonst steht der Auftrag nur auf dem
+  // Papier.
+  const stand = rechenstandStart();
+  assert.equal(stand.stufe, RECHENSTUFE_START);
+  assert.equal(stand.serie, 0);
+  assert.deepEqual(rechenarten(stand.stufe).sort(), ["*", "+", "-", "/"]);
+
+  // Und die erste Aufgabe zeigt das auch wirklich: ueber viele Ziehungen
+  // kommen alle vier Arten vor und die Zahlen sind nicht mehr nur einstellig.
+  const arten = new Set();
+  let zweistellig = 0;
+  for (let i = 0; i < 2000; i++) {
+    const a = erzeugeRechenaufgabe(Math.random, stand.stufe);
+    arten.add(a.op);
+    if (Math.abs(a.a) > 9 || Math.abs(a.b) > 9) zweistellig++;
+  }
+  assert.deepEqual([...arten].sort(), ["*", "+", "-", "/"]);
+  assert.ok(zweistellig > 100, `zu selten zweistellig: ${zweistellig} von 2000`);
+
+  // Der Start darf die Treppe nicht ueberschreiten.
+  assert.ok(RECHENSTUFE_START >= 0 && RECHENSTUFE_START <= RECHENSTUFEN_MAX);
 });
 
 test("passeRechenstufeAn: Deckel am Maximum, Serie zählt nach Fehler neu", () => {
