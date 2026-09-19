@@ -742,7 +742,7 @@ export function erzeugeUebung3({ speicher, controls }) {
         </div>
         <button class="punkt" id="u3-fertig">ZURÜCK ZUR MISSION</button>
         <div class="ergebnisfuss">
-          <span>Stufe ${stufe} · ${testdauer} min Testdauer${fehlersaeule ? "" : " · Fehlersäule aus"} · Faktor ${faktor.toFixed(2)}</span>
+          <span>${auswahl.map((id) => NAMEN3[id]).join(", ")}${rechnenAn ? " · Kopfrechnen" : ""} · ${testdauer} min Testdauer${fehlersaeule ? "" : " · Fehlersäule aus"} · Faktor ${faktor.toFixed(2)}</span>
           ${abbruchzeile}
         </div>`;
       document.body.append(tafelErgebnis);
@@ -761,7 +761,10 @@ export function erzeugeUebung3({ speicher, controls }) {
           kennzahl: wert,
           daten: {
             art: "instrumentenflug",
-            stufe,
+            // Seit 19.09.2026 steht hier die gewaehlte Auswahl statt der
+            // Stufe 1 bis 4. Aeltere Laeufe tragen weiterhin stufe.
+            controls: [...auswahl],
+            kopfrechnen: rechnenAn,
             faktor,
             genauigkeit,
             testdauerMin: testdauer,

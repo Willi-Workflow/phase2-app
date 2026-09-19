@@ -18,6 +18,8 @@ const nr = Number(new URLSearchParams(location.search).get("bereich"));
 const mission = MISSIONEN.find((m) => m.nr === nr);
 
 let laufAktiv = false;
+// Die Tuer des laufenden Tests, damit das Rettungsnetz sie oeffnen kann.
+let laufendeTuer = null;
 const controls = erzeugeControls(speicher);
 // Bereiche mit echter Übung; alle übrigen laufen über den Probelauf.
 const UEBUNGEN = { 1: erzeugeUebung1, 2: erzeugeUebung2, 3: erzeugeUebung3, 4: erzeugeUebung4, 5: erzeugeUebung5, 6: erzeugeUebung6 };
@@ -107,6 +109,7 @@ function starteLauf() {
     // Die Hangartür fährt über der Missionsseite zu, dahinter baut sich der
     // Test auf, dann öffnet die Übung die Tür selbst.
     const tuer = erzeugeHangartuer();
+    laufendeTuer = tuer;
     tuer.schliesse().then(() => uebung.starte({
       tuer,
       registriereAbbruch: (fn) => { brichLaufAb = fn; },
@@ -131,6 +134,7 @@ function starteLauf() {
         }
         await zeichneAuswertung();
         laufAktiv = false;
+        laufendeTuer = null;
       },
     }));
     return;
@@ -140,6 +144,7 @@ function starteLauf() {
   // Auch der Probelauf läuft hinter dem Hangartür-Übergang: Tür zu, Aufbau
   // verdeckt, Tür auf, erst dann läuft die Zeit.
   const tuer = erzeugeHangartuer();
+  laufendeTuer = tuer;
 
   const schleier = document.createElement("div");
   schleier.className = "laufschleier";
@@ -216,6 +221,38 @@ function starteLauf() {
     });
   });
 }
+
+// Rettungsnetz gegen haengende Bildschirme (Willis Meldung vom 19.09.2026:
+// "manchmal fehlerhafte bildschirme die sich aufgehaengt haben"). Wirft
+// irgendwo im Lauf etwas Unerwartetes, wird die Hangartuer nie geoeffnet und
+// laufAktiv bleibt auf true stehen: Die Seite ist dann tot, auch START
+// reagiert nicht mehr, und nur Neuladen hilft. Die gefundene Ursache war ein
+// ReferenceError in der Ergebnistafel von Mission 3, behoben im selben
+// Commit. Dieses Netz sorgt dafuer, dass der naechste Fehler dieser Art den
+// LAUF beendet statt die SEITE. Es verdeckt nichts: Der Fehler steht in der
+// Konsole, der Lauf zaehlt nicht, und der Bewerber wird darauf hingewiesen.
+async function rettungAusFehler(was) {
+  if (!laufAktiv) return; // ausserhalb eines Laufs gibt es nichts zu retten
+  laufAktiv = false;      // zuerst, damit ein Folgefehler nicht erneut rettet
+  console.error("Lauf wegen unerwartetem Fehler beendet:", was);
+  brichLaufAb = null;
+  for (const schicht of document.querySelectorAll(".laufschleier, .ergebnisschicht")) {
+    schicht.remove();
+  }
+  if (document.fullscreenElement) await document.exitFullscreen().catch(() => {});
+  try {
+    await laufendeTuer?.oeffne();
+  } catch {
+    // Laesst sich die Tuer nicht mehr regulaer fahren, kommt sie hart weg:
+    // ein offener Blick auf die Mission ist besser als ein toter Bildschirm.
+  }
+  document.querySelector(".hangartuer")?.remove();
+  laufendeTuer = null;
+  alert("Der Lauf wurde wegen eines unerwarteten Fehlers beendet und nicht gewertet. "
+    + "Die Einzelheiten stehen in der Browser-Konsole.");
+}
+addEventListener("error", (e) => rettungAusFehler(e.error ?? e.message));
+addEventListener("unhandledrejection", (e) => rettungAusFehler(e.reason));
 
 function initialisiereSeite() {
   // Erst nach dem Laden der Zuordnung zeigt die Rollenanzeige den echten Stand,

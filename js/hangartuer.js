@@ -28,6 +28,13 @@ export function erzeugeHangartuer() {
       tuer.classList.toggle("zu", zu);
       setTimeout(fertig, FAHRZEIT);
     }));
+    // Ohne diesen Fang bliebe die Kette nach einem einzigen Fehler dauerhaft
+    // abgelehnt: Jede spaetere Fahrt haengt sich an ein abgelehntes
+    // Versprechen und laeuft nie an, die Tuer bleibt fuer immer stehen.
+    // Der Fang gibt die Kette wieder frei, der Fehler steht in der Konsole.
+    kette = kette.catch((fehler) => {
+      console.error("Hangartuer: Fahrt fehlgeschlagen, Kette freigegeben", fehler);
+    });
     return kette;
   };
 
